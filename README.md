@@ -33,20 +33,6 @@ NEXT_PUBLIC_TELEGRAM_CHANNEL_URL=https://t.me/doechkurse
 
 Pass the same env contract into the frontend image build/runtime:
 
-From the current monorepo root:
-
-```bash
-docker build \
-  -f frontend/Dockerfile \
-  frontend \
-  --build-arg NEXT_PUBLIC_API_URL=http://localhost:8000 \
-  --build-arg API_INTERNAL_URL=http://localhost:8000 \
-  --build-arg NEXT_PUBLIC_TELEGRAM_BOT_URL=https://t.me/Deine_Deutsch_Quiz_bot \
-  --build-arg NEXT_PUBLIC_TELEGRAM_CHANNEL_URL=https://t.me/doechkurse
-```
-
-After the split, the same image can be built from the standalone repo root:
-
 ```bash
 docker build \
   -f Dockerfile \
