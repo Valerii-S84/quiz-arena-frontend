@@ -62,13 +62,13 @@ The Dockerfile accepts all four values in both the `builder` and `production` st
 For the backend repo cutover, the production image contract is:
 
 ```bash
-FRONTEND_IMAGE=ghcr.io/Valerii-S84/quiz-arena-frontend:<tag>
+FRONTEND_IMAGE=ghcr.io/valerii-s84/quiz-arena-frontend:<tag>
 ```
 
 The publish workflow in this repo pushes:
 
-- `ghcr.io/Valerii-S84/quiz-arena-frontend:main` on the default branch
-- `ghcr.io/Valerii-S84/quiz-arena-frontend:sha-<commit>`
+- `ghcr.io/valerii-s84/quiz-arena-frontend:main` on the default branch
+- `ghcr.io/valerii-s84/quiz-arena-frontend:sha-<commit>`
 
 ## Quality Gates
 
