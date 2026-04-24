@@ -1,8 +1,7 @@
 # Quiz Arena Frontend (Public + Admin)
 
-This directory is the intended root of the future standalone frontend repo.
-Until the split happens, run the commands below from `frontend/`.
-After the split, run the same commands from the repo root.
+Standalone repo: `https://github.com/Valerii-S84/quiz-arena-frontend`
+Backend deploy/orchestration stays in the backend repo; this repo owns frontend CI and image publishing.
 
 ## Run
 
@@ -60,6 +59,17 @@ docker build \
 
 The Dockerfile accepts all four values in both the `builder` and `production` stages.
 
+For the backend repo cutover, the production image contract is:
+
+```bash
+FRONTEND_IMAGE=ghcr.io/valerii-s84/quiz-arena-frontend:<tag>
+```
+
+The publish workflow in this repo pushes:
+
+- `ghcr.io/valerii-s84/quiz-arena-frontend:main` on the default branch
+- `ghcr.io/valerii-s84/quiz-arena-frontend:sha-<commit>`
+
 ## Quality Gates
 
 ```bash
@@ -71,7 +81,7 @@ npm run ci
 ```
 
 `npm run lint` uses the repo-supported ESLint CLI path.
-`npm run ci` is the frontend-local aggregate gate for a standalone repo or future frontend-only CI job.
+`npm run ci` is the frontend-local aggregate gate and the basis for the repo CI workflow.
 
 ## Routes
 
