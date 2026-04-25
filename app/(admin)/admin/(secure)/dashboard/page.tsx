@@ -5,22 +5,17 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { fetchContactRequests, fetchOverview, updateContactRequestStatus } from "@/lib/api";
 
+import { normalizeOverviewData } from "./dashboard-normalization";
 import { PERIOD_OPTIONS } from "./dashboard-config";
 import { DashboardContactRequestsSection } from "./dashboard-contact-requests-section";
-import { findPeakHourlyActivity, getMetric, mapFunnelStep, mapProductLabel } from "./dashboard-helpers";
 import { DashboardOverviewSections } from "./dashboard-overview-sections";
-import type {
-  ContactRequestsData,
-  FunnelChartItem,
-  OverviewData,
-  TopProductChartItem,
-} from "./dashboard-types";
+import type { ContactRequestsData, OverviewData } from "./dashboard-types";
 
 export default function DashboardPage() {
   const [period, setPeriod] = useState("7d");
   const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery<OverviewData>({
+  const { data, error: queryError, isLoading } = useQuery<OverviewData, Error>({
     queryKey: ["overview", period],
     queryFn: () => fetchOverview(period),
   });
@@ -39,71 +34,28 @@ export default function DashboardPage() {
     },
   });
 
-  const funnelData = useMemo<FunnelChartItem[]>(() => {
+  const { overviewModel, normalizationError } = useMemo(() => {
     if (!data) {
-      return [];
-    }
-    return data.funnel.map((item, index) => {
-      const previousValue = index > 0 ? Number(data.funnel[index - 1]?.value ?? 0) : 0;
-      const currentValue = Number(item.value ?? 0);
-      const conversion =
-        index === 0 ? 100 : previousValue > 0 ? (currentValue / previousValue) * 100 : 0;
       return {
-        step: item.step,
-        step_label: mapFunnelStep(item.step),
-        value: currentValue,
-        conversion_from_prev: conversion,
+        overviewModel: null,
+        normalizationError: null,
       };
-    });
-  }, [data]);
-
-  const topProductsData = useMemo<TopProductChartItem[]>(() => {
-    if (!data) {
-      return [];
     }
-    return data.top_products.map((item) => ({
-      product: item.product,
-      product_label: mapProductLabel(item.product),
-      revenue_stars: Number(item.revenue_stars ?? 0),
-    }));
-  }, [data]);
-
-  const totalRevenueStars = useMemo(() => {
-    if (!data) {
-      return 0;
+    try {
+      return {
+        overviewModel: normalizeOverviewData(data),
+        normalizationError: null,
+      };
+    } catch (error) {
+      return {
+        overviewModel: null,
+        normalizationError:
+          error instanceof Error ? error : new Error("Dashboard-Daten konnten nicht verarbeitet werden."),
+      };
     }
-    return data.revenue_series.reduce((sum, item) => sum + Number(item.stars ?? 0), 0);
   }, [data]);
 
-  const averageActiveUsers = useMemo(() => {
-    if (!data || data.users_series.length === 0) {
-      return 0;
-    }
-    const total = data.users_series.reduce((sum, item) => sum + Number(item.active_users ?? 0), 0);
-    return total / data.users_series.length;
-  }, [data]);
-
-  const peakHourlyActivity = useMemo(
-    () => findPeakHourlyActivity(data?.hourly_activity_series),
-    [data],
-  );
-
-  const averageHourlyActivity = useMemo(() => {
-    const series = data?.hourly_activity_series ?? [];
-    if (series.length === 0) {
-      return 0;
-    }
-    const total = series.reduce((sum, item) => sum + Number(item.active_users ?? 0), 0);
-    return total / series.length;
-  }, [data]);
-
-  const topHourlyWindows = useMemo(() => {
-    const series = data?.hourly_activity_series ?? [];
-    return [...series]
-      .filter((item) => Number(item.active_users ?? 0) > 0)
-      .sort((left, right) => Number(right.active_users ?? 0) - Number(left.active_users ?? 0))
-      .slice(0, 3);
-  }, [data]);
+  const overviewError = queryError ?? normalizationError;
 
   return (
     <main className="min-w-0 space-y-6 py-2">
@@ -116,13 +68,9 @@ export default function DashboardPage() {
               Alle Werte sind auf den gewählten Zeitraum bezogen und werden mit dem vorherigen
               gleich langen Zeitraum verglichen.
             </p>
-            {data ? (
+            {overviewModel ? (
               <p className="mt-1 text-xs text-ember/60">
-                Letzte Aktualisierung:{" "}
-                {new Date(data.generated_at).toLocaleString("de-DE", {
-                  timeZone: "Europe/Berlin",
-                })}{" "}
-                (Berlin)
+                Letzte Aktualisierung: {overviewModel.generatedAtLabel} (Berlin)
               </p>
             ) : null}
           </div>
@@ -140,20 +88,18 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {isLoading || !data ? <p className="text-sm">Dashboard-Daten werden geladen...</p> : null}
+      {isLoading ? <p className="text-sm">Dashboard-Daten werden geladen...</p> : null}
 
-      {data ? (
-        <DashboardOverviewSections
-          data={data}
-          funnelData={funnelData}
-          topProductsData={topProductsData}
-          totalRevenueStars={totalRevenueStars}
-          averageActiveUsers={averageActiveUsers}
-          peakHourlyActivity={peakHourlyActivity}
-          averageHourlyActivity={averageHourlyActivity}
-          topHourlyWindows={topHourlyWindows}
-        />
+      {overviewError ? (
+        <section className="surface rounded-2xl border border-red-200 bg-red-50/70 p-5">
+          <p className="text-sm font-medium text-red-800">
+            Dashboard-Daten konnten nicht geladen oder validiert werden.
+          </p>
+          <p className="mt-1 text-xs text-red-700">{overviewError.message}</p>
+        </section>
       ) : null}
+
+      {overviewModel ? <DashboardOverviewSections model={overviewModel} /> : null}
 
       <DashboardContactRequestsSection
         data={contactRequestsData}

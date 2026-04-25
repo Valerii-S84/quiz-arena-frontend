@@ -18,8 +18,6 @@ import {
   CHART_AXIS_TICK,
   CHART_GRID_STROKE,
   CHART_TOOLTIP_STYLE,
-  FEATURE_USAGE_DEFINITIONS,
-  KPI_DEFINITIONS,
 } from "./dashboard-config";
 import {
   deltaClassName,
@@ -28,46 +26,32 @@ import {
   formatHourRangeLabel,
   formatShortDateLabel,
   formatValue,
-  getMetric,
   mapAlert,
 } from "./dashboard-helpers";
-import type {
-  AlertItem,
-  FunnelChartItem,
-  HourlyActivityItem,
-  OverviewData,
-  TopProductChartItem,
-} from "./dashboard-types";
+import type { AlertItem, DashboardOverviewModel } from "./dashboard-types";
 
 type DashboardOverviewSectionsProps = {
-  data: OverviewData;
-  funnelData: FunnelChartItem[];
-  topProductsData: TopProductChartItem[];
-  totalRevenueStars: number;
-  averageActiveUsers: number;
-  peakHourlyActivity: HourlyActivityItem | null;
-  averageHourlyActivity: number;
-  topHourlyWindows: HourlyActivityItem[];
+  model: DashboardOverviewModel;
 };
 
-function DashboardKpiSection({ data }: { data: OverviewData }) {
+function DashboardKpiSection({ model }: DashboardOverviewSectionsProps) {
   return (
     <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-      {KPI_DEFINITIONS.map((definition) => {
-        const metric = getMetric(data.kpis, definition.key);
+      {model.kpiCards.map((card) => {
+        const { metric } = card;
         return (
-          <article key={definition.key} className="surface rounded-xl p-4">
-            <p className="text-xs uppercase tracking-wide text-ember/60">{definition.label}</p>
+          <article key={card.key} className="surface rounded-xl p-4">
+            <p className="text-xs uppercase tracking-wide text-ember/60">{card.label}</p>
             <p className="mt-2 text-2xl font-semibold">
-              {formatValue(metric.current, definition.unit)}
+              {formatValue(metric.current, card.unit)}
             </p>
             <p className={`mt-1 text-xs ${deltaClassName(metric.delta_pct)}`}>
               Veränderung: {formatDelta(metric.delta_pct)}
             </p>
             <p className="mt-1 text-xs text-ember/60">
-              Vorher: {formatValue(metric.previous, definition.unit)}
+              Vorher: {formatValue(metric.previous, card.unit)}
             </p>
-            <p className="mt-2 text-xs text-ember/70">{definition.hint}</p>
+            <p className="mt-2 text-xs text-ember/70">{card.hint}</p>
           </article>
         );
       })}
@@ -75,7 +59,7 @@ function DashboardKpiSection({ data }: { data: OverviewData }) {
   );
 }
 
-function DashboardFeatureUsageSection({ data }: { data: OverviewData }) {
+function DashboardFeatureUsageSection({ model }: DashboardOverviewSectionsProps) {
   return (
     <section className="surface rounded-2xl p-4">
       <h2 className="text-xl">Nutzung wichtiger Funktionen</h2>
@@ -83,21 +67,21 @@ function DashboardFeatureUsageSection({ data }: { data: OverviewData }) {
         Diese Werte zeigen direkt, ob zentrale Features wirklich genutzt werden.
       </p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {FEATURE_USAGE_DEFINITIONS.map((definition) => {
-          const metric = getMetric(data.feature_usage, definition.key);
+        {model.featureUsageCards.map((card) => {
+          const { metric } = card;
           return (
             <article
-              key={definition.key}
+              key={card.key}
               className="rounded-xl border border-ember/15 bg-white/70 p-3"
             >
-              <p className="text-xs uppercase tracking-wide text-ember/60">{definition.label}</p>
+              <p className="text-xs uppercase tracking-wide text-ember/60">{card.label}</p>
               <p className="mt-1 text-xl font-semibold">
-                {formatValue(metric.current, definition.unit)}
+                {formatValue(metric.current, card.unit)}
               </p>
               <p className={`mt-1 text-xs ${deltaClassName(metric.delta_pct)}`}>
                 Veränderung: {formatDelta(metric.delta_pct)}
               </p>
-              <p className="mt-2 text-xs text-ember/70">{definition.hint}</p>
+              <p className="mt-2 text-xs text-ember/70">{card.hint}</p>
             </article>
           );
         })}
@@ -107,14 +91,10 @@ function DashboardFeatureUsageSection({ data }: { data: OverviewData }) {
 }
 
 function DashboardActivitySection({
-  data,
-  peakHourlyActivity,
-  averageHourlyActivity,
-  topHourlyWindows,
-}: Pick<
-  DashboardOverviewSectionsProps,
-  "data" | "peakHourlyActivity" | "averageHourlyActivity" | "topHourlyWindows"
->) {
+  model,
+}: DashboardOverviewSectionsProps) {
+  const { hourlyActivity } = model;
+
   return (
     <section className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(18rem,0.62fr)]">
       <article className="surface overflow-hidden rounded-[32px] p-5">
@@ -123,19 +103,19 @@ function DashboardActivitySection({
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-ember/45">
               Aktivitaet
             </p>
-            <h2 className="mt-1 text-2xl">Bot-Aktivität nach Uhrzeit</h2>
+            <h2 className="mt-1 text-2xl">Aktive Nutzer nach Berliner Stunde</h2>
             <p className="mt-1 text-sm text-ember/70">
-              Zeigt, in welchen Berliner Stunden Nutzer im Bot wirklich aktiv sind.
+              Zeigt distinct aktive Nutzer je Berliner Stundenfenster im gewählten Zeitraum.
             </p>
           </div>
           <div className="rounded-full border border-ember/15 bg-white/80 px-3 py-1 text-xs text-ember/75">
-            Berlin-Zeit · {data.hourly_activity_series?.length ?? 0} Stundenpunkte
+            Berlin-Zeit · {hourlyActivity.pointCount} Stundenfenster
           </div>
         </div>
         <div className="mt-4 h-[24rem] rounded-[26px] border border-white/70 bg-[radial-gradient(circle_at_top_left,rgba(41,80,101,0.16),transparent_38%),radial-gradient(circle_at_top_right,rgba(137,245,199,0.16),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.94),rgba(242,247,249,0.98))] p-3">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={data.hourly_activity_series ?? []}
+              data={hourlyActivity.series}
               margin={{ top: 8, right: 12, left: -16, bottom: 0 }}
             >
               <defs>
@@ -191,34 +171,36 @@ function DashboardActivitySection({
           <div className="rounded-[24px] border border-[#295065]/12 bg-[linear-gradient(135deg,rgba(41,80,101,0.12),rgba(137,245,199,0.18))] p-4">
             <p className="text-xs uppercase tracking-[0.2em] text-ember/50">Peak</p>
             <p className="mt-2 text-2xl font-semibold text-[#1f4257]">
-              {peakHourlyActivity
-                ? formatHourRangeLabel(peakHourlyActivity.hour)
+              {hourlyActivity.peakWindow
+                ? formatHourRangeLabel(hourlyActivity.peakWindow.hour)
                 : "Keine Daten"}
             </p>
             <p className="mt-1 text-sm text-ember/70">
-              {peakHourlyActivity
-                ? `${peakHourlyActivity.active_users.toLocaleString("de-DE")} aktive Nutzer`
+              {hourlyActivity.peakWindow
+                ? `${hourlyActivity.peakWindow.active_users.toLocaleString("de-DE")} aktive Nutzer im staerksten Stundenfenster`
                 : "Im gewählten Zeitraum wurden noch keine Stundenwerte erfasst."}
             </p>
           </div>
 
           <div className="rounded-[24px] border border-ember/12 bg-[#fff9f3] p-4">
-            <p className="text-xs uppercase tracking-[0.2em] text-ember/50">Ø pro Stunde</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-ember/50">
+              Ø je Stundenfenster
+            </p>
             <p className="mt-2 text-2xl font-semibold text-[#1f4257]">
-              {averageHourlyActivity.toLocaleString("de-DE", {
+              {hourlyActivity.averageUsersPerHourBucket.toLocaleString("de-DE", {
                 maximumFractionDigits: 1,
               })}
             </p>
             <p className="mt-1 text-sm text-ember/70">
-              Durchschnitt aktiver Nutzer über alle 24 Stunden.
+              Durchschnitt distinct aktiver Nutzer je Berliner Stundenfenster im gewählten Zeitraum.
             </p>
           </div>
 
           <div className="rounded-[24px] border border-ember/12 bg-white/80 p-4">
             <p className="text-xs uppercase tracking-[0.2em] text-ember/50">Top-Zeitfenster</p>
             <div className="mt-3 space-y-2">
-              {topHourlyWindows.length > 0 ? (
-                topHourlyWindows.map((item) => (
+              {hourlyActivity.topWindows.length > 0 ? (
+                hourlyActivity.topWindows.map((item) => (
                   <div
                     key={item.hour}
                     className="flex items-center justify-between rounded-2xl border border-ember/10 bg-[#fffdf9] px-3 py-2"
@@ -243,10 +225,8 @@ function DashboardActivitySection({
 }
 
 function DashboardRevenueUsersSection({
-  data,
-  totalRevenueStars,
-  averageActiveUsers,
-}: Pick<DashboardOverviewSectionsProps, "data" | "totalRevenueStars" | "averageActiveUsers">) {
+  model,
+}: DashboardOverviewSectionsProps) {
   return (
     <section className="grid gap-4 xl:grid-cols-2">
       <article className="surface overflow-hidden rounded-3xl p-5">
@@ -258,12 +238,15 @@ function DashboardRevenueUsersSection({
             </p>
           </div>
           <div className="rounded-full border border-ember/15 bg-white/80 px-3 py-1 text-xs text-ember/75">
-            Gesamt: {totalRevenueStars.toLocaleString("de-DE")} ⭐
+            Gesamt: {model.totalRevenueStars.toLocaleString("de-DE")} ⭐
           </div>
         </div>
         <div className="mt-4 h-[22rem] rounded-2xl border border-white/70 bg-[radial-gradient(circle_at_top_left,rgba(137,245,199,0.22),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.92),rgba(255,248,244,0.96))] p-3">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data.revenue_series} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
+            <AreaChart
+              data={model.revenueSeries}
+              margin={{ top: 8, right: 12, left: -16, bottom: 0 }}
+            >
               <defs>
                 <linearGradient id="dashboardRevenueGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#89f5c7" stopOpacity={0.75} />
@@ -307,12 +290,16 @@ function DashboardRevenueUsersSection({
             </p>
           </div>
           <div className="rounded-full border border-ember/15 bg-white/80 px-3 py-1 text-xs text-ember/75">
-            Ø aktiv: {averageActiveUsers.toLocaleString("de-DE", { maximumFractionDigits: 1 })}
+            Ø aktiv pro Tag:{" "}
+            {model.averageActiveUsersPerDay.toLocaleString("de-DE", { maximumFractionDigits: 1 })}
           </div>
         </div>
         <div className="mt-4 h-[22rem] rounded-2xl border border-white/70 bg-[radial-gradient(circle_at_top_left,rgba(245,141,116,0.16),transparent_44%),linear-gradient(180deg,rgba(255,255,255,0.92),rgba(249,244,241,0.98))] p-3">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data.users_series} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
+            <LineChart
+              data={model.usersSeries}
+              margin={{ top: 8, right: 12, left: -16, bottom: 0 }}
+            >
               <CartesianGrid stroke={CHART_GRID_STROKE} strokeDasharray="4 8" vertical={false} />
               <XAxis
                 dataKey="date"
@@ -345,21 +332,24 @@ function DashboardRevenueUsersSection({
 }
 
 function DashboardFunnelProductsSection({
-  funnelData,
-  topProductsData,
-}: Pick<DashboardOverviewSectionsProps, "funnelData" | "topProductsData">) {
+  model,
+}: DashboardOverviewSectionsProps) {
   return (
     <section className="grid gap-4 xl:grid-cols-2">
       <article className="surface overflow-hidden rounded-3xl p-5">
         <div>
-          <h2 className="text-xl">Nutzer-Funnel</h2>
+          <h2 className="text-xl">Zeitfenster-Milestones</h2>
           <p className="mt-1 text-sm text-ember/70">
-            Klarere Stufenansicht statt klassischer Standardbalken.
+            Vergleich derselben Zeitraum-Meilensteine; kein cohort-basierter Conversion-Funnel.
           </p>
         </div>
         <div className="mt-4 h-[22rem] rounded-2xl border border-white/70 bg-[radial-gradient(circle_at_top_left,rgba(137,245,199,0.20),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.92),rgba(241,248,245,0.98))] p-3">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={funnelData} layout="vertical" margin={{ top: 8, right: 12, left: 4, bottom: 0 }}>
+            <BarChart
+              data={model.funnelData}
+              layout="vertical"
+              margin={{ top: 8, right: 12, left: 4, bottom: 0 }}
+            >
               <defs>
                 <linearGradient id="dashboardFunnelGradient" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0%" stopColor="#89f5c7" stopOpacity={0.98} />
@@ -388,13 +378,13 @@ function DashboardFunnelProductsSection({
           </ResponsiveContainer>
         </div>
         <div className="mt-3 space-y-1 text-xs text-ember/75">
-          {funnelData.map((item, index) => (
+          {model.funnelData.map((item, index) => (
             <p key={`${item.step}-${index}`}>
               {item.step_label}: {item.value.toLocaleString("de-DE")} Nutzer
               {index > 0
-                ? ` · ${item.conversion_from_prev.toLocaleString("de-DE", {
+                ? ` · ${item.ratio_to_previous.toLocaleString("de-DE", {
                     maximumFractionDigits: 1,
-                  })}% von der vorherigen Stufe`
+                  })}% relativ zur vorherigen Stufe im selben Zeitraum`
                 : ""}
             </p>
           ))}
@@ -410,7 +400,11 @@ function DashboardFunnelProductsSection({
         </div>
         <div className="mt-4 h-[22rem] rounded-2xl border border-white/70 bg-[radial-gradient(circle_at_top_left,rgba(245,141,116,0.16),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.92),rgba(251,245,242,0.98))] p-3">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={topProductsData} layout="vertical" margin={{ top: 8, right: 12, left: 8, bottom: 0 }}>
+            <BarChart
+              data={model.topProductsData}
+              layout="vertical"
+              margin={{ top: 8, right: 12, left: 8, bottom: 0 }}
+            >
               <defs>
                 <linearGradient id="dashboardProductsGradient" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0%" stopColor="#f58d74" stopOpacity={0.98} />
@@ -472,27 +466,15 @@ function DashboardAlertsSection({ alerts }: { alerts: AlertItem[] }) {
   );
 }
 
-export function DashboardOverviewSections(props: DashboardOverviewSectionsProps) {
+export function DashboardOverviewSections({ model }: DashboardOverviewSectionsProps) {
   return (
     <>
-      <DashboardKpiSection data={props.data} />
-      <DashboardFeatureUsageSection data={props.data} />
-      <DashboardActivitySection
-        data={props.data}
-        peakHourlyActivity={props.peakHourlyActivity}
-        averageHourlyActivity={props.averageHourlyActivity}
-        topHourlyWindows={props.topHourlyWindows}
-      />
-      <DashboardRevenueUsersSection
-        data={props.data}
-        totalRevenueStars={props.totalRevenueStars}
-        averageActiveUsers={props.averageActiveUsers}
-      />
-      <DashboardFunnelProductsSection
-        funnelData={props.funnelData}
-        topProductsData={props.topProductsData}
-      />
-      <DashboardAlertsSection alerts={props.data.alerts} />
+      <DashboardKpiSection model={model} />
+      <DashboardFeatureUsageSection model={model} />
+      <DashboardActivitySection model={model} />
+      <DashboardRevenueUsersSection model={model} />
+      <DashboardFunnelProductsSection model={model} />
+      <DashboardAlertsSection alerts={model.alerts} />
     </>
   );
 }
