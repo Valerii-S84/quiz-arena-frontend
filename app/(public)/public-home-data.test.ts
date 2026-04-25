@@ -16,6 +16,19 @@ describe("public home data", () => {
     });
   });
 
+  it("keeps real zero values available instead of treating them as missing", async () => {
+    const stats = await loadPublicStats(async () => ({
+      users: 0,
+      quizzes: 0,
+    }));
+
+    expect(stats).toEqual({
+      users: 0,
+      quizzes: 0,
+      isUnavailable: false,
+    });
+  });
+
   it("marks stats as unavailable when payload is incomplete", async () => {
     const stats = await loadPublicStats(async () => ({
       users: 1250,

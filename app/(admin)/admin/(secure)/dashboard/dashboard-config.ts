@@ -13,7 +13,20 @@ export const PERIOD_OPTIONS = [
   { value: "90d", label: "90 Tage" },
 ] as const;
 
+export const OVERVIEW_PERIODS = PERIOD_OPTIONS.map((option) => option.value) as [
+  "7d",
+  "30d",
+  "90d",
+];
+
 export const REQUEST_STATUSES = ["NEW", "IN_PROGRESS", "DONE", "SPAM"] as const;
+
+export const FUNNEL_STEP_ORDER = [
+  "Start",
+  "First Quiz",
+  "Streak 3+",
+  "Purchase",
+] as const;
 
 export const KPI_DEFINITIONS: MetricDefinition[] = [
   {
