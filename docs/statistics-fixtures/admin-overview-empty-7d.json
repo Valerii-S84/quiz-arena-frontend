@@ -1,0 +1,218 @@
+{
+  "period": "7d",
+  "generated_at": "2026-04-10T12:00:00+00:00",
+  "kpis": {
+    "dau": {
+      "current": 0.0,
+      "previous": 0.0,
+      "delta_pct": 0.0
+    },
+    "wau": {
+      "current": 0.0,
+      "previous": 0.0,
+      "delta_pct": 0.0
+    },
+    "mau": {
+      "current": 0.0,
+      "previous": 0.0,
+      "delta_pct": 0.0
+    },
+    "new_users": {
+      "current": 0.0,
+      "previous": 0.0,
+      "delta_pct": 0.0
+    },
+    "retention_d1": {
+      "current": 0.0,
+      "previous": 0.0,
+      "delta_pct": 0.0
+    },
+    "retention_d7": {
+      "current": 0.0,
+      "previous": 0.0,
+      "delta_pct": 0.0
+    },
+    "revenue_stars": {
+      "current": 0.0,
+      "previous": 0.0,
+      "delta_pct": 0.0
+    },
+    "revenue_eur": {
+      "current": 0.0,
+      "previous": 0.0,
+      "delta_pct": 0.0
+    },
+    "active_subscriptions": {
+      "current": 0.0,
+      "previous": 0.0,
+      "delta_pct": 0.0
+    },
+    "start_users": {
+      "current": 0.0,
+      "previous": 0.0,
+      "delta_pct": 0.0
+    },
+    "conversion_start_to_quiz": {
+      "current": 0.0,
+      "previous": 0.0,
+      "delta_pct": 0.0
+    },
+    "conversion_quiz_to_purchase": {
+      "current": 0.0,
+      "previous": 0.0,
+      "delta_pct": 0.0
+    }
+  },
+  "revenue_series": [],
+  "users_series": [],
+  "hourly_activity_series": [
+    {
+      "hour": 0,
+      "active_users": 0
+    },
+    {
+      "hour": 1,
+      "active_users": 0
+    },
+    {
+      "hour": 2,
+      "active_users": 0
+    },
+    {
+      "hour": 3,
+      "active_users": 0
+    },
+    {
+      "hour": 4,
+      "active_users": 0
+    },
+    {
+      "hour": 5,
+      "active_users": 0
+    },
+    {
+      "hour": 6,
+      "active_users": 0
+    },
+    {
+      "hour": 7,
+      "active_users": 0
+    },
+    {
+      "hour": 8,
+      "active_users": 0
+    },
+    {
+      "hour": 9,
+      "active_users": 0
+    },
+    {
+      "hour": 10,
+      "active_users": 0
+    },
+    {
+      "hour": 11,
+      "active_users": 0
+    },
+    {
+      "hour": 12,
+      "active_users": 0
+    },
+    {
+      "hour": 13,
+      "active_users": 0
+    },
+    {
+      "hour": 14,
+      "active_users": 0
+    },
+    {
+      "hour": 15,
+      "active_users": 0
+    },
+    {
+      "hour": 16,
+      "active_users": 0
+    },
+    {
+      "hour": 17,
+      "active_users": 0
+    },
+    {
+      "hour": 18,
+      "active_users": 0
+    },
+    {
+      "hour": 19,
+      "active_users": 0
+    },
+    {
+      "hour": 20,
+      "active_users": 0
+    },
+    {
+      "hour": 21,
+      "active_users": 0
+    },
+    {
+      "hour": 22,
+      "active_users": 0
+    },
+    {
+      "hour": 23,
+      "active_users": 0
+    }
+  ],
+  "funnel": [
+    {
+      "step": "Start",
+      "value": 0
+    },
+    {
+      "step": "First Quiz",
+      "value": 0
+    },
+    {
+      "step": "Streak 3+",
+      "value": 0
+    },
+    {
+      "step": "Purchase",
+      "value": 0
+    }
+  ],
+  "top_products": [],
+  "feature_usage": {
+    "duel_created_users": {
+      "current": 0.0,
+      "previous": 0.0,
+      "delta_pct": 0.0
+    },
+    "duel_completed_users": {
+      "current": 0.0,
+      "previous": 0.0,
+      "delta_pct": 0.0
+    },
+    "duel_completion_rate": {
+      "current": 0.0,
+      "previous": 0.0,
+      "delta_pct": 0.0
+    },
+    "referral_shared_users": {
+      "current": 0.0,
+      "previous": 0.0,
+      "delta_pct": 0.0
+    },
+    "referral_referrers_started": {
+      "current": 0.0,
+      "previous": 0.0,
+      "delta_pct": 0.0
+    },
+    "daily_cup_registered_users": {
+      "current": 0.0,
+      "previous": 0.0,
+      "delta_pct": 0.0
+    }
+  },
+  "alerts": []
+}

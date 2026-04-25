@@ -72,14 +72,14 @@ export const KPI_DEFINITIONS: MetricDefinition[] = [
   },
   {
     key: "start_users",
-    label: "Bot gestartet",
-    hint: "Nutzer mit Start-Aktion im Zeitraum.",
+    label: "Start-Basis (aktuell neu)",
+    hint: "Backend nutzt hier derzeit neue Nutzer statt echter /start-Events.",
     unit: "count",
   },
   {
     key: "conversion_start_to_quiz",
-    label: "Von Start zu erstem Quiz",
-    hint: "Wie viele nach Start auch ein Quiz beginnen.",
+    label: "Neue Nutzer zu erstem Quiz",
+    hint: "Aktuelle Backend-Definition: Anteil neuer Nutzer mit erstem Quiz im Zeitraum.",
     unit: "percent",
   },
   {
@@ -130,10 +130,10 @@ export const FEATURE_USAGE_DEFINITIONS: MetricDefinition[] = [
 ];
 
 export const FUNNEL_STEP_LABELS: Record<string, string> = {
-  Start: "Start",
+  Start: "Neue Nutzer",
   "First Quiz": "Erstes Quiz",
   "Streak 3+": "Streak 3+",
-  Purchase: "Kauf",
+  Purchase: "Erstkauf",
 };
 
 export const PRODUCT_LABELS: Record<string, string> = {

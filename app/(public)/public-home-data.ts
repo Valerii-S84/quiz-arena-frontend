@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { api } from "@/lib/api";
 import { apiRoutes } from "@/lib/api-routes";
+import { parsePublicStatsPayload } from "@/lib/statistics-payload";
 
 import {
   createInitialStatsState,
@@ -21,7 +22,7 @@ import type {
 
 export async function requestPublicStats(): Promise<StatsPayload> {
   const response = await api.get<StatsPayload>(apiRoutes.public.stats);
-  return response.data;
+  return parsePublicStatsPayload(response.data);
 }
 
 export async function loadPublicStats(
