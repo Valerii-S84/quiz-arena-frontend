@@ -2,6 +2,7 @@ import axios from "axios";
 
 import { getBrowserApiBaseUrl } from "@/lib/api-config";
 import { apiRoutes } from "@/lib/api-routes";
+import { parseOverviewPayloadSections } from "@/lib/statistics-payload";
 
 export const api = axios.create({
   baseURL: getBrowserApiBaseUrl(),
@@ -10,7 +11,7 @@ export const api = axios.create({
 
 export async function fetchOverview(period: string) {
   const { data } = await api.get(apiRoutes.admin.overview, { params: { period } });
-  return data;
+  return parseOverviewPayloadSections(data);
 }
 
 export async function fetchEconomyPurchases() {

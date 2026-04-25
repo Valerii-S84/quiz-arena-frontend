@@ -1,4 +1,6 @@
 export type MetricUnit = "count" | "percent" | "eur" | "stars";
+export type DashboardSectionStatus = "valid" | "partial" | "invalid" | "empty";
+export type DashboardCardStatus = "valid" | "invalid";
 
 export type KpiMetric = {
   current: number;
@@ -43,15 +45,15 @@ export type AlertItem = {
 };
 
 export type OverviewData = {
-  period: string;
+  period: "7d" | "30d" | "90d";
   generated_at: string;
   kpis: Record<string, KpiMetric>;
   revenue_series: RevenueSeriesItem[];
   users_series: UsersSeriesItem[];
-  hourly_activity_series?: HourlyActivityItem[];
+  hourly_activity_series: HourlyActivityItem[];
   funnel: FunnelItem[];
   top_products: TopProductItem[];
-  feature_usage?: Record<string, KpiMetric>;
+  feature_usage: Record<string, KpiMetric>;
   alerts: AlertItem[];
 };
 
@@ -77,11 +79,75 @@ export type FunnelChartItem = {
   step: string;
   step_label: string;
   value: number;
-  conversion_from_prev: number;
+  ratio_to_previous: number | null;
 };
 
 export type TopProductChartItem = {
   product: string;
   product_label: string;
   revenue_stars: number;
+};
+
+export type DashboardMetricCard = {
+  key: string;
+  label: string;
+  hint: string;
+  unit: MetricUnit;
+  metric: KpiMetric | null;
+  status: DashboardCardStatus;
+};
+
+export type DashboardMetricSection = {
+  status: DashboardSectionStatus;
+  message: string | null;
+  cards: DashboardMetricCard[];
+};
+
+export type DashboardHourlyInsights = {
+  status: DashboardSectionStatus;
+  message: string | null;
+  series: HourlyActivityItem[];
+  pointCount: number;
+  missingHours: number[];
+  peakWindow: HourlyActivityItem | null;
+  averageUsersPerHourBucket: number | null;
+  topWindows: HourlyActivityItem[];
+};
+
+export type DashboardRevenueSection = {
+  status: DashboardSectionStatus;
+  message: string | null;
+  series: RevenueSeriesItem[];
+  totalRevenueStars: number | null;
+};
+
+export type DashboardUsersSection = {
+  status: DashboardSectionStatus;
+  message: string | null;
+  series: UsersSeriesItem[];
+  averageActiveUsersPerDay: number | null;
+};
+
+export type DashboardOverviewModel = {
+  generatedAtLabel: string;
+  kpiSection: DashboardMetricSection;
+  featureUsageSection: DashboardMetricSection;
+  hourlyActivity: DashboardHourlyInsights;
+  revenueSection: DashboardRevenueSection;
+  usersSection: DashboardUsersSection;
+  funnelSection: {
+    status: DashboardSectionStatus;
+    message: string | null;
+    items: FunnelChartItem[];
+  };
+  topProductsSection: {
+    status: DashboardSectionStatus;
+    message: string | null;
+    items: TopProductChartItem[];
+  };
+  alertsSection: {
+    status: DashboardSectionStatus;
+    message: string | null;
+    alerts: AlertItem[];
+  };
 };
