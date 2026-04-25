@@ -166,10 +166,12 @@ export function findPeakHourlyActivity(
   if (!series || series.length === 0) {
     return null;
   }
-  return series.reduce((best, item) => {
+  const peak = series.reduce((best, item) => {
     if (item.active_users > best.active_users) {
       return item;
     }
     return best;
   });
+
+  return peak.active_users > 0 ? peak : null;
 }

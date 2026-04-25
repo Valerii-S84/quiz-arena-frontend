@@ -1,4 +1,6 @@
 export type MetricUnit = "count" | "percent" | "eur" | "stars";
+export type DashboardSectionStatus = "valid" | "partial" | "invalid" | "empty";
+export type DashboardCardStatus = "valid" | "invalid";
 
 export type KpiMetric = {
   current: number;
@@ -77,7 +79,7 @@ export type FunnelChartItem = {
   step: string;
   step_label: string;
   value: number;
-  ratio_to_previous: number;
+  ratio_to_previous: number | null;
 };
 
 export type TopProductChartItem = {
@@ -91,27 +93,61 @@ export type DashboardMetricCard = {
   label: string;
   hint: string;
   unit: MetricUnit;
-  metric: KpiMetric;
+  metric: KpiMetric | null;
+  status: DashboardCardStatus;
+};
+
+export type DashboardMetricSection = {
+  status: DashboardSectionStatus;
+  message: string | null;
+  cards: DashboardMetricCard[];
 };
 
 export type DashboardHourlyInsights = {
+  status: DashboardSectionStatus;
+  message: string | null;
   series: HourlyActivityItem[];
   pointCount: number;
+  missingHours: number[];
   peakWindow: HourlyActivityItem | null;
-  averageUsersPerHourBucket: number;
+  averageUsersPerHourBucket: number | null;
   topWindows: HourlyActivityItem[];
+};
+
+export type DashboardRevenueSection = {
+  status: DashboardSectionStatus;
+  message: string | null;
+  series: RevenueSeriesItem[];
+  totalRevenueStars: number | null;
+};
+
+export type DashboardUsersSection = {
+  status: DashboardSectionStatus;
+  message: string | null;
+  series: UsersSeriesItem[];
+  averageActiveUsersPerDay: number | null;
 };
 
 export type DashboardOverviewModel = {
   generatedAtLabel: string;
-  kpiCards: DashboardMetricCard[];
-  featureUsageCards: DashboardMetricCard[];
-  revenueSeries: RevenueSeriesItem[];
-  usersSeries: UsersSeriesItem[];
+  kpiSection: DashboardMetricSection;
+  featureUsageSection: DashboardMetricSection;
   hourlyActivity: DashboardHourlyInsights;
-  funnelData: FunnelChartItem[];
-  topProductsData: TopProductChartItem[];
-  totalRevenueStars: number;
-  averageActiveUsersPerDay: number;
-  alerts: AlertItem[];
+  revenueSection: DashboardRevenueSection;
+  usersSection: DashboardUsersSection;
+  funnelSection: {
+    status: DashboardSectionStatus;
+    message: string | null;
+    items: FunnelChartItem[];
+  };
+  topProductsSection: {
+    status: DashboardSectionStatus;
+    message: string | null;
+    items: TopProductChartItem[];
+  };
+  alertsSection: {
+    status: DashboardSectionStatus;
+    message: string | null;
+    alerts: AlertItem[];
+  };
 };

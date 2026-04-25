@@ -1,35 +1,102 @@
 import { describe, expect, it } from "vitest";
 
+import emptyOverviewFixture from "@/docs/statistics-fixtures/admin-overview-empty-7d.json";
 import overviewFixture from "@/docs/statistics-fixtures/admin-overview-seeded-7d.json";
+import { parseOverviewPayloadSections } from "@/lib/statistics-payload";
 
 import { FEATURE_USAGE_DEFINITIONS, KPI_DEFINITIONS } from "./dashboard-config";
 import { normalizeOverviewData } from "./dashboard-normalization";
-import type { OverviewData } from "./dashboard-types";
 
 describe("normalizeOverviewData", () => {
   it("builds a display model from a validated overview payload", () => {
-    const model = normalizeOverviewData(overviewFixture as OverviewData);
+    const model = normalizeOverviewData(parseOverviewPayloadSections(overviewFixture));
 
-    expect(model.kpiCards).toHaveLength(KPI_DEFINITIONS.length);
-    expect(model.featureUsageCards).toHaveLength(FEATURE_USAGE_DEFINITIONS.length);
-    expect(model.hourlyActivity.pointCount).toBe(24);
-    expect(model.totalRevenueStars).toBe(
+    expect(model.kpiSection.cards).toHaveLength(KPI_DEFINITIONS.length);
+    expect(model.featureUsageSection.cards).toHaveLength(FEATURE_USAGE_DEFINITIONS.length);
+    expect(model.kpiSection.status).toBe("valid");
+    expect(model.hourlyActivity.status).toBe("valid");
+    expect(model.revenueSection.totalRevenueStars).toBe(
       overviewFixture.revenue_series.reduce((sum, item) => sum + item.stars, 0),
     );
-    expect(model.funnelData[0]).toMatchObject({
+    expect(model.funnelSection.items[0]).toMatchObject({
       step: "Start",
       step_label: "Neue Nutzer",
-      ratio_to_previous: 100,
+      ratio_to_previous: null,
     });
   });
 
-  it("fails loudly when a configured KPI is missing", () => {
+  it("keeps valid zero metrics distinct from missing KPI data", () => {
+    const model = normalizeOverviewData(parseOverviewPayloadSections(emptyOverviewFixture));
+
+    expect(model.kpiSection.status).toBe("valid");
+    expect(model.kpiSection.cards[0]).toMatchObject({
+      key: "dau",
+      status: "valid",
+      metric: {
+        current: 0,
+        previous: 0,
+        delta_pct: 0,
+      },
+    });
+    expect(model.hourlyActivity.status).toBe("empty");
+  });
+
+  it("marks the KPI section as partial when only some cards are missing", () => {
     const { dau: _dau, ...kpisWithoutDau } = overviewFixture.kpis;
-    const invalidPayload = {
+    const payload = parseOverviewPayloadSections({
       ...overviewFixture,
       kpis: kpisWithoutDau,
-    } as OverviewData;
+    });
+    const model = normalizeOverviewData(payload);
 
-    expect(() => normalizeOverviewData(invalidPayload)).toThrow("Missing kpi metric: dau");
+    expect(model.kpiSection.status).toBe("partial");
+    expect(model.kpiSection.cards.find((card) => card.key === "dau")).toMatchObject({
+      status: "invalid",
+      metric: null,
+    });
+    expect(model.kpiSection.cards.find((card) => card.key === "wau")).toMatchObject({
+      status: "valid",
+    });
+  });
+
+  it("uses available hourly points without pretending missing buckets are zero", () => {
+    const payload = parseOverviewPayloadSections({
+      ...overviewFixture,
+      hourly_activity_series: overviewFixture.hourly_activity_series.filter(
+        (item) => item.active_users > 0,
+      ),
+    });
+    const model = normalizeOverviewData(payload);
+
+    expect(model.hourlyActivity.status).toBe("partial");
+    expect(model.hourlyActivity.pointCount).toBe(3);
+    expect(model.hourlyActivity.missingHours).toHaveLength(21);
+    expect(model.hourlyActivity.averageUsersPerHourBucket).toBeCloseTo(5 / 3, 5);
+    expect(model.hourlyActivity.peakWindow).toMatchObject({
+      hour: 10,
+      active_users: 2,
+    });
+  });
+
+  it("normalizes unordered funnel payloads into the known milestone order", () => {
+    const payload = parseOverviewPayloadSections({
+      ...overviewFixture,
+      funnel: [
+        overviewFixture.funnel[3],
+        overviewFixture.funnel[1],
+        overviewFixture.funnel[0],
+        overviewFixture.funnel[2],
+      ],
+    });
+    const model = normalizeOverviewData(payload);
+
+    expect(model.funnelSection.items.map((item) => item.step)).toEqual([
+      "Start",
+      "First Quiz",
+      "Streak 3+",
+      "Purchase",
+    ]);
+    expect(model.funnelSection.items[1]?.ratio_to_previous).toBe(50);
+    expect(model.funnelSection.items[3]?.ratio_to_previous).toBe(100);
   });
 });

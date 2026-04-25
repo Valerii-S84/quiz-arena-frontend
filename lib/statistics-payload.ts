@@ -1,7 +1,44 @@
 import { z, type ZodIssue } from "zod";
 
 import type { StatsPayload } from "@/app/(public)/public-home-types";
-import type { OverviewData } from "@/app/(admin)/admin/(secure)/dashboard/dashboard-types";
+import {
+  FEATURE_USAGE_DEFINITIONS,
+  FUNNEL_STEP_ORDER,
+  KPI_DEFINITIONS,
+  OVERVIEW_PERIODS,
+} from "@/app/(admin)/admin/(secure)/dashboard/dashboard-config";
+import type {
+  AlertItem,
+  FunnelItem,
+  HourlyActivityItem,
+  KpiMetric,
+  OverviewData,
+  RevenueSeriesItem,
+  TopProductItem,
+  UsersSeriesItem,
+} from "@/app/(admin)/admin/(secure)/dashboard/dashboard-types";
+
+type OverviewMetricRecord = Partial<Record<string, KpiMetric>>;
+type OverviewSectionValidationStatus = "valid" | "partial" | "invalid";
+
+export type OverviewSectionResult<T> = {
+  status: OverviewSectionValidationStatus;
+  data: T | null;
+  error: StatisticsPayloadError | null;
+};
+
+export type OverviewPayloadSections = {
+  period: OverviewData["period"];
+  generated_at: string;
+  kpis: OverviewSectionResult<OverviewMetricRecord>;
+  revenue_series: OverviewSectionResult<RevenueSeriesItem[]>;
+  users_series: OverviewSectionResult<UsersSeriesItem[]>;
+  hourly_activity_series: OverviewSectionResult<HourlyActivityItem[]>;
+  funnel: OverviewSectionResult<FunnelItem[]>;
+  top_products: OverviewSectionResult<TopProductItem[]>;
+  feature_usage: OverviewSectionResult<OverviewMetricRecord>;
+  alerts: OverviewSectionResult<AlertItem[]>;
+};
 
 const nonNegativeIntegerSchema = z.number().int().nonnegative();
 const nonNegativeNumberSchema = z.number().finite().nonnegative();
@@ -9,6 +46,12 @@ const isoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const isoDateTimeSchema = z.string().refine((value) => !Number.isNaN(Date.parse(value)), {
   message: "Expected ISO datetime string",
 });
+const overviewEnvelopeSchema = z
+  .object({
+    period: z.enum(OVERVIEW_PERIODS),
+    generated_at: isoDateTimeSchema,
+  })
+  .passthrough();
 
 const kpiMetricSchema = z
   .object({
@@ -41,27 +84,12 @@ const hourlyActivityItemSchema = z
   })
   .passthrough();
 
-const hourlyActivitySeriesSchema = z
-  .array(hourlyActivityItemSchema)
-  .length(24)
-  .superRefine((series, context) => {
-    series.forEach((item, index) => {
-      if (item.hour !== index) {
-        context.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Expected hourly bucket ${index}, received ${item.hour}`,
-          path: [index, "hour"],
-        });
-      }
-    });
-  });
-
-const funnelSchema = z.tuple([
-  z.object({ step: z.literal("Start"), value: nonNegativeIntegerSchema }).passthrough(),
-  z.object({ step: z.literal("First Quiz"), value: nonNegativeIntegerSchema }).passthrough(),
-  z.object({ step: z.literal("Streak 3+"), value: nonNegativeIntegerSchema }).passthrough(),
-  z.object({ step: z.literal("Purchase"), value: nonNegativeIntegerSchema }).passthrough(),
-]);
+const funnelItemSchema = z
+  .object({
+    step: z.enum(FUNNEL_STEP_ORDER),
+    value: nonNegativeIntegerSchema,
+  })
+  .passthrough();
 
 const topProductSchema = z
   .object({
@@ -81,53 +109,10 @@ const alertSchema = z
   })
   .passthrough();
 
-const overviewKpisSchema = z
-  .object({
-    dau: kpiMetricSchema,
-    wau: kpiMetricSchema,
-    mau: kpiMetricSchema,
-    new_users: kpiMetricSchema,
-    revenue_stars: kpiMetricSchema,
-    revenue_eur: kpiMetricSchema,
-    active_subscriptions: kpiMetricSchema,
-    retention_d1: kpiMetricSchema,
-    retention_d7: kpiMetricSchema,
-    start_users: kpiMetricSchema,
-    conversion_start_to_quiz: kpiMetricSchema,
-    conversion_quiz_to_purchase: kpiMetricSchema,
-  })
-  .passthrough();
-
-const featureUsageSchema = z
-  .object({
-    duel_created_users: kpiMetricSchema,
-    duel_completed_users: kpiMetricSchema,
-    duel_completion_rate: kpiMetricSchema,
-    referral_shared_users: kpiMetricSchema,
-    referral_referrers_started: kpiMetricSchema,
-    daily_cup_registered_users: kpiMetricSchema,
-  })
-  .passthrough();
-
 const publicStatsSchema = z
   .object({
     users: nonNegativeIntegerSchema,
     quizzes: nonNegativeIntegerSchema,
-  })
-  .passthrough();
-
-const overviewPayloadSchema = z
-  .object({
-    period: z.enum(["7d", "30d", "90d"]),
-    generated_at: isoDateTimeSchema,
-    kpis: overviewKpisSchema,
-    revenue_series: z.array(revenueSeriesItemSchema),
-    users_series: z.array(usersSeriesItemSchema),
-    hourly_activity_series: hourlyActivitySeriesSchema,
-    funnel: funnelSchema,
-    top_products: z.array(topProductSchema).max(5),
-    feature_usage: featureUsageSchema,
-    alerts: z.array(alertSchema),
   })
   .passthrough();
 
@@ -143,6 +128,186 @@ export class StatisticsPayloadError extends Error {
   }
 }
 
+function createCustomIssue(message: string, path: (string | number)[] = []): ZodIssue {
+  return {
+    code: z.ZodIssueCode.custom,
+    message,
+    path,
+  };
+}
+
+function prefixIssues(issues: ZodIssue[], pathPrefix: (string | number)[]): ZodIssue[] {
+  return issues.map((issue) => ({
+    ...issue,
+    path: [...pathPrefix, ...issue.path],
+  }));
+}
+
+function createSectionError(sectionKey: string, issues: ZodIssue[]): StatisticsPayloadError {
+  return new StatisticsPayloadError(`/admin/overview.${sectionKey}`, issues);
+}
+
+function createInvalidSectionResult<T>(
+  sectionKey: string,
+  issues: ZodIssue[],
+): OverviewSectionResult<T> {
+  return {
+    status: "invalid",
+    data: null,
+    error: createSectionError(sectionKey, issues),
+  };
+}
+
+function createPartialSectionResult<T>(
+  sectionKey: string,
+  data: T,
+  issues: ZodIssue[],
+): OverviewSectionResult<T> {
+  return {
+    status: "partial",
+    data,
+    error: createSectionError(sectionKey, issues),
+  };
+}
+
+function createValidSectionResult<T>(data: T): OverviewSectionResult<T> {
+  return {
+    status: "valid",
+    data,
+    error: null,
+  };
+}
+
+function parseMetricSection(
+  sectionKey: "kpis" | "feature_usage",
+  sectionValue: unknown,
+  expectedKeys: readonly string[],
+): OverviewSectionResult<OverviewMetricRecord> {
+  const recordResult = z.record(z.string(), z.unknown()).safeParse(sectionValue);
+  if (!recordResult.success) {
+    return createInvalidSectionResult(sectionKey, recordResult.error.issues);
+  }
+
+  const metrics: OverviewMetricRecord = {};
+  const issues: ZodIssue[] = [];
+
+  for (const key of expectedKeys) {
+    const metricResult = kpiMetricSchema.safeParse(recordResult.data[key]);
+    if (metricResult.success) {
+      metrics[key] = metricResult.data;
+      continue;
+    }
+    issues.push(...prefixIssues(metricResult.error.issues, [key]));
+  }
+
+  if (issues.length === 0) {
+    return createValidSectionResult(metrics);
+  }
+
+  if (Object.keys(metrics).length > 0) {
+    return createPartialSectionResult(sectionKey, metrics, issues);
+  }
+
+  return createInvalidSectionResult(sectionKey, issues);
+}
+
+function parseArraySection<T>(
+  sectionKey: string,
+  sectionValue: unknown,
+  schema: z.ZodType<T>,
+): OverviewSectionResult<T> {
+  const result = schema.safeParse(sectionValue);
+  if (!result.success) {
+    return createInvalidSectionResult(sectionKey, result.error.issues);
+  }
+  return createValidSectionResult(result.data);
+}
+
+function parseHourlyActivitySection(sectionValue: unknown): OverviewSectionResult<HourlyActivityItem[]> {
+  const result = z.array(hourlyActivityItemSchema).max(24).safeParse(sectionValue);
+  if (!result.success) {
+    return createInvalidSectionResult("hourly_activity_series", result.error.issues);
+  }
+
+  const seenHours = new Set<number>();
+  const issues: ZodIssue[] = [];
+
+  for (const [index, item] of result.data.entries()) {
+    if (seenHours.has(item.hour)) {
+      issues.push(createCustomIssue(`Duplicate hourly bucket ${item.hour}`, [index, "hour"]));
+      continue;
+    }
+    seenHours.add(item.hour);
+  }
+
+  if (issues.length > 0) {
+    return createInvalidSectionResult("hourly_activity_series", issues);
+  }
+
+  const sortedSeries = [...result.data].sort((left, right) => left.hour - right.hour);
+  const missingHours = Array.from({ length: 24 }, (_, hour) => hour).filter(
+    (hour) => !seenHours.has(hour),
+  );
+
+  if (missingHours.length > 0) {
+    return createPartialSectionResult(
+      "hourly_activity_series",
+      sortedSeries,
+      missingHours.map((hour) =>
+        createCustomIssue(`Missing hourly bucket ${hour}`, [hour]),
+      ),
+    );
+  }
+
+  return createValidSectionResult(sortedSeries);
+}
+
+function parseFunnelSection(sectionValue: unknown): OverviewSectionResult<FunnelItem[]> {
+  const result = z.array(funnelItemSchema).max(FUNNEL_STEP_ORDER.length).safeParse(sectionValue);
+  if (!result.success) {
+    return createInvalidSectionResult("funnel", result.error.issues);
+  }
+
+  const seenSteps = new Set<string>();
+  const issues: ZodIssue[] = [];
+
+  for (const [index, item] of result.data.entries()) {
+    if (seenSteps.has(item.step)) {
+      issues.push(createCustomIssue(`Duplicate funnel step ${item.step}`, [index, "step"]));
+      continue;
+    }
+    seenSteps.add(item.step);
+  }
+
+  if (issues.length > 0) {
+    return createInvalidSectionResult("funnel", issues);
+  }
+
+  const orderedData = [...result.data].sort(
+    (left, right) =>
+      FUNNEL_STEP_ORDER.indexOf(left.step as (typeof FUNNEL_STEP_ORDER)[number]) -
+      FUNNEL_STEP_ORDER.indexOf(right.step as (typeof FUNNEL_STEP_ORDER)[number]),
+  );
+  const missingSteps = FUNNEL_STEP_ORDER.filter((step) => !seenSteps.has(step));
+
+  if (missingSteps.length > 0) {
+    return createPartialSectionResult(
+      "funnel",
+      orderedData,
+      missingSteps.map((step) => createCustomIssue(`Missing funnel step ${step}`, [step])),
+    );
+  }
+
+  return createValidSectionResult(orderedData);
+}
+
+function requireValidSection<T>(result: OverviewSectionResult<T>): T {
+  if (result.status !== "valid" || result.data === null) {
+    throw result.error ?? new Error("Overview section is not fully valid");
+  }
+  return result.data;
+}
+
 export function parsePublicStatsPayload(payload: unknown): StatsPayload {
   const result = publicStatsSchema.safeParse(payload);
   if (!result.success) {
@@ -151,10 +316,61 @@ export function parsePublicStatsPayload(payload: unknown): StatsPayload {
   return result.data as StatsPayload;
 }
 
-export function parseOverviewPayload(payload: unknown): OverviewData {
-  const result = overviewPayloadSchema.safeParse(payload);
-  if (!result.success) {
-    throw new StatisticsPayloadError("/admin/overview", result.error.issues);
+export function parseOverviewPayloadSections(payload: unknown): OverviewPayloadSections {
+  const envelope = overviewEnvelopeSchema.safeParse(payload);
+  if (!envelope.success) {
+    throw new StatisticsPayloadError("/admin/overview", envelope.error.issues);
   }
-  return result.data as OverviewData;
+
+  const rawPayload = envelope.data as Record<string, unknown>;
+
+  return {
+    period: envelope.data.period,
+    generated_at: envelope.data.generated_at,
+    kpis: parseMetricSection(
+      "kpis",
+      rawPayload.kpis,
+      KPI_DEFINITIONS.map((definition) => definition.key),
+    ),
+    revenue_series: parseArraySection(
+      "revenue_series",
+      rawPayload.revenue_series,
+      z.array(revenueSeriesItemSchema),
+    ),
+    users_series: parseArraySection(
+      "users_series",
+      rawPayload.users_series,
+      z.array(usersSeriesItemSchema),
+    ),
+    hourly_activity_series: parseHourlyActivitySection(rawPayload.hourly_activity_series),
+    funnel: parseFunnelSection(rawPayload.funnel),
+    top_products: parseArraySection(
+      "top_products",
+      rawPayload.top_products,
+      z.array(topProductSchema).max(5),
+    ),
+    feature_usage: parseMetricSection(
+      "feature_usage",
+      rawPayload.feature_usage,
+      FEATURE_USAGE_DEFINITIONS.map((definition) => definition.key),
+    ),
+    alerts: parseArraySection("alerts", rawPayload.alerts, z.array(alertSchema)),
+  };
+}
+
+export function parseOverviewPayload(payload: unknown): OverviewData {
+  const sections = parseOverviewPayloadSections(payload);
+
+  return {
+    period: sections.period,
+    generated_at: sections.generated_at,
+    kpis: requireValidSection(sections.kpis) as Record<string, KpiMetric>,
+    revenue_series: requireValidSection(sections.revenue_series),
+    users_series: requireValidSection(sections.users_series),
+    hourly_activity_series: requireValidSection(sections.hourly_activity_series),
+    funnel: requireValidSection(sections.funnel),
+    top_products: requireValidSection(sections.top_products),
+    feature_usage: requireValidSection(sections.feature_usage) as Record<string, KpiMetric>,
+    alerts: requireValidSection(sections.alerts),
+  };
 }

@@ -6,6 +6,7 @@ import publicStatsFixture from "@/docs/statistics-fixtures/public-stats-seeded.j
 
 import {
   parseOverviewPayload,
+  parseOverviewPayloadSections,
   parsePublicStatsPayload,
   StatisticsPayloadError,
 } from "./statistics-payload";
@@ -34,21 +35,60 @@ describe("statistics payload parsing", () => {
     expect(parsed.funnel).toHaveLength(4);
   });
 
-  it("rejects overview payloads with missing required KPI keys", () => {
+  it("returns a partial KPI section when one metric is missing", () => {
     const { dau: _dau, ...kpisWithoutDau } = overviewFixture.kpis;
-    const invalidPayload = {
+    const parsed = parseOverviewPayloadSections({
       ...overviewFixture,
       kpis: kpisWithoutDau,
-    };
+    });
 
-    expect(() => parseOverviewPayload(invalidPayload)).toThrow(StatisticsPayloadError);
+    expect(parsed.kpis.status).toBe("partial");
+    expect(parsed.kpis.data).toMatchObject({
+      wau: overviewFixture.kpis.wau,
+    });
+    expect(parsed.kpis.error).toBeInstanceOf(StatisticsPayloadError);
   });
 
-  it("rejects overview payloads with broken hourly bucket coverage", () => {
-    const invalidPayload = structuredClone(overviewFixture);
+  it("returns a partial hourly section when bucket coverage is incomplete", () => {
+    const parsed = parseOverviewPayloadSections({
+      ...overviewFixture,
+      hourly_activity_series: overviewFixture.hourly_activity_series.filter(
+        (item) => item.active_users > 0,
+      ),
+    });
 
-    invalidPayload.hourly_activity_series = invalidPayload.hourly_activity_series.slice(1);
+    expect(parsed.hourly_activity_series.status).toBe("partial");
+    expect(parsed.hourly_activity_series.data).toHaveLength(3);
+    expect(parsed.hourly_activity_series.error).toBeInstanceOf(StatisticsPayloadError);
+  });
 
-    expect(() => parseOverviewPayload(invalidPayload)).toThrow(StatisticsPayloadError);
+  it("rejects incomplete overview payloads in strict mode", () => {
+    const { dau: _dau, ...kpisWithoutDau } = overviewFixture.kpis;
+
+    expect(() =>
+      parseOverviewPayload({
+        ...overviewFixture,
+        kpis: kpisWithoutDau,
+      }),
+    ).toThrow(StatisticsPayloadError);
+  });
+
+  it("accepts unordered funnel steps and normalizes them to backend order", () => {
+    const parsed = parseOverviewPayload({
+      ...overviewFixture,
+      funnel: [
+        overviewFixture.funnel[3],
+        overviewFixture.funnel[1],
+        overviewFixture.funnel[0],
+        overviewFixture.funnel[2],
+      ],
+    });
+
+    expect(parsed.funnel.map((item) => item.step)).toEqual([
+      "Start",
+      "First Quiz",
+      "Streak 3+",
+      "Purchase",
+    ]);
   });
 });

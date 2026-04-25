@@ -4,18 +4,19 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { fetchContactRequests, fetchOverview, updateContactRequestStatus } from "@/lib/api";
+import type { OverviewPayloadSections } from "@/lib/statistics-payload";
 
 import { normalizeOverviewData } from "./dashboard-normalization";
 import { PERIOD_OPTIONS } from "./dashboard-config";
 import { DashboardContactRequestsSection } from "./dashboard-contact-requests-section";
 import { DashboardOverviewSections } from "./dashboard-overview-sections";
-import type { ContactRequestsData, OverviewData } from "./dashboard-types";
+import type { ContactRequestsData } from "./dashboard-types";
 
 export default function DashboardPage() {
   const [period, setPeriod] = useState("7d");
   const queryClient = useQueryClient();
 
-  const { data, error: queryError, isLoading } = useQuery<OverviewData, Error>({
+  const { data, error: queryError, isLoading } = useQuery<OverviewPayloadSections, Error>({
     queryKey: ["overview", period],
     queryFn: () => fetchOverview(period),
   });
@@ -34,28 +35,12 @@ export default function DashboardPage() {
     },
   });
 
-  const { overviewModel, normalizationError } = useMemo(() => {
+  const overviewModel = useMemo(() => {
     if (!data) {
-      return {
-        overviewModel: null,
-        normalizationError: null,
-      };
+      return null;
     }
-    try {
-      return {
-        overviewModel: normalizeOverviewData(data),
-        normalizationError: null,
-      };
-    } catch (error) {
-      return {
-        overviewModel: null,
-        normalizationError:
-          error instanceof Error ? error : new Error("Dashboard-Daten konnten nicht verarbeitet werden."),
-      };
-    }
+    return normalizeOverviewData(data);
   }, [data]);
-
-  const overviewError = queryError ?? normalizationError;
 
   return (
     <main className="min-w-0 space-y-6 py-2">
@@ -90,12 +75,12 @@ export default function DashboardPage() {
 
       {isLoading ? <p className="text-sm">Dashboard-Daten werden geladen...</p> : null}
 
-      {overviewError ? (
+      {queryError ? (
         <section className="surface rounded-2xl border border-red-200 bg-red-50/70 p-5">
           <p className="text-sm font-medium text-red-800">
             Dashboard-Daten konnten nicht geladen oder validiert werden.
           </p>
-          <p className="mt-1 text-xs text-red-700">{overviewError.message}</p>
+          <p className="mt-1 text-xs text-red-700">{queryError.message}</p>
         </section>
       ) : null}
 
