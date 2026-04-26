@@ -51,20 +51,37 @@ function buildBaseEventPayload(name: PublicAnalyticsEventName, payload: PublicAn
   };
 }
 
-function emitToWindow(name: PublicAnalyticsEventName, payload: PublicAnalyticsPayload) {
+type PageEventContext = {
+  page_path: string;
+  page_title: string;
+  timestamp: string;
+};
+
+function getPageContext(timestamp = new Date().toISOString()): PageEventContext {
+  return {
+    page_path: window.location.pathname,
+    page_title: document.title,
+    timestamp,
+  };
+}
+
+function emitToWindow(
+  name: PublicAnalyticsEventName,
+  payload: PublicAnalyticsPayload,
+  context?: PageEventContext,
+) {
   if (typeof window === "undefined") {
     return;
   }
 
   const eventPayload = buildBaseEventPayload(name, payload);
   const eventWindow = window as WindowWithAnalytics;
+  const eventContext = context ?? getPageContext();
 
   eventWindow.__quizArenaPublicAnalytics = eventWindow.__quizArenaPublicAnalytics ?? [];
   eventWindow.__quizArenaPublicAnalytics.push({
     ...eventPayload,
-    page_path: window.location.pathname,
-    page_title: document.title,
-    timestamp: new Date().toISOString(),
+    ...eventContext,
   });
 
   if (eventWindow.dataLayer) {
@@ -156,7 +173,11 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
 
     setQueuedEvents((events) => {
       events.forEach((queuedEvent) => {
-        emitToWindow(queuedEvent.name, queuedEvent.payload);
+        emitToWindow(queuedEvent.name, queuedEvent.payload, {
+          page_path: queuedEvent.page_path,
+          page_title: queuedEvent.page_title,
+          timestamp: queuedEvent.timestamp,
+        });
       });
       return [];
     });
@@ -166,10 +187,13 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
     (name: PublicAnalyticsEventName, payload: PublicAnalyticsPayload = {}) => {
       if (consent === "pending") {
         setQueuedEvents((events) => {
+          const context = getPageContext();
           const nextEvent: QueuedPublicAnalyticsEvent = {
             name,
             payload,
-            timestamp: new Date().toISOString(),
+            timestamp: context.timestamp,
+            page_path: context.page_path,
+            page_title: context.page_title,
           };
 
           const mergedEvents = [...events, nextEvent];

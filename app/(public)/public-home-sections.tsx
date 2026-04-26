@@ -26,8 +26,8 @@ type PublicHomeHeroProps = {
 };
 
 type PublicHomeContactSectionProps = {
-  onOpenStudentWizard: () => void;
-  onOpenPartnerWizard: () => void;
+  onOpenStudentWizard?: () => void;
+  onOpenPartnerWizard?: () => void;
 };
 
 const publicNavigation = [
@@ -79,11 +79,12 @@ export function PublicHomeHero({ trackedTelegramBotUrl }: PublicHomeHeroProps) {
       {STAR_POSITIONS.map((star, index) => (
         <span
           key={`${star.top}-${star.left}`}
-          className="pointer-events-none absolute text-lg text-sky-700/85"
+          className="pointer-events-none absolute animate-pulse text-lg text-sky-700/85"
           style={{
             top: star.top,
             left: star.left,
-            animation: `twinkle 2.8s ease-in-out ${index * 0.2}s infinite`,
+            animationDelay: `${index * 0.2}s`,
+            animationDuration: "2.8s",
           }}
         >
           ✦
@@ -360,7 +361,7 @@ export function PublicHomeProductsSection() {
 export function PublicHomeContactSection({
   onOpenStudentWizard,
   onOpenPartnerWizard,
-}: PublicHomeContactSectionProps) {
+}: PublicHomeContactSectionProps = {}) {
   return (
     <section id="contact" className="mt-10 grid gap-4 lg:grid-cols-2">
       <article className={`${GLASS_CARD_CLASS} p-6`}>
@@ -378,6 +379,7 @@ export function PublicHomeContactSection({
         <button
           type="button"
           onClick={onOpenStudentWizard}
+          data-wizard="student"
           className={`mt-6 ${ORANGE_BUTTON_CLASS}`}
         >
           Anfrage senden
@@ -396,6 +398,7 @@ export function PublicHomeContactSection({
         <button
           type="button"
           onClick={onOpenPartnerWizard}
+          data-wizard="partner"
           className="mt-6 inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_10px_22px_rgba(15,23,42,0.28)] transition hover:bg-slate-800"
         >
           Kontakt aufnehmen

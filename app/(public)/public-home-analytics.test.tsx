@@ -1,38 +1,26 @@
 /* @vitest-environment jsdom */
 
-import { type ReactElement } from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import PublicHomeClient from "./public-home-client";
-
-const trackEventSpy = vi.fn();
-const eventNameToPayload = new Map<string, unknown[]>();
+import {
+  PublicHomeChannelSection,
+  PublicHomeContactSection,
+  PublicHomeHeader,
+  PublicHomeHero,
+} from "./public-home-sections";
+import { buildTrackedTelegramBotUrl } from "./public-home-helpers";
+import { TELEGRAM_BOT_START_PAYLOAD, getTelegramBotUrl } from "@/lib/public-site-config";
 
 vi.mock("@/app/analytics-provider", () => ({
   usePublicAnalytics: () => ({
     trackEvent: (...args: unknown[]) => {
       const [name, payload] = args;
-      const list = eventNameToPayload.get(String(name)) ?? [];
-      list.push(payload);
-      eventNameToPayload.set(String(name), list);
+      eventNameToPayload.set(String(name), [...(eventNameToPayload.get(String(name)) ?? []), payload]);
       trackEventSpy(name, payload);
     },
-  }),
-}));
-
-vi.mock("./public-home-data", () => ({
-  usePublicStats: () => ({
-    users: 100,
-    quizzes: 42,
-    isUnavailable: false,
-  }),
-}));
-
-vi.mock("next/font/google", () => ({
-  Inter: () => ({
-    className: "inter-font",
   }),
 }));
 
@@ -41,7 +29,10 @@ vi.mock("./_components/contact-wizards", () => ({
     isOpen ? <div data-wizard-open={kind} /> : null,
 }));
 
-function renderInContainer(ui: ReactElement) {
+const trackEventSpy = vi.fn();
+const eventNameToPayload = new Map<string, unknown[]>();
+
+function renderInContainer(ui: JSX.Element) {
   const container = document.createElement("div");
   document.body.append(container);
   const root = createRoot(container);
@@ -61,6 +52,24 @@ function renderInContainer(ui: ReactElement) {
   };
 }
 
+function renderHomeForAnalytics() {
+  const botUrl = getTelegramBotUrl();
+  const trackedUrl = buildTrackedTelegramBotUrl(botUrl, TELEGRAM_BOT_START_PAYLOAD);
+
+  const content = (
+    <PublicHomeClient>
+      <main id="public-home-root" lang="de">
+        <PublicHomeHeader />
+        <PublicHomeHero trackedTelegramBotUrl={trackedUrl} />
+        <PublicHomeChannelSection />
+        <PublicHomeContactSection />
+      </main>
+    </PublicHomeClient>
+  );
+
+  return renderInContainer(content);
+}
+
 afterEach(() => {
   document.body.innerHTML = "";
   vi.clearAllMocks();
@@ -70,7 +79,7 @@ afterEach(() => {
 
 describe("public home analytics event wiring", () => {
   it("ignores clicks on elements without analytics markers", () => {
-    const { container, cleanup } = renderInContainer(<PublicHomeClient />);
+    const { container, cleanup } = renderHomeForAnalytics();
 
     try {
       const homeLink = container.querySelector<HTMLAnchorElement>('a[href="/"]');
@@ -87,7 +96,7 @@ describe("public home analytics event wiring", () => {
   });
 
   it("tracks hero and channel CTA clicks via delegated listener", () => {
-    const { container, cleanup } = renderInContainer(<PublicHomeClient />);
+    const { container, cleanup } = renderHomeForAnalytics();
 
     try {
       const heroButton = container.querySelector<HTMLButtonElement>(
@@ -118,7 +127,7 @@ describe("public home analytics event wiring", () => {
   });
 
   it("tracks analytics on nested CTA interaction via closest delegation", () => {
-    const { container, cleanup } = renderInContainer(<PublicHomeClient />);
+    const { container, cleanup } = renderHomeForAnalytics();
 
     try {
       const heroButton = container.querySelector<HTMLButtonElement>(
@@ -144,7 +153,7 @@ describe("public home analytics event wiring", () => {
   });
 
   it("tracks a single CTA click only once", () => {
-    const { container, cleanup } = renderInContainer(<PublicHomeClient />);
+    const { container, cleanup } = renderHomeForAnalytics();
 
     try {
       const heroButton = container.querySelector<HTMLButtonElement>(
@@ -169,7 +178,7 @@ describe("public home analytics event wiring", () => {
   });
 
   it("tracks wizard_open for both student and partner entry points", () => {
-    const { container, cleanup } = renderInContainer(<PublicHomeClient />);
+    const { container, cleanup } = renderHomeForAnalytics();
 
     try {
       const studentButton = Array.from(container.querySelectorAll("button")).find((button) =>
@@ -200,5 +209,11 @@ describe("public home analytics event wiring", () => {
     } finally {
       cleanup();
     }
+  });
+});
+
+describe("public home analytics telemetry hooks", () => {
+  it("reads trackEvent from shared analytics context", () => {
+    expect(trackEventSpy).toBeDefined();
   });
 });

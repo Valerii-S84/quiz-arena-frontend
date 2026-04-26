@@ -13,18 +13,45 @@ const navItems = [
   { href: "/admin/system", label: "System" },
 ];
 
+type AdminSessionPayload = {
+  email?: string;
+};
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
 async function ensureSession() {
   const cookieHeader = cookies().toString();
-  const response = await fetch(getServerApiUrl(apiRoutes.admin.auth.session), {
-    headers: {
-      cookie: cookieHeader,
-    },
-    cache: "no-store",
-  });
-  if (!response.ok) {
-    redirect("/admin/login");
+  const timeoutMs = 3000;
+  const abortController = new AbortController();
+  const timeout = setTimeout(() => abortController.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(getServerApiUrl(apiRoutes.admin.auth.session), {
+      headers: {
+        cookie: cookieHeader,
+        accept: "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+        "X-Client-Context": "secure-admin-server-layout",
+      },
+      cache: "no-store",
+      signal: abortController.signal,
+    });
+
+    if (!response.ok) {
+      redirect("/admin/login");
+    }
+
+    const payload = (await response.json().catch(() => null)) as AdminSessionPayload | null;
+    if (!payload || !isNonEmptyString(payload.email)) {
+      redirect("/admin/login");
+    }
+
+    return payload;
+  } finally {
+    clearTimeout(timeout);
   }
-  return response.json();
 }
 
 export default async function SecureAdminLayout({ children }: { children: React.ReactNode }) {

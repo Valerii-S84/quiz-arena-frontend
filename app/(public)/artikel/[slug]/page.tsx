@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ARTICLE_EMBEDS } from "@/lib/article-definitions";
-import { extractArticleBodyAndStyles } from "@/lib/article-content";
+import { ARTICLE_SERVER_RENDERED_PAYLOAD } from "@/lib/article-server-rendered-content";
 import { getSiteUrl } from "@/lib/public-site-config";
 
 type ArticlePageProps = {
@@ -150,28 +148,18 @@ function buildArticleBreadcrumbStructuredData(
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
   const article = ARTICLE_EMBEDS[slug];
+  const articlePayload = ARTICLE_SERVER_RENDERED_PAYLOAD[slug];
 
   if (!article) {
     notFound();
   }
 
-  let articleHtml = "";
-  let articleStyles = "";
-  try {
-    articleHtml = await readFile(path.join(process.cwd(), "public", "artikel", article.fileName), "utf-8");
-    const preparedArticle = extractArticleBodyAndStyles(articleHtml, ARTICLE_DOCUMENT_CLASS);
-    articleHtml = preparedArticle.content;
-    articleStyles = `${embeddedArticleTheme()}\n${preparedArticle.styles}`;
-  } catch {
-    return (
-      <main className="min-h-screen bg-[linear-gradient(135deg,#e8f4f8_0%,#f0f7ee_50%,#fef9f0_100%)] px-4 py-16 text-slate-800 sm:px-6">
-        <div className="mx-auto max-w-3xl rounded-2xl border border-white/40 bg-white/60 p-8 text-center shadow-[0_4px_24px_rgba(0,0,0,0.06)] backdrop-blur-xl">
-          <h1 className="text-3xl font-semibold">Artikel vorübergehend nicht verfügbar</h1>
-          <p className="mt-3 text-sm text-slate-600">Bitte versuchen Sie es in einigen Minuten erneut.</p>
-        </div>
-      </main>
-    );
+  if (!articlePayload) {
+    notFound();
   }
+
+  const articleHtml = articlePayload.content;
+  const articleStyles = `${embeddedArticleTheme()}\n${articlePayload.styles}`;
 
   return (
     <main
