@@ -1,16 +1,24 @@
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
+  getPublicContactEmail,
   TELEGRAM_BOT_START_PAYLOAD,
   getTelegramBotUrl,
   getTelegramChannelUrl,
+  getSiteUrl,
 } from "./public-site-config";
 
 const ORIGINAL_TELEGRAM_BOT_URL = process.env.NEXT_PUBLIC_TELEGRAM_BOT_URL;
 const ORIGINAL_TELEGRAM_CHANNEL_URL = process.env.NEXT_PUBLIC_TELEGRAM_CHANNEL_URL;
+const ORIGINAL_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
+const ORIGINAL_CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
 
 function restoreEnv(
-  name: "NEXT_PUBLIC_TELEGRAM_BOT_URL" | "NEXT_PUBLIC_TELEGRAM_CHANNEL_URL",
+  name:
+    | "NEXT_PUBLIC_TELEGRAM_BOT_URL"
+    | "NEXT_PUBLIC_TELEGRAM_CHANNEL_URL"
+    | "NEXT_PUBLIC_SITE_URL"
+    | "NEXT_PUBLIC_CONTACT_EMAIL",
   value: string | undefined,
 ) {
   if (value === undefined) {
@@ -24,6 +32,8 @@ function restoreEnv(
 afterEach(() => {
   restoreEnv("NEXT_PUBLIC_TELEGRAM_BOT_URL", ORIGINAL_TELEGRAM_BOT_URL);
   restoreEnv("NEXT_PUBLIC_TELEGRAM_CHANNEL_URL", ORIGINAL_TELEGRAM_CHANNEL_URL);
+  restoreEnv("NEXT_PUBLIC_SITE_URL", ORIGINAL_SITE_URL);
+  restoreEnv("NEXT_PUBLIC_CONTACT_EMAIL", ORIGINAL_CONTACT_EMAIL);
 });
 
 describe("public site config", () => {
@@ -45,5 +55,21 @@ describe("public site config", () => {
 
   it("keeps the public home start payload stable", () => {
     expect(TELEGRAM_BOT_START_PAYLOAD).toBe("site_public_home");
+  });
+
+  it("uses default site URL and contact email when env values are unset", () => {
+    delete process.env.NEXT_PUBLIC_SITE_URL;
+    delete process.env.NEXT_PUBLIC_CONTACT_EMAIL;
+
+    expect(getSiteUrl()).toBe("https://deutchquizarena.de");
+    expect(getPublicContactEmail()).toBe("info@deutchquizarena.de");
+  });
+
+  it("trims and uses configured site URL and contact email", () => {
+    process.env.NEXT_PUBLIC_SITE_URL = " https://example.quizarena.test ";
+    process.env.NEXT_PUBLIC_CONTACT_EMAIL = " hello@example.test ";
+
+    expect(getSiteUrl()).toBe("https://example.quizarena.test");
+    expect(getPublicContactEmail()).toBe("hello@example.test");
   });
 });

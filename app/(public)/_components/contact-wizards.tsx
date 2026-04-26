@@ -13,13 +13,10 @@ export function ContactWizardModal({
   isOpen: boolean;
   onClose: () => void;
 }) {
-  if (!isOpen) {
-    return null;
-  }
-
   return (
     <WizardModal
       title={kind === "student" ? "Zum Unterricht anmelden" : "Kooperation / Partnerschaft"}
+      open={isOpen}
       onClose={onClose}
     >
       {kind === "student" ? <StudentWizard onClose={onClose} /> : <PartnerWizard onClose={onClose} />}

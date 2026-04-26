@@ -1,4 +1,21 @@
+import type { Metadata } from "next";
+
 export const revalidate = 3600;
+
+export const metadata: Metadata = {
+  title: "Projekte",
+  description:
+    "Übersicht über den Telegram-Bot, Admin-Dashboard und ergänzende Lernwerkzeuge.",
+  alternates: {
+    canonical: "/projects",
+  },
+  openGraph: {
+    title: "Projekte | Deutsch Quiz Arena",
+    description:
+      "Übersicht über Telegram Quiz Bot, Analytics-Dashboard und ergänzende Produktblöcke.",
+    url: "/projects",
+  },
+};
 
 const projects = [
   {

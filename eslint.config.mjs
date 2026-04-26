@@ -10,6 +10,11 @@ const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
-const eslintConfig = [...compat.extends("next/core-web-vitals")];
+const eslintConfig = [
+  {
+    ignores: [".next/**", "inspect-wizard.mjs"],
+  },
+  ...compat.extends("next/core-web-vitals"),
+];
 
 export default eslintConfig;
