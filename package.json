@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint . --ext .js,.mjs,.cjs,.jsx,.ts,.mts,.cts,.tsx",
     "test": "vitest run",
+    "test:analytics-seo": "vitest run app/(public)/analytics-provider.test.tsx app/(public)/public-home-analytics.test.tsx app/(public)/seo-contracts.test.ts app/(public)/accessibility-behavior.test.tsx",
     "typecheck": "tsc --noEmit",
     "ci": "npm run lint && npm test && npm run typecheck && npm run build"
   },

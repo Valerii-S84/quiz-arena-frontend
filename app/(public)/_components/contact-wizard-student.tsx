@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 
 import { api } from "@/lib/api";
 import { apiRoutes } from "@/lib/api-routes";
+import { usePublicAnalytics } from "@/app/analytics-provider";
 
 import {
   ChoiceCards,
@@ -129,6 +130,7 @@ export function StudentWizard({ onClose }: WizardProps) {
   const [errorFieldId, setErrorFieldId] = useState<string | null>(null);
   const [submittedName, setSubmittedName] = useState("");
   const errorRef = useRef<HTMLParagraphElement>(null);
+  const { trackEvent } = usePublicAnalytics();
 
   useEffect(() => {
     if (!errorFieldId) return;
@@ -222,6 +224,14 @@ export function StudentWizard({ onClose }: WizardProps) {
       });
       setSubmittedName(form.name.trim());
       setSubmitState("success");
+      trackEvent("lead_submit_success", {
+        wizard_type: "student",
+        level: form.level,
+        goals_count: form.goals.length,
+        has_contact: Boolean(form.contact.trim()),
+        has_budget: Boolean(form.budget),
+        has_message: Boolean(form.message.trim()),
+      });
     } catch {
       setSubmitState("error");
       setErrorMessage("Etwas ist schiefgelaufen. Bitte versuche es erneut.");
