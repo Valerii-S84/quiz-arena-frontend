@@ -179,11 +179,13 @@ export function WizardModal({ title, onClose, children, open }: WizardModalProps
         <Dialog.Overlay className="fixed inset-0 z-[59] bg-white/35 px-4 py-6 backdrop-blur-sm">
           <Dialog.Content
             className="fixed inset-x-0 top-1/2 mx-auto flex w-full max-w-[560px] -translate-y-1/2 items-center justify-center px-4"
-            onClick={(event) => event.stopPropagation()}
           >
             <div className="h-[78vh] w-full max-w-[560px] overflow-y-auto rounded-2xl border border-white/50 bg-white/90 p-5 shadow-[0_24px_60px_rgba(15,23,42,0.18)] backdrop-blur-xl">
               <div className="flex items-start justify-between gap-3">
                 <Dialog.Title className="text-xl font-semibold text-slate-900">{title}</Dialog.Title>
+                <Dialog.Description className="sr-only">
+                  Dialog zum Ausfüllen des Kontaktformulars. Zum Schließen Esc oder Schaltfläche schließen.
+                </Dialog.Description>
                 <Dialog.Close asChild>
                   <button
                     type="button"

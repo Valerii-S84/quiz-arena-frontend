@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
 import { api } from "@/lib/api";
 import { apiRoutes } from "@/lib/api-routes";
@@ -31,6 +31,21 @@ type StudentFormState = {
   message: string;
   company: string;
 };
+
+type ValidationResult = {
+  message: string;
+  fieldId: string | null;
+};
+
+const STUDENT_ERROR_ID = "student-form-error";
+const STUDENT_NAME_FIELD_ID = "student-name";
+const STUDENT_AGE_GROUP_FIELD_ID = "student-age-group";
+const STUDENT_LEVEL_FIELD_ID = "student-level";
+const STUDENT_GOALS_FIELD_ID = "student-goals";
+const STUDENT_FORMAT_FIELD_ID = "student-format";
+const STUDENT_TIME_FIELD_ID = "student-time";
+const STUDENT_FREQUENCY_FIELD_ID = "student-frequency";
+const STUDENT_CONTACT_FIELD_ID = "student-contact";
 
 const STUDENT_AGE_OPTIONS: ChoiceOption[] = [
   { value: "unter_16", label: "Unter 16" },
@@ -111,40 +126,48 @@ export function StudentWizard({ onClose }: WizardProps) {
   const [form, setForm] = useState<StudentFormState>(INITIAL_STUDENT_STATE);
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorFieldId, setErrorFieldId] = useState<string | null>(null);
   const [submittedName, setSubmittedName] = useState("");
+  const errorRef = useRef<HTMLParagraphElement>(null);
 
-  function validateCurrentStep(currentStep: number): string | null {
+  useEffect(() => {
+    if (!errorFieldId) return;
+    const errorField = document.getElementById(errorFieldId);
+    errorField?.focus();
+  }, [errorFieldId]);
+
+  function validateCurrentStep(currentStep: number): ValidationResult | null {
     if (currentStep === 1) {
       if (!form.name.trim()) {
-        return "Bitte gib deinen Namen ein.";
+        return { message: "Bitte gib deinen Namen ein.", fieldId: STUDENT_NAME_FIELD_ID };
       }
       if (!form.ageGroup) {
-        return "Bitte wähle eine Altersgruppe.";
+        return { message: "Bitte wähle eine Altersgruppe.", fieldId: STUDENT_AGE_GROUP_FIELD_ID };
       }
       if (!form.level) {
-        return "Bitte wähle dein aktuelles Deutschniveau.";
+        return { message: "Bitte wähle dein aktuelles Deutschniveau.", fieldId: STUDENT_LEVEL_FIELD_ID };
       }
       if (!form.goals.length) {
-        return "Bitte wähle mindestens ein Lernziel.";
+        return { message: "Bitte wähle mindestens ein Lernziel.", fieldId: STUDENT_GOALS_FIELD_ID };
       }
       return null;
     }
 
     if (currentStep === 2) {
       if (!form.format) {
-        return "Bitte wähle einen Lernformat-Wunsch.";
+        return { message: "Bitte wähle einen Lernformat-Wunsch.", fieldId: STUDENT_FORMAT_FIELD_ID };
       }
       if (!form.timeSlots.length) {
-        return "Bitte wähle mindestens ein Zeitfenster.";
+        return { message: "Bitte wähle mindestens ein Zeitfenster.", fieldId: STUDENT_TIME_FIELD_ID };
       }
       if (!form.frequency) {
-        return "Bitte wähle, wie oft du lernen möchtest.";
+        return { message: "Bitte wähle, wie oft du lernen möchtest.", fieldId: STUDENT_FREQUENCY_FIELD_ID };
       }
       return null;
     }
 
     if (!form.contact.trim()) {
-      return "Bitte gib Telegram oder Email an.";
+      return { message: "Bitte gib Telegram oder Email an.", fieldId: STUDENT_CONTACT_FIELD_ID };
     }
 
     return null;
@@ -153,15 +176,18 @@ export function StudentWizard({ onClose }: WizardProps) {
   function handleNext() {
     const validationError = validateCurrentStep(step);
     if (validationError) {
-      setErrorMessage(validationError);
+      setErrorMessage(validationError.message);
+      setErrorFieldId(validationError.fieldId);
       return;
     }
     setErrorMessage(null);
+    setErrorFieldId(null);
     setStep((current) => Math.min(current + 1, 3));
   }
 
   function handleBack() {
     setErrorMessage(null);
+    setErrorFieldId(null);
     setStep((current) => Math.max(current - 1, 1));
   }
 
@@ -170,12 +196,14 @@ export function StudentWizard({ onClose }: WizardProps) {
 
     const validationError = validateCurrentStep(3);
     if (validationError) {
-      setErrorMessage(validationError);
+      setErrorMessage(validationError.message);
+      setErrorFieldId(validationError.fieldId);
       return;
     }
 
     setSubmitState("loading");
     setErrorMessage(null);
+    setErrorFieldId(null);
 
     try {
       await api.post(apiRoutes.public.contact, {
@@ -197,6 +225,7 @@ export function StudentWizard({ onClose }: WizardProps) {
     } catch {
       setSubmitState("error");
       setErrorMessage("Etwas ist schiefgelaufen. Bitte versuche es erneut.");
+      setErrorFieldId(STUDENT_ERROR_ID);
     }
   }
 
@@ -221,7 +250,7 @@ export function StudentWizard({ onClose }: WizardProps) {
   }
 
   return (
-    <form className="space-y-5" onSubmit={handleSubmit}>
+    <form className="space-y-5" onSubmit={handleSubmit} noValidate>
       <HoneypotField
         fieldId="student-company"
         value={form.company}
@@ -231,19 +260,34 @@ export function StudentWizard({ onClose }: WizardProps) {
 
       {step === 1 ? (
         <div className="space-y-4">
-          <label className="block text-sm font-medium text-slate-700">
-            Wie heißt du?
+          <div>
+            <label htmlFor={STUDENT_NAME_FIELD_ID} className="mb-1 block text-sm font-medium text-slate-700">
+              Wie heißt du?
+            </label>
             <input
+              id={STUDENT_NAME_FIELD_ID}
               value={form.name}
               onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
-              className={`${INPUT_CLASS} mt-2`}
+              className={`${INPUT_CLASS} mt-1`}
               placeholder="Dein Name"
               autoComplete="name"
+              required
+              aria-required="true"
+              aria-invalid={errorFieldId === STUDENT_NAME_FIELD_ID}
+              aria-describedby={errorFieldId === STUDENT_NAME_FIELD_ID ? STUDENT_ERROR_ID : undefined}
             />
-          </label>
+          </div>
 
-          <div>
-            <p className="text-sm font-medium text-slate-700">Wie alt bist du?</p>
+          <fieldset
+            id={STUDENT_AGE_GROUP_FIELD_ID}
+            tabIndex={-1}
+            className="space-y-1"
+            aria-invalid={errorFieldId === STUDENT_AGE_GROUP_FIELD_ID}
+            aria-describedby={
+              errorFieldId === STUDENT_AGE_GROUP_FIELD_ID ? STUDENT_ERROR_ID : undefined
+            }
+          >
+            <legend className="text-sm font-medium text-slate-700">Wie alt bist du?</legend>
             <div className="mt-2">
               <ChoiceCards
                 options={STUDENT_AGE_OPTIONS}
@@ -251,10 +295,18 @@ export function StudentWizard({ onClose }: WizardProps) {
                 onChange={(value) => setForm((prev) => ({ ...prev, ageGroup: value }))}
               />
             </div>
-          </div>
+          </fieldset>
 
-          <div>
-            <p className="text-sm font-medium text-slate-700">Wie ist dein aktuelles Deutschniveau?</p>
+          <fieldset
+            id={STUDENT_LEVEL_FIELD_ID}
+            tabIndex={-1}
+            className="space-y-1"
+            aria-invalid={errorFieldId === STUDENT_LEVEL_FIELD_ID}
+            aria-describedby={errorFieldId === STUDENT_LEVEL_FIELD_ID ? STUDENT_ERROR_ID : undefined}
+          >
+            <legend className="text-sm font-medium text-slate-700">
+              Wie ist dein aktuelles Deutschniveau?
+            </legend>
             <div className="mt-2">
               <ChoiceCards
                 options={STUDENT_LEVEL_OPTIONS}
@@ -263,10 +315,16 @@ export function StudentWizard({ onClose }: WizardProps) {
                 columnsClass="grid-cols-1"
               />
             </div>
-          </div>
+          </fieldset>
 
-          <div>
-            <p className="text-sm font-medium text-slate-700">Was ist dein Hauptziel?</p>
+          <fieldset
+            id={STUDENT_GOALS_FIELD_ID}
+            tabIndex={-1}
+            className="space-y-1"
+            aria-invalid={errorFieldId === STUDENT_GOALS_FIELD_ID}
+            aria-describedby={errorFieldId === STUDENT_GOALS_FIELD_ID ? STUDENT_ERROR_ID : undefined}
+          >
+            <legend className="text-sm font-medium text-slate-700">Was ist dein Hauptziel?</legend>
             <div className="mt-2">
               <MultiChoiceCards
                 options={STUDENT_GOAL_OPTIONS}
@@ -277,14 +335,20 @@ export function StudentWizard({ onClose }: WizardProps) {
                 columnsClass="grid-cols-1"
               />
             </div>
-          </div>
+          </fieldset>
         </div>
       ) : null}
 
       {step === 2 ? (
         <div className="space-y-4">
-          <div>
-            <p className="text-sm font-medium text-slate-700">Wie möchtest du lernen?</p>
+          <fieldset
+            id={STUDENT_FORMAT_FIELD_ID}
+            tabIndex={-1}
+            className="space-y-1"
+            aria-invalid={errorFieldId === STUDENT_FORMAT_FIELD_ID}
+            aria-describedby={errorFieldId === STUDENT_FORMAT_FIELD_ID ? STUDENT_ERROR_ID : undefined}
+          >
+            <legend className="text-sm font-medium text-slate-700">Wie möchtest du lernen?</legend>
             <div className="mt-2">
               <ChoiceCards
                 options={STUDENT_FORMAT_OPTIONS}
@@ -292,10 +356,16 @@ export function StudentWizard({ onClose }: WizardProps) {
                 onChange={(value) => setForm((prev) => ({ ...prev, format: value }))}
               />
             </div>
-          </div>
+          </fieldset>
 
-          <div>
-            <p className="text-sm font-medium text-slate-700">Wann passt es dir?</p>
+          <fieldset
+            id={STUDENT_TIME_FIELD_ID}
+            tabIndex={-1}
+            className="space-y-1"
+            aria-invalid={errorFieldId === STUDENT_TIME_FIELD_ID}
+            aria-describedby={errorFieldId === STUDENT_TIME_FIELD_ID ? STUDENT_ERROR_ID : undefined}
+          >
+            <legend className="text-sm font-medium text-slate-700">Wann passt es dir?</legend>
             <div className="mt-2">
               <MultiChoiceCards
                 options={STUDENT_TIME_OPTIONS}
@@ -305,10 +375,18 @@ export function StudentWizard({ onClose }: WizardProps) {
                 }
               />
             </div>
-          </div>
+          </fieldset>
 
-          <div>
-            <p className="text-sm font-medium text-slate-700">Wie oft pro Woche?</p>
+          <fieldset
+            id={STUDENT_FREQUENCY_FIELD_ID}
+            tabIndex={-1}
+            className="space-y-1"
+            aria-invalid={errorFieldId === STUDENT_FREQUENCY_FIELD_ID}
+            aria-describedby={
+              errorFieldId === STUDENT_FREQUENCY_FIELD_ID ? STUDENT_ERROR_ID : undefined
+            }
+          >
+            <legend className="text-sm font-medium text-slate-700">Wie oft pro Woche?</legend>
             <div className="mt-2">
               <ChoiceCards
                 options={STUDENT_FREQUENCY_OPTIONS}
@@ -316,7 +394,7 @@ export function StudentWizard({ onClose }: WizardProps) {
                 onChange={(value) => setForm((prev) => ({ ...prev, frequency: value }))}
               />
             </div>
-          </div>
+          </fieldset>
 
           <div>
             <p className="text-sm font-medium text-slate-700">Budget pro Monat (optional)</p>
@@ -333,26 +411,33 @@ export function StudentWizard({ onClose }: WizardProps) {
 
       {step === 3 ? (
         <div className="space-y-4">
-          <label className="block text-sm font-medium text-slate-700">
-            Telegram oder Email
+          <div>
+            <label htmlFor={STUDENT_CONTACT_FIELD_ID} className="mb-1 block text-sm font-medium text-slate-700">
+              Telegram oder Email
+            </label>
             <input
+              id={STUDENT_CONTACT_FIELD_ID}
               value={form.contact}
               onChange={(event) => setForm((prev) => ({ ...prev, contact: event.target.value }))}
-              className={`${INPUT_CLASS} mt-2`}
+              className={`${INPUT_CLASS} mt-1`}
               placeholder="@username oder email@beispiel.de"
               autoComplete="email"
+              required
+              aria-required="true"
+              aria-invalid={errorFieldId === STUDENT_CONTACT_FIELD_ID}
+              aria-describedby={errorFieldId === STUDENT_CONTACT_FIELD_ID ? STUDENT_ERROR_ID : undefined}
             />
             <span className="mt-1 block text-xs text-slate-500">
               Wir schreiben dir innerhalb von 24 Stunden.
             </span>
-          </label>
+          </div>
 
           <label className="block text-sm font-medium text-slate-700">
             Möchtest du etwas ergänzen? (optional)
             <textarea
               value={form.message}
               onChange={(event) => setForm((prev) => ({ ...prev, message: event.target.value }))}
-              className={`${INPUT_CLASS} mt-2`}
+              className={`${INPUT_CLASS} mt-1`}
               rows={3}
               placeholder="Zum Beispiel: Ich habe schon gelernt, suche eine bestimmte Lehrkraft oder brauche Prüfungsvorbereitung."
             />
@@ -360,7 +445,18 @@ export function StudentWizard({ onClose }: WizardProps) {
         </div>
       ) : null}
 
-      {errorMessage ? <p className="text-sm text-red-600">{errorMessage}</p> : null}
+      {errorMessage ? (
+        <p
+          id={STUDENT_ERROR_ID}
+          ref={errorRef}
+          className="text-sm text-red-600"
+          role="alert"
+          aria-live="assertive"
+          tabIndex={-1}
+        >
+          {errorMessage}
+        </p>
+      ) : null}
 
       <div className="flex items-center justify-between gap-3 pt-1">
         <button

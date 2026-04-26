@@ -104,4 +104,82 @@ describe("wizard dialog contract", () => {
     expect(source).toContain("Dialog.Overlay");
     expect(source).toContain("Dialog.Content");
   });
+
+  it("keeps shared wizard modal with dialog description", () => {
+    const source = readFile(
+      join(process.cwd(), "app", "(public)", "_components", "contact-wizard-shared.tsx"),
+    );
+
+    expect(source).toContain("Dialog.Description");
+    expect(source).toContain("Dialog.Title");
+    expect(source).toContain("Dialog.Close asChild");
+  });
+
+  it("adds explicit labels and aria metadata to student wizard form", () => {
+    const source = readFile(
+      join(process.cwd(), "app", "(public)", "_components", "contact-wizard-student.tsx"),
+    );
+
+    expect(source).toContain("STUDENT_ERROR_ID");
+    expect(source).toContain('htmlFor={STUDENT_NAME_FIELD_ID}');
+    expect(source).toContain('htmlFor={STUDENT_CONTACT_FIELD_ID}');
+    expect(source).toContain('aria-required="true"');
+    expect(source).toContain('aria-invalid={errorFieldId === STUDENT_NAME_FIELD_ID}');
+    expect(source).toContain('aria-describedby={errorFieldId === STUDENT_CONTACT_FIELD_ID ? STUDENT_ERROR_ID : undefined}');
+    expect(source).toContain('ValidationResult');
+    expect(source).toContain('useEffect(() => {');
+    expect(source).toContain("role=\"alert\"");
+  });
+
+  it("adds explicit labels and aria metadata to partner wizard form", () => {
+    const source = readFile(
+      join(process.cwd(), "app", "(public)", "_components", "contact-wizard-partner.tsx"),
+    );
+
+    expect(source).toContain("PARTNER_ERROR_ID");
+    expect(source).toContain('htmlFor={PARTNER_NAME_FIELD_ID}');
+    expect(source).toContain('htmlFor={PARTNER_CONTACT_FIELD_ID}');
+    expect(source).toContain('aria-required="true"');
+    expect(source).toContain('aria-invalid={errorFieldId === PARTNER_NAME_FIELD_ID}');
+    expect(source).toContain('aria-describedby={errorFieldId === PARTNER_CONTACT_FIELD_ID ? PARTNER_ERROR_ID : undefined}');
+    expect(source).toContain('ValidationResult');
+    expect(source).toContain('useEffect(() => {');
+    expect(source).toContain("role=\"alert\"");
+  });
+});
+
+describe("admin login accessibility contract", () => {
+  it("renders admin login modal with visible labels and required ARIA metadata", () => {
+    const source = readFile(
+      join(process.cwd(), "app", "(public)", "public-home-admin-login-modal.tsx"),
+    );
+
+    expect(source).toContain("import * as Dialog from \"@radix-ui/react-dialog\";");
+    expect(source).toContain("Dialog.Root");
+    expect(source).toContain("Dialog.Title");
+    expect(source).toContain("Dialog.Description");
+    expect(source).toContain("Dialog.Close asChild");
+    expect(source).toContain('htmlFor={loginInputId}');
+    expect(source).toContain('htmlFor={passwordInputId}');
+    expect(source).toContain('aria-required="true"');
+    expect(source).toContain('aria-describedby={loginFeedback ? errorId : undefined}');
+    expect(source).toContain('id={errorId}');
+  });
+});
+
+describe("admin login form labels and aria states", () => {
+  it("adds labels and validation metadata to admin login page", () => {
+    const source = readFile(
+      join(process.cwd(), "app", "(admin)", "admin", "login", "page.tsx"),
+    );
+
+    expect(source).toContain("htmlFor=\"admin-email\"");
+    expect(source).toContain("htmlFor=\"admin-password\"");
+    expect(source).toContain("htmlFor=\"admin-2fa-code\"");
+    expect(source).toContain('aria-invalid={form.formState.errors.email ? "true" : "false"}');
+    expect(source).toContain('aria-describedby={form.formState.errors.password ? "admin-password-error" : undefined}');
+    expect(source).toContain('id="admin-login-error"');
+    expect(source).toContain('role="alert"');
+    expect(source).toContain("document.getElementById(\"admin-email\")?.focus();");
+  });
 });

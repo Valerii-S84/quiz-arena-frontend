@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
 import { api } from "@/lib/api";
 import { apiRoutes } from "@/lib/api-routes";
@@ -30,6 +30,19 @@ type PartnerFormState = {
   startTimeline: string;
   company: string;
 };
+
+type ValidationResult = {
+  message: string;
+  fieldId: string | null;
+};
+
+const PARTNER_ERROR_ID = "partner-form-error";
+const PARTNER_NAME_FIELD_ID = "partner-name";
+const PARTNER_TYPE_FIELD_ID = "partner-type";
+const PARTNER_COUNTRY_FIELD_ID = "partner-country";
+const PARTNER_COUNT_FIELD_ID = "partner-student-count";
+const PARTNER_OFFERINGS_FIELD_ID = "partner-offerings";
+const PARTNER_CONTACT_FIELD_ID = "partner-contact";
 
 const PARTNER_TYPE_OPTIONS: ChoiceOption[] = [
   { value: "tutor", label: "Privater Nachhilfelehrer", icon: "👩‍🏫" },
@@ -79,35 +92,49 @@ export function PartnerWizard({ onClose }: WizardProps) {
   const [form, setForm] = useState<PartnerFormState>(INITIAL_PARTNER_STATE);
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorFieldId, setErrorFieldId] = useState<string | null>(null);
+  const errorRef = useRef<HTMLParagraphElement>(null);
 
-  function validateCurrentStep(currentStep: number): string | null {
+  useEffect(() => {
+    if (!errorFieldId) return;
+    const errorField = document.getElementById(errorFieldId);
+    errorField?.focus();
+  }, [errorFieldId]);
+
+  function validateCurrentStep(currentStep: number): ValidationResult | null {
     if (currentStep === 1) {
       if (!form.name.trim()) {
-        return "Bitte gib deinen Namen oder den Organisationsnamen ein.";
+        return { message: "Bitte gib deinen Namen oder den Organisationsnamen ein.", fieldId: PARTNER_NAME_FIELD_ID };
       }
       if (!form.partnerType) {
-        return "Bitte wähle aus, wer ihr seid.";
+        return { message: "Bitte wähle aus, wer ihr seid.", fieldId: PARTNER_TYPE_FIELD_ID };
       }
       if (!form.country.trim()) {
-        return "Bitte gib Land/Stadt an.";
+        return { message: "Bitte gib Land/Stadt an.", fieldId: PARTNER_COUNTRY_FIELD_ID };
       }
       if (!form.studentCount) {
-        return "Bitte wähle die aktuelle Zahl eurer Lernenden.";
+        return {
+          message: "Bitte wähle die aktuelle Zahl eurer Lernenden.",
+          fieldId: PARTNER_COUNT_FIELD_ID,
+        };
       }
       if (!form.offerings.length) {
-        return "Bitte wähle mindestens ein Kooperationsangebot.";
+        return {
+          message: "Bitte wähle mindestens ein Kooperationsangebot.",
+          fieldId: PARTNER_OFFERINGS_FIELD_ID,
+        };
       }
       return null;
     }
 
     if (!form.contact.trim()) {
-      return "Bitte gib Telegram oder Email an.";
+      return { message: "Bitte gib Telegram oder Email an.", fieldId: PARTNER_CONTACT_FIELD_ID };
     }
     if (!form.idea.trim()) {
-      return "Bitte beschreibe eure Idee.";
+      return { message: "Bitte beschreibe eure Idee.", fieldId: "partner-idea" };
     }
     if (!form.startTimeline) {
-      return "Bitte gib an, wann ihr starten möchtet.";
+      return { message: "Bitte gib an, wann ihr starten möchtet.", fieldId: "partner-start-timeline" };
     }
 
     return null;
@@ -116,15 +143,18 @@ export function PartnerWizard({ onClose }: WizardProps) {
   function handleNext() {
     const validationError = validateCurrentStep(step);
     if (validationError) {
-      setErrorMessage(validationError);
+      setErrorMessage(validationError.message);
+      setErrorFieldId(validationError.fieldId);
       return;
     }
     setErrorMessage(null);
+    setErrorFieldId(null);
     setStep((current) => Math.min(current + 1, 2));
   }
 
   function handleBack() {
     setErrorMessage(null);
+    setErrorFieldId(null);
     setStep((current) => Math.max(current - 1, 1));
   }
 
@@ -133,12 +163,14 @@ export function PartnerWizard({ onClose }: WizardProps) {
 
     const validationError = validateCurrentStep(2);
     if (validationError) {
-      setErrorMessage(validationError);
+      setErrorMessage(validationError.message);
+      setErrorFieldId(validationError.fieldId);
       return;
     }
 
     setSubmitState("loading");
     setErrorMessage(null);
+    setErrorFieldId(null);
 
     try {
       await api.post(apiRoutes.public.contact, {
@@ -158,6 +190,7 @@ export function PartnerWizard({ onClose }: WizardProps) {
     } catch {
       setSubmitState("error");
       setErrorMessage("Etwas ist schiefgelaufen. Bitte versuche es erneut.");
+      setErrorFieldId(PARTNER_ERROR_ID);
     }
   }
 
@@ -181,7 +214,7 @@ export function PartnerWizard({ onClose }: WizardProps) {
   }
 
   return (
-    <form className="space-y-5" onSubmit={handleSubmit}>
+    <form className="space-y-5" onSubmit={handleSubmit} noValidate>
       <HoneypotField
         fieldId="partner-company"
         value={form.company}
@@ -191,19 +224,32 @@ export function PartnerWizard({ onClose }: WizardProps) {
 
       {step === 1 ? (
         <div className="space-y-4">
-          <label className="block text-sm font-medium text-slate-700">
-            Name oder Organisation
+          <div>
+            <label htmlFor={PARTNER_NAME_FIELD_ID} className="block text-sm font-medium text-slate-700">
+              Name oder Organisation
+            </label>
             <input
+              id={PARTNER_NAME_FIELD_ID}
               value={form.name}
               onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
-              className={`${INPUT_CLASS} mt-2`}
+              className={`${INPUT_CLASS} mt-1`}
               placeholder="Name / Organisation"
               autoComplete="organization"
+              required
+              aria-required="true"
+              aria-invalid={errorFieldId === PARTNER_NAME_FIELD_ID}
+              aria-describedby={errorFieldId === PARTNER_NAME_FIELD_ID ? PARTNER_ERROR_ID : undefined}
             />
-          </label>
+          </div>
 
-          <div>
-            <p className="text-sm font-medium text-slate-700">Wer seid ihr?</p>
+          <fieldset
+            id={PARTNER_TYPE_FIELD_ID}
+            tabIndex={-1}
+            className="space-y-1"
+            aria-invalid={errorFieldId === PARTNER_TYPE_FIELD_ID}
+            aria-describedby={errorFieldId === PARTNER_TYPE_FIELD_ID ? PARTNER_ERROR_ID : undefined}
+          >
+            <legend className="text-sm font-medium text-slate-700">Wer seid ihr?</legend>
             <div className="mt-2">
               <ChoiceCards
                 options={PARTNER_TYPE_OPTIONS}
@@ -211,20 +257,35 @@ export function PartnerWizard({ onClose }: WizardProps) {
                 onChange={(value) => setForm((prev) => ({ ...prev, partnerType: value }))}
               />
             </div>
-          </div>
-
-          <label className="block text-sm font-medium text-slate-700">
-            In welchem Land arbeitet ihr?
-            <input
-              value={form.country}
-              onChange={(event) => setForm((prev) => ({ ...prev, country: event.target.value }))}
-              className={`${INPUT_CLASS} mt-2`}
-              placeholder="Land / Stadt"
-            />
-          </label>
+          </fieldset>
 
           <div>
-            <p className="text-sm font-medium text-slate-700">Wie viele Lernende habt ihr aktuell?</p>
+            <label htmlFor={PARTNER_COUNTRY_FIELD_ID} className="mb-1 block text-sm font-medium text-slate-700">
+              In welchem Land arbeitet ihr?
+            </label>
+            <input
+              id={PARTNER_COUNTRY_FIELD_ID}
+              value={form.country}
+              onChange={(event) => setForm((prev) => ({ ...prev, country: event.target.value }))}
+              className={`${INPUT_CLASS} mt-1`}
+              placeholder="Land / Stadt"
+              required
+              aria-required="true"
+              aria-invalid={errorFieldId === PARTNER_COUNTRY_FIELD_ID}
+              aria-describedby={errorFieldId === PARTNER_COUNTRY_FIELD_ID ? PARTNER_ERROR_ID : undefined}
+            />
+          </div>
+
+          <fieldset
+            id={PARTNER_COUNT_FIELD_ID}
+            tabIndex={-1}
+            className="space-y-1"
+            aria-invalid={errorFieldId === PARTNER_COUNT_FIELD_ID}
+            aria-describedby={errorFieldId === PARTNER_COUNT_FIELD_ID ? PARTNER_ERROR_ID : undefined}
+          >
+            <legend className="text-sm font-medium text-slate-700">
+              Wie viele Lernende habt ihr aktuell?
+            </legend>
             <div className="mt-2">
               <ChoiceCards
                 options={PARTNER_STUDENT_COUNT_OPTIONS}
@@ -232,10 +293,16 @@ export function PartnerWizard({ onClose }: WizardProps) {
                 onChange={(value) => setForm((prev) => ({ ...prev, studentCount: value }))}
               />
             </div>
-          </div>
+          </fieldset>
 
-          <div>
-            <p className="text-sm font-medium text-slate-700">Was bietet ihr für eine Kooperation an?</p>
+          <fieldset
+            id={PARTNER_OFFERINGS_FIELD_ID}
+            tabIndex={-1}
+            className="space-y-1"
+            aria-invalid={errorFieldId === PARTNER_OFFERINGS_FIELD_ID}
+            aria-describedby={errorFieldId === PARTNER_OFFERINGS_FIELD_ID ? PARTNER_ERROR_ID : undefined}
+          >
+            <legend className="text-sm font-medium text-slate-700">Was bietet ihr für eine Kooperation an?</legend>
             <div className="mt-2">
               <MultiChoiceCards
                 options={PARTNER_OFFERING_OPTIONS}
@@ -246,46 +313,67 @@ export function PartnerWizard({ onClose }: WizardProps) {
                 columnsClass="grid-cols-1"
               />
             </div>
-          </div>
+          </fieldset>
         </div>
       ) : null}
 
       {step === 2 ? (
         <div className="space-y-4">
-          <label className="block text-sm font-medium text-slate-700">
-            Telegram oder Email
+          <div>
+            <label htmlFor={PARTNER_CONTACT_FIELD_ID} className="mb-1 block text-sm font-medium text-slate-700">
+              Telegram oder Email
+            </label>
             <input
+              id={PARTNER_CONTACT_FIELD_ID}
               value={form.contact}
               onChange={(event) => setForm((prev) => ({ ...prev, contact: event.target.value }))}
-              className={`${INPUT_CLASS} mt-2`}
+              className={`${INPUT_CLASS} mt-1`}
               placeholder="@username oder email@beispiel.de"
               autoComplete="email"
+              required
+              aria-required="true"
+              aria-invalid={errorFieldId === PARTNER_CONTACT_FIELD_ID}
+              aria-describedby={errorFieldId === PARTNER_CONTACT_FIELD_ID ? PARTNER_ERROR_ID : undefined}
             />
-          </label>
+          </div>
 
-          <label className="block text-sm font-medium text-slate-700">
-            Website oder Social Media (optional)
+          <div>
+            <label htmlFor="partner-website" className="mb-1 block text-sm font-medium text-slate-700">
+              Website oder Social Media (optional)
+            </label>
             <input
+              id="partner-website"
               value={form.website}
               onChange={(event) => setForm((prev) => ({ ...prev, website: event.target.value }))}
-              className={`${INPUT_CLASS} mt-2`}
+              className={`${INPUT_CLASS} mt-1`}
               placeholder="Damit wir eure Arbeit kennenlernen"
             />
-          </label>
+          </div>
 
           <label className="block text-sm font-medium text-slate-700">
             Erzählt uns von eurer Idee
             <textarea
+              id="partner-idea"
               value={form.idea}
               onChange={(event) => setForm((prev) => ({ ...prev, idea: event.target.value }))}
-              className={`${INPUT_CLASS} mt-2`}
+              className={`${INPUT_CLASS} mt-1`}
               rows={4}
               placeholder="Was bietet ihr an und was erwartet ihr von der Kooperation?"
+              required
+              aria-required="true"
+              aria-invalid={errorFieldId === "partner-idea"}
+              aria-describedby={errorFieldId === "partner-idea" ? PARTNER_ERROR_ID : undefined}
             />
           </label>
 
-          <div>
-            <p className="text-sm font-medium text-slate-700">Wie schnell möchtet ihr starten?</p>
+          <fieldset
+            id="partner-start-timeline"
+            tabIndex={-1}
+            className="space-y-1"
+            aria-invalid={errorFieldId === "partner-start-timeline"}
+            aria-describedby={errorFieldId === "partner-start-timeline" ? PARTNER_ERROR_ID : undefined}
+          >
+            <legend className="text-sm font-medium text-slate-700">Wie schnell möchtet ihr starten?</legend>
             <div className="mt-2">
               <ChoiceCards
                 options={PARTNER_TIMELINE_OPTIONS}
@@ -294,11 +382,22 @@ export function PartnerWizard({ onClose }: WizardProps) {
                 columnsClass="grid-cols-1"
               />
             </div>
-          </div>
+          </fieldset>
         </div>
       ) : null}
 
-      {errorMessage ? <p className="text-sm text-red-600">{errorMessage}</p> : null}
+      {errorMessage ? (
+        <p
+          id={PARTNER_ERROR_ID}
+          ref={errorRef}
+          className="text-sm text-red-600"
+          role="alert"
+          aria-live="assertive"
+          tabIndex={-1}
+        >
+          {errorMessage}
+        </p>
+      ) : null}
 
       <div className="flex items-center justify-between gap-3 pt-1">
         <button
