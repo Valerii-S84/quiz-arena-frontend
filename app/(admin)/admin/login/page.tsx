@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { api } from "@/lib/api";
+import { api, classifyApiError } from "@/lib/api";
 import { apiRoutes } from "@/lib/api-routes";
 
 const loginSchema = z.object({
@@ -42,7 +42,16 @@ export default function AdminLoginPage() {
       }
       window.location.href = "/admin/dashboard";
     } catch (error) {
-      setErrorMessage("Не вдалося увійти. Перевір email/password.");
+      const errorCode = classifyApiError(error);
+      if (errorCode === "TOO_MANY_REQUESTS") {
+        setErrorMessage("Занадто багато спроб входу. Спробуйте пізніше.");
+      } else if (errorCode === "CSRF_VALIDATION_FAILED" || errorCode === "AUTH_FORBIDDEN") {
+        setErrorMessage("Спроба входу блокована захистом безпеки. Оновіть сторінку та спробуйте знову.");
+      } else if (errorCode === "NETWORK_ERROR") {
+        setErrorMessage("Мережеві проблеми. Перевірте з'єднання.");
+      } else {
+        setErrorMessage("Не вдалося увійти. Перевір email/password.");
+      }
       setRequires2FA(false);
     } finally {
       setIsSubmitting(false);
@@ -55,8 +64,13 @@ export default function AdminLoginPage() {
     try {
       await api.post(apiRoutes.admin.auth.verify2FA, { code: totpCode });
       window.location.href = "/admin/dashboard";
-    } catch {
-      setErrorMessage("Невірний 2FA код.");
+    } catch (error) {
+      const errorCode = classifyApiError(error);
+      if (errorCode === "TOO_MANY_REQUESTS") {
+        setErrorMessage("Занадто багато невдалих спроб 2FA. Зачекайте й спробуйте знову.");
+      } else {
+        setErrorMessage("Невірний 2FA код.");
+      }
     } finally {
       setIs2FALoading(false);
     }
