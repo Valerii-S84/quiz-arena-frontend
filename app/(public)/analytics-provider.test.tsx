@@ -20,12 +20,10 @@ declare global {
 }
 
 const windowAnalytics = (): AnalyticsWindowShape => {
-  window.__quizArenaPublicAnalytics ||= [];
-  window.dataLayer ||= [];
-  return {
-    __quizArenaPublicAnalytics: window.__quizArenaPublicAnalytics,
-    dataLayer: window.dataLayer,
-  };
+  const analyticsWindow = window as Window & AnalyticsWindowShape;
+  analyticsWindow.__quizArenaPublicAnalytics = analyticsWindow.__quizArenaPublicAnalytics ?? [];
+  analyticsWindow.dataLayer = analyticsWindow.dataLayer ?? [];
+  return analyticsWindow;
 };
 
 const mockUsePathname = vi.fn();
@@ -57,11 +55,7 @@ function renderInContainer(ui: ReactElement) {
 function AnalyticsProbe() {
   const { trackEvent } = usePublicAnalytics();
 
-  return (
-    <button type="button" onClick={() => trackEvent("hero_cta_click", { source: "probe" })}>
-      track
-    </button>
-  );
+  return <button type="button" onClick={() => trackEvent("hero_cta_click", { source: "probe" })}>track</button>;
 }
 
 afterEach(() => {

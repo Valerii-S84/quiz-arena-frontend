@@ -164,7 +164,7 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
 
   const trackEvent = useCallback(
     (name: PublicAnalyticsEventName, payload: PublicAnalyticsPayload = {}) => {
-      if (consent !== "granted") {
+      if (consent === "pending") {
         setQueuedEvents((events) => {
           const nextEvent: QueuedPublicAnalyticsEvent = {
             name,
@@ -179,6 +179,10 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
 
           return mergedEvents.slice(mergedEvents.length - MAX_QUEUED_EVENTS);
         });
+        return;
+      }
+
+      if (consent === "denied") {
         return;
       }
 
