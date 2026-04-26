@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ARTICLE_EMBEDS } from "@/lib/article-definitions";
+import { getSiteUrl } from "@/lib/public-site-config";
 
 type ArticlePageProps = {
   params: Promise<{
@@ -9,73 +12,137 @@ type ArticlePageProps = {
   }>;
 };
 
-const ARTICLE_EMBEDS: Record<string, { title: string; fileName: string }> = {
-  "deutsche-sprache-geschichte": {
-    title: "Geschichte der deutschen Sprache",
-    fileName: "deutsche-sprache-geschichte.html",
-  },
-  "pruefungen-goethe-telc-testdaf": {
-    title: "Prüfungen: Goethe / telc / TestDaF",
-    fileName: "pruefungen-goethe-telc-testdaf.html",
-  },
-  "sprachniveaus-a1-c1": {
-    title: "Sprachniveaus A1-C1",
-    fileName: "sprachniveaus-a1-c1.html",
-  },
-};
+const ARTICLE_DOCUMENT_CLASS = "dq-article-document";
 
 export const dynamicParams = false;
 
 export function generateStaticParams() {
   return Object.keys(ARTICLE_EMBEDS).map((slug) => ({ slug }));
 }
-function applyEmbeddedTheme(html: string): string {
-  const embedThemeOverride = `
-<style id="embedded-article-theme-override">
-  :root {
-    --bg: #cedde8;
-    --surface: #f4f7fa;
-    --border: #b8cad6;
-    --text: #132233;
-    --muted: #31465b;
-    --accent: #e8734a;
-    --a0-bg: rgba(155,155,155,0.14);
-    --a1-bg: rgba(110,198,224,0.14);
-    --a2-bg: rgba(77,184,168,0.14);
-    --b1-bg: rgba(126,200,110,0.14);
-    --b2-bg: rgba(200,184,78,0.14);
-    --c1-bg: rgba(224,120,72,0.14);
-    --c2-bg: rgba(208,72,112,0.14);
+
+export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const article = ARTICLE_EMBEDS[slug];
+
+  if (!article) {
+    return {
+      title: "Artikel nicht gefunden",
+    };
   }
-  body {
-    background: linear-gradient(135deg, #b7d1df 0%, #c4d7bf 50%, #dbcfbf 100%) !important;
-    color: var(--text) !important;
-    font-weight: 400 !important;
+
+  const canonical = `/artikel/${slug}`;
+
+  return {
+    title: article.title,
+    description: article.description,
+    alternates: {
+      canonical,
+    },
+    openGraph: {
+      type: "article",
+      url: canonical,
+      title: article.title,
+      description: article.description,
+      images: [
+        {
+          url: "/logo/bot-logo.jpg",
+          width: 1200,
+          height: 630,
+          alt: article.title,
+        },
+      ],
+    },
+  };
+}
+
+function extractArticleBodyAndStyles(html: string): {
+  content: string;
+  styles: string;
+} {
+  const styleTags = html.match(/<style[^>]*>([\s\S]*?)<\/style>/gi) ?? [];
+  const extractedStyles = styleTags
+    .map((styleTag) =>
+      styleTag
+      .replace(/^<style[^>]*>/i, "")
+      .replace(/<\/style>$/i, "")
+      .replace(/:root/g, `.${ARTICLE_DOCUMENT_CLASS}`)
+      .replace(/\bbody\b/g, `.${ARTICLE_DOCUMENT_CLASS}`),
+    )
+    .join("\n\n");
+
+  let content = html
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "");
+
+  const bodyMatch = content.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  if (bodyMatch) {
+    content = bodyMatch[1];
   }
-  .card-block,
-  .tip-card,
-  .ag-cell,
-  .cefr-group,
-  .notice,
-  .time-badge,
-  .exams-table th {
-    background: rgba(255, 255, 255, 0.97) !important;
-  }
-  .card-description,
-  .tip-desc,
-  .ag-desc,
-  .cefr-group-sub,
-  .card-subtitle {
-    color: #3f556a !important;
-  }
-  .exams-table tr:hover td {
-    background: rgba(15, 23, 42, 0.06) !important;
-  }
-</style>`;
-  if (html.includes("</head>")) {
-    return html.replace("</head>", `${embedThemeOverride}</head>`);
-  }
-  return `${embedThemeOverride}${html}`;
+
+  return {
+    content,
+    styles: extractedStyles,
+  };
+}
+
+function embeddedArticleTheme(): string {
+  return `
+.${ARTICLE_DOCUMENT_CLASS} {
+  --bg: #cedde8;
+  --surface: #f4f7fa;
+  --border: #b8cad6;
+  --text: #132233;
+  --muted: #31465b;
+  --accent: #e8734a;
+  --a0-bg: rgba(155,155,155,0.14);
+  --a1-bg: rgba(110,198,224,0.14);
+  --a2-bg: rgba(77,184,168,0.14);
+  --b1-bg: rgba(126,200,110,0.14);
+  --b2-bg: rgba(200,184,78,0.14);
+  --c1-bg: rgba(224,120,72,0.14);
+  --c2-bg: rgba(208,72,112,0.14);
+  background: linear-gradient(135deg, #b7d1df 0%, #c4d7bf 50%, #dbcfbf 100%);
+  color: var(--text);
+  font-weight: 400;
+}
+.${ARTICLE_DOCUMENT_CLASS} * {
+  box-sizing: border-box;
+}
+.${ARTICLE_DOCUMENT_CLASS} .card-block,
+.${ARTICLE_DOCUMENT_CLASS} .tip-card,
+.${ARTICLE_DOCUMENT_CLASS} .ag-cell,
+.${ARTICLE_DOCUMENT_CLASS} .cefr-group,
+.${ARTICLE_DOCUMENT_CLASS} .notice,
+.${ARTICLE_DOCUMENT_CLASS} .time-badge,
+.${ARTICLE_DOCUMENT_CLASS} .exams-table th {
+  background: rgba(255, 255, 255, 0.97);
+}
+.${ARTICLE_DOCUMENT_CLASS} .card-description,
+.${ARTICLE_DOCUMENT_CLASS} .tip-desc,
+.${ARTICLE_DOCUMENT_CLASS} .ag-desc,
+.${ARTICLE_DOCUMENT_CLASS} .cefr-group-sub,
+.${ARTICLE_DOCUMENT_CLASS} .card-subtitle {
+  color: #3f556a;
+}
+.${ARTICLE_DOCUMENT_CLASS} .exams-table tr:hover td {
+  background: rgba(15, 23, 42, 0.06);
+}
+`;
+}
+
+function buildArticleStructuredData(slug: string, title: string, description: string, siteUrl: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: title,
+    description,
+    mainEntityOfPage: `${siteUrl}/artikel/${slug}`,
+    inLanguage: "de",
+    publisher: {
+      "@type": "Organization",
+      name: "Deutsch Quiz Arena",
+    },
+  };
 }
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
@@ -87,9 +154,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   }
 
   let articleHtml = "";
+  let articleStyles = "";
   try {
     articleHtml = await readFile(path.join(process.cwd(), "public", "artikel", article.fileName), "utf-8");
-    articleHtml = applyEmbeddedTheme(articleHtml);
+    const preparedArticle = extractArticleBodyAndStyles(articleHtml);
+    articleHtml = preparedArticle.content;
+    articleStyles = `${embeddedArticleTheme()}\n${preparedArticle.styles}`;
   } catch {
     return (
       <main className="min-h-screen bg-[linear-gradient(135deg,#e8f4f8_0%,#f0f7ee_50%,#fef9f0_100%)] px-4 py-16 text-slate-800 sm:px-6">
@@ -117,13 +187,27 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </div>
       </div>
 
-      <iframe
-        srcDoc={articleHtml}
-        title={article.title}
-        loading="lazy"
-        sandbox="allow-scripts"
-        className="block h-[calc(100vh-61px)] w-full border-0 bg-white"
-      />
+      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+        <article className="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-[0_4px_26px_rgba(15,23,42,0.06)]">
+          <style
+            dangerouslySetInnerHTML={{
+              __html: articleStyles,
+            }}
+          />
+          <div
+            className={`${ARTICLE_DOCUMENT_CLASS} overflow-hidden`}
+            dangerouslySetInnerHTML={{
+              __html: articleHtml,
+            }}
+          />
+        </article>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(buildArticleStructuredData(slug, article.title, article.description, getSiteUrl())),
+          }}
+        />
+      </div>
     </main>
   );
 }

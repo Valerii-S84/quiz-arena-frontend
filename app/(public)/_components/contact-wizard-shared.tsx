@@ -1,6 +1,7 @@
 "use client";
 
-import { ReactNode, useEffect } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
+import { ReactNode } from "react";
 
 export type WizardKind = "student" | "partner";
 export type SubmitState = "idle" | "loading" | "success" | "error";
@@ -20,6 +21,7 @@ type WizardModalProps = {
   title: string;
   onClose: () => void;
   children: ReactNode;
+  open: boolean;
 };
 
 export const SELECT_BASE_CLASS =
@@ -164,47 +166,39 @@ export function HoneypotField({
   );
 }
 
-export function WizardModal({ title, onClose, children }: WizardModalProps) {
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose();
-      }
+export function WizardModal({ title, onClose, children, open }: WizardModalProps) {
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen) {
+      onClose();
     }
-
-    window.addEventListener("keydown", handleEscape);
-
-    return () => {
-      window.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [onClose]);
+  }
 
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-white/35 px-4 py-6 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <section
-        className="w-full max-w-[560px] rounded-2xl border border-white/50 bg-white/90 p-5 shadow-[0_24px_60px_rgba(15,23,42,0.18)] backdrop-blur-xl"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="text-xl font-semibold text-slate-900">{title}</h3>
-          <button
-            type="button"
-            className="rounded-full px-2 py-1 text-lg leading-none text-slate-600 transition hover:bg-slate-100"
-            onClick={onClose}
-            aria-label="Schließen"
+    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-[59] bg-white/35 px-4 py-6 backdrop-blur-sm">
+          <Dialog.Content
+            className="fixed inset-x-0 top-1/2 mx-auto flex w-full max-w-[560px] -translate-y-1/2 items-center justify-center px-4"
+            onClick={(event) => event.stopPropagation()}
           >
-            ✕
-          </button>
-        </div>
-        <div className="mt-4 max-h-[78vh] overflow-y-auto pr-1">{children}</div>
-      </section>
-    </div>
+            <div className="h-[78vh] w-full max-w-[560px] overflow-y-auto rounded-2xl border border-white/50 bg-white/90 p-5 shadow-[0_24px_60px_rgba(15,23,42,0.18)] backdrop-blur-xl">
+              <div className="flex items-start justify-between gap-3">
+                <Dialog.Title className="text-xl font-semibold text-slate-900">{title}</Dialog.Title>
+                <Dialog.Close asChild>
+                  <button
+                    type="button"
+                    className="rounded-full px-2 py-1 text-lg leading-none text-slate-600 transition hover:bg-slate-100"
+                    aria-label="Schließen"
+                  >
+                    ✕
+                  </button>
+                </Dialog.Close>
+              </div>
+              <div className="mt-4 max-h-[calc(78vh-112px)] overflow-y-auto pr-1">{children}</div>
+            </div>
+          </Dialog.Content>
+        </Dialog.Overlay>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

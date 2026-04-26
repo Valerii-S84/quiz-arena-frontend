@@ -16,13 +16,13 @@ import {
 import { formatStatValue } from "./public-home-helpers";
 import type { StatsState } from "./public-home-types";
 
-type PublicHomeHeaderProps = {
-  onOpenAdminLogin: () => void;
-};
-
 type PublicHomeBotSectionProps = {
   trackedTelegramBotUrl: string;
   stats: StatsState;
+};
+
+type PublicHomeHeroProps = {
+  trackedTelegramBotUrl: string;
 };
 
 type PublicHomeContactSectionProps = {
@@ -30,10 +30,17 @@ type PublicHomeContactSectionProps = {
   onOpenPartnerWizard: () => void;
 };
 
-export function PublicHomeHeader({ onOpenAdminLogin }: PublicHomeHeaderProps) {
+const publicNavigation = [
+  { href: "#bot", label: "Produkt" },
+  { href: "#products", label: "Angebot" },
+  { href: "#knowledge", label: "Wissen" },
+  { href: "#contact", label: "Kontakt" },
+];
+
+export function PublicHomeHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-white/60 bg-white/82 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
+      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:px-6 md:flex-row md:items-center md:justify-between">
         <Link href="/" className="flex items-center gap-3">
           <span className="relative h-8 w-8 overflow-hidden rounded-full ring-1 ring-white/80 shadow-[0_6px_14px_rgba(15,23,42,0.25)]">
             <Image
@@ -46,23 +53,28 @@ export function PublicHomeHeader({ onOpenAdminLogin }: PublicHomeHeaderProps) {
           </span>
           <span className="text-sm font-bold sm:text-base">Quiz Arena Deutsch</span>
         </Link>
-        <button
-          type="button"
-          className="rounded-full p-2 text-slate-800 transition hover:bg-white/80"
-          aria-label="Admin Login öffnen"
-          onClick={onOpenAdminLogin}
-        >
-          <LockIcon />
-        </button>
+
+        <nav aria-label="Primary" className="flex flex-wrap gap-2 text-sm">
+          {publicNavigation.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              className="rounded-full border border-transparent px-3 py-2 transition hover:border-sky-300 hover:bg-white"
+            >
+              {item.label}
+            </a>
+          ))}
+        </nav>
       </div>
     </header>
   );
 }
 
-export function PublicHomeHero() {
+export function PublicHomeHero({ trackedTelegramBotUrl }: PublicHomeHeroProps) {
   return (
     <section
-      className={`${GLASS_CARD_CLASS} relative overflow-hidden bg-[linear-gradient(135deg,#cfe7f3_0%,#dcedd7_50%,#f7e6c8_100%)] px-6 py-16 text-center`}
+      id="hero"
+      className={`${GLASS_CARD_CLASS} relative overflow-hidden bg-[linear-gradient(135deg,#cfe7f3_0%,#dcedd7_50%,#f7e6c8_100%)] px-6 py-16 text-left sm:text-center`}
     >
       {STAR_POSITIONS.map((star, index) => (
         <span
@@ -77,9 +89,50 @@ export function PublicHomeHero() {
           ✦
         </span>
       ))}
-      <h1 className="relative z-10 mx-auto max-w-3xl text-3xl font-semibold leading-tight sm:text-5xl">
-        Jeden Tag ein bisschen Deutsch.
+      <p className="relative z-10 inline-flex rounded-full border border-sky-200/80 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-sky-700">
+        Deutsch lernen ohne Hürden
+      </p>
+      <h1 className="relative z-10 mt-4 max-w-3xl text-3xl font-semibold leading-tight sm:text-5xl">
+        Jeden Tag ein bisschen Deutsch. Mit klaren Mini-Schritten und echtem Fortschritt.
       </h1>
+      <p className="relative z-10 mt-4 max-w-2xl text-sm text-slate-700 sm:text-base">
+        Starte direkt mit dem Telegram-Bot, erhalte personalisierte Aufgaben, verfolge deinen
+        Fortschritt und nimm bei Interesse direkt Kontakt für Unterricht auf.
+      </p>
+      <div className="relative z-10 mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <a
+          href={trackedTelegramBotUrl}
+          target="_blank"
+          rel="noreferrer"
+          className={ORANGE_BUTTON_CLASS}
+        >
+          Bot öffnen
+        </a>
+        <a
+          href="#contact"
+          className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-[0_10px_18px_rgba(15,23,42,0.14)] transition hover:bg-white/90"
+        >
+          Beratung anfragen
+        </a>
+      </div>
+      <div className="relative z-10 mt-8 grid gap-3 sm:grid-cols-3">
+        <article className="rounded-xl border border-white/60 bg-white/70 p-4">
+          <p className="text-xs font-semibold uppercase text-slate-600">Für Lernende</p>
+          <p className="mt-1 text-sm text-slate-800">
+            3–15 Minuten täglich: Quiz, Wortschatz, Grammatik.
+          </p>
+        </article>
+        <article className="rounded-xl border border-white/60 bg-white/70 p-4">
+          <p className="text-xs font-semibold uppercase text-slate-600">Für Eltern & Teams</p>
+          <p className="mt-1 text-sm text-slate-800">
+            Fortschritte sichtbar machen und direkt nachplanen.
+          </p>
+        </article>
+        <article className="rounded-xl border border-white/60 bg-white/70 p-4">
+          <p className="text-xs font-semibold uppercase text-slate-600">Support</p>
+          <p className="mt-1 text-sm text-slate-800">Antwort binnen 24h nach Formular-Start.</p>
+        </article>
+      </div>
     </section>
   );
 }
@@ -88,7 +141,7 @@ export function PublicHomeChannelSection() {
   const telegramChannelUrl = getTelegramChannelUrl();
 
   return (
-    <section className="mt-8">
+    <section id="channel" className="mt-8">
       <div
         className={`${GLASS_CARD_CLASS} flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between`}
       >
@@ -110,12 +163,8 @@ export function PublicHomeChannelSection() {
               Deutsch ist einfach! · Täglich & Praxis 🇩🇪
             </h3>
             <p className="mt-2 text-sm text-slate-700">
-              📚 Deutsch — dein täglicher Begleiter 🇩🇪 Kurze, klare Lernposts: Wortschatz mit
-              Artikeln, einfache Grammatik, Dialoge zum Mitmachen.
-            </p>
-            <p className="mt-1 text-sm text-slate-700">
-              Dazu bekommst du Mini-Übungen, alltagstaugliche Redemittel und kompakte Tipps für
-              Prüfungen, Arbeit und sichere Kommunikation im echten Leben.
+              📚 Deutsch — dein täglicher Begleiter 🇩🇪 Kurze Lernposts mit Mini-Übungen, Dialogen
+              und alltagstauglichen Redemitteln.
             </p>
           </div>
         </div>
@@ -137,7 +186,7 @@ export function PublicHomeBotSection({
   stats,
 }: PublicHomeBotSectionProps) {
   return (
-    <section className="mt-6">
+    <section id="bot" className="mt-6">
       <div className={`${GLASS_CARD_CLASS} grid gap-6 p-6 lg:grid-cols-5`}>
         <div className="lg:col-span-3">
           <div className="flex items-start gap-4">
@@ -168,14 +217,6 @@ export function PublicHomeBotSection({
                 <li className="flex gap-2">
                   <span className="text-emerald-600">✓</span>
                   <span>Verfolge deinen Fortschritt jeden Tag</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-emerald-600">✓</span>
-                  <span>Streaks und Wettkämpfe mit Freunden</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-emerald-600">✓</span>
-                  <span>Wortschatz und Grammatik trainieren</span>
                 </li>
               </ul>
             </div>
@@ -215,7 +256,7 @@ export function PublicHomeBotSection({
 
 export function PublicHomeProductsSection() {
   return (
-    <section className="mt-10">
+    <section id="products" className="mt-10">
       <h2 className="text-3xl font-semibold text-slate-900">Produkte</h2>
       <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:items-start">
         <article className={`${GLASS_CARD_CLASS} p-5 sm:p-6`}>
@@ -309,7 +350,7 @@ export function PublicHomeContactSection({
   onOpenPartnerWizard,
 }: PublicHomeContactSectionProps) {
   return (
-    <section className="mt-10 grid gap-4 lg:grid-cols-2">
+    <section id="contact" className="mt-10 grid gap-4 lg:grid-cols-2">
       <article className={`${GLASS_CARD_CLASS} p-6`}>
         <p className="text-2xl">📚</p>
         <h3 className="mt-2 text-2xl font-semibold">Zum Unterricht anmelden</h3>
@@ -354,7 +395,7 @@ export function PublicHomeContactSection({
 
 export function PublicHomeKnowledgeSection() {
   return (
-    <section className="mt-10">
+    <section id="knowledge" className="mt-10">
       <h2 className="text-3xl font-semibold">Wissen & Tipps</h2>
       <div className="mt-4 space-y-3">
         {WISSEN_ARTICLES.map((article) => (
@@ -375,21 +416,7 @@ export function PublicHomeKnowledgeSection() {
 export function PublicHomeFooter() {
   return (
     <footer className="mt-12 border-t border-white/70 pt-6 text-center text-sm text-slate-700">
-      <p>© 2025 Chik&amp;com</p>
+      <p>© 2025 Chik&com</p>
     </footer>
-  );
-}
-
-function LockIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.8" />
-      <path
-        d="M8.5 10V7.5a3.5 3.5 0 1 1 7 0V10"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
   );
 }
