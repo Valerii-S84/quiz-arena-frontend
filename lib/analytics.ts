@@ -15,4 +15,6 @@ export type QueuedPublicAnalyticsEvent = {
   name: PublicAnalyticsEventName;
   payload: PublicAnalyticsPayload;
   timestamp: string;
+  page_path: string;
+  page_title: string;
 };
