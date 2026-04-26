@@ -2,21 +2,29 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { WizardModal } from './app/(public)/_components/contact-wizard-shared';
 
+const modalBody = React.createElement('p', null, 'body');
+
 const htmlOpen = renderToStaticMarkup(
-  React.createElement(WizardModal, {
+  React.createElement(
+    WizardModal,
+    {
     title: 'Test',
     open: true,
     onClose() {},
-    children: React.createElement('p', null, 'body'),
-  }),
+    },
+    modalBody,
+  ),
 );
 const htmlClosed = renderToStaticMarkup(
-  React.createElement(WizardModal, {
+  React.createElement(
+    WizardModal,
+    {
     title: 'Test',
     open: false,
     onClose() {},
-    children: React.createElement('p', null, 'body'),
-  }),
+    },
+    modalBody,
+  ),
 );
 console.log('OPEN START');
 console.log(htmlOpen.slice(0, 500));
