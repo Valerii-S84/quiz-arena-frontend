@@ -128,7 +128,7 @@ function clickOptionByFieldsetIndex(
     throw new Error(`Fieldset with id "${fieldsetId}" not found`);
   }
 
-  const option = Array.from(fieldset.querySelectorAll("button[type='button']"))[optionIndex];
+  const option = Array.from(fieldset.querySelectorAll("button"))[optionIndex];
   if (!option) {
     throw new Error(`Option ${optionIndex} not found in fieldset "${fieldsetId}"`);
   }

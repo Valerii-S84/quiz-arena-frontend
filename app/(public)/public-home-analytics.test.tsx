@@ -73,7 +73,7 @@ describe("public home analytics event wiring", () => {
     const { container, cleanup } = renderInContainer(<PublicHomeClient />);
 
     try {
-      const homeLink = container.querySelector('a[href="/"]');
+      const homeLink = container.querySelector<HTMLAnchorElement>('a[href="/"]');
       expect(homeLink).not.toBeNull();
 
       act(() => {
@@ -90,10 +90,10 @@ describe("public home analytics event wiring", () => {
     const { container, cleanup } = renderInContainer(<PublicHomeClient />);
 
     try {
-      const heroButton = container.querySelector(
+      const heroButton = container.querySelector<HTMLButtonElement>(
         '[data-analytics-event="hero_cta_click"][data-analytics-section="hero"]',
       );
-      const channelButton = container.querySelector(
+      const channelButton = container.querySelector<HTMLButtonElement>(
         '[data-analytics-event="channel_cta_click"][data-analytics-section="channel"]',
       );
 
@@ -121,7 +121,7 @@ describe("public home analytics event wiring", () => {
     const { container, cleanup } = renderInContainer(<PublicHomeClient />);
 
     try {
-      const heroButton = container.querySelector(
+      const heroButton = container.querySelector<HTMLButtonElement>(
         '[data-analytics-event="hero_cta_click"][data-analytics-section="hero"]',
       );
       expect(heroButton).not.toBeNull();
@@ -147,7 +147,7 @@ describe("public home analytics event wiring", () => {
     const { container, cleanup } = renderInContainer(<PublicHomeClient />);
 
     try {
-      const heroButton = container.querySelector(
+      const heroButton = container.querySelector<HTMLButtonElement>(
         '[data-analytics-event="hero_cta_click"][data-analytics-section="hero"]',
       );
       expect(heroButton).not.toBeNull();

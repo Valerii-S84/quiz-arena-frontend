@@ -7,13 +7,26 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { AnalyticsProvider, usePublicAnalytics } from "@/app/analytics-provider";
 
-type WindowAnalytics = Window & {
+type AnalyticsWindowShape = {
   __quizArenaPublicAnalytics: Array<Record<string, unknown>>;
   dataLayer: Array<Record<string, unknown>>;
 };
 
-const windowAnalytics = (): WindowAnalytics =>
-  window as WindowAnalytics;
+declare global {
+  interface Window {
+    __quizArenaPublicAnalytics?: Array<Record<string, unknown>>;
+    dataLayer?: Array<Record<string, unknown>>;
+  }
+}
+
+const windowAnalytics = (): AnalyticsWindowShape => {
+  window.__quizArenaPublicAnalytics ||= [];
+  window.dataLayer ||= [];
+  return {
+    __quizArenaPublicAnalytics: window.__quizArenaPublicAnalytics,
+    dataLayer: window.dataLayer,
+  };
+};
 
 const mockUsePathname = vi.fn();
 
