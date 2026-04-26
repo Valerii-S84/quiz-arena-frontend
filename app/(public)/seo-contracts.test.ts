@@ -22,6 +22,7 @@ import { metadata as privacyMetadata } from "@/app/(public)/privacy/page";
 import { metadata as projectsMetadata } from "@/app/(public)/projects/page";
 import { metadata as rootMetadata } from "@/app/layout";
 import { getSiteUrl } from "@/lib/public-site-config";
+import { extractArticleBodyAndStyles } from "@/lib/article-content";
 import { ARTICLE_EMBEDS, ARTICLE_SLUGS } from "@/lib/article-definitions";
 import robots from "@/app/robots";
 import sitemap from "@/app/sitemap";
@@ -151,5 +152,23 @@ describe("knowledge transport implementation", () => {
     expect(source).not.toContain("<iframe");
     expect(source).toContain("application/ld+json");
     expect(source).toContain("notFound()");
+  });
+
+  it("keeps required inline scripts and onclick handlers for article interactivity", () => {
+    for (const slug of ARTICLE_SLUGS) {
+      const articleFilePath = join(
+        process.cwd(),
+        "public",
+        "artikel",
+        ARTICLE_EMBEDS[slug].fileName,
+      );
+      const sourceArticle = readFileSync(articleFilePath, "utf-8");
+      const extracted = extractArticleBodyAndStyles(sourceArticle, "dq-article-document");
+
+      expect(sourceArticle).toContain("<script");
+      expect(extracted.content).toContain("<script");
+      expect(extracted.content).toContain("onclick=");
+      expect(extracted.content).toContain("function ");
+    }
   });
 });

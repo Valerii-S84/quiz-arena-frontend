@@ -4,6 +4,7 @@ import path from "node:path";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ARTICLE_EMBEDS } from "@/lib/article-definitions";
+import { extractArticleBodyAndStyles } from "@/lib/article-content";
 import { getSiteUrl } from "@/lib/public-site-config";
 
 type ArticlePageProps = {
@@ -52,36 +53,6 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
         },
       ],
     },
-  };
-}
-
-function extractArticleBodyAndStyles(html: string): {
-  content: string;
-  styles: string;
-} {
-  const styleTags = html.match(/<style[^>]*>([\s\S]*?)<\/style>/gi) ?? [];
-  const extractedStyles = styleTags
-    .map((styleTag) =>
-      styleTag
-      .replace(/^<style[^>]*>/i, "")
-      .replace(/<\/style>$/i, "")
-      .replace(/:root/g, `.${ARTICLE_DOCUMENT_CLASS}`)
-      .replace(/\bbody\b/g, `.${ARTICLE_DOCUMENT_CLASS}`),
-    )
-    .join("\n\n");
-
-  let content = html
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "");
-
-  const bodyMatch = content.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-  if (bodyMatch) {
-    content = bodyMatch[1];
-  }
-
-  return {
-    content,
-    styles: extractedStyles,
   };
 }
 
@@ -157,7 +128,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   let articleStyles = "";
   try {
     articleHtml = await readFile(path.join(process.cwd(), "public", "artikel", article.fileName), "utf-8");
-    const preparedArticle = extractArticleBodyAndStyles(articleHtml);
+    const preparedArticle = extractArticleBodyAndStyles(articleHtml, ARTICLE_DOCUMENT_CLASS);
     articleHtml = preparedArticle.content;
     articleStyles = `${embeddedArticleTheme()}\n${preparedArticle.styles}`;
   } catch {
