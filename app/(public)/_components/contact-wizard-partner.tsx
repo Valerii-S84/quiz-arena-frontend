@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 
 import { api } from "@/lib/api";
 import { apiRoutes } from "@/lib/api-routes";
+import { usePublicAnalytics } from "@/app/analytics-provider";
 
 import {
   ChoiceCards,
@@ -94,6 +95,7 @@ export function PartnerWizard({ onClose }: WizardProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [errorFieldId, setErrorFieldId] = useState<string | null>(null);
   const errorRef = useRef<HTMLParagraphElement>(null);
+  const { trackEvent } = usePublicAnalytics();
 
   useEffect(() => {
     if (!errorFieldId) return;
@@ -187,6 +189,14 @@ export function PartnerWizard({ onClose }: WizardProps) {
         company: form.company,
       });
       setSubmitState("success");
+      trackEvent("lead_submit_success", {
+        wizard_type: "partner",
+        partner_type: form.partnerType,
+        country: Boolean(form.country.trim()),
+        offerings_count: form.offerings.length,
+        has_website: Boolean(form.website.trim()),
+        has_contact: Boolean(form.contact.trim()),
+      });
     } catch {
       setSubmitState("error");
       setErrorMessage("Etwas ist schiefgelaufen. Bitte versuche es erneut.");

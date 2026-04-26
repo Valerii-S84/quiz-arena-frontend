@@ -34,6 +34,20 @@ describe("public home scenarios", () => {
     expect(html).toContain("start=site_public_home");
   });
 
+  it("adds analytics dataset metadata to conversion CTAs", () => {
+    const botUrl = getTelegramBotUrl();
+    const trackedUrl = buildTrackedTelegramBotUrl(botUrl, TELEGRAM_BOT_START_PAYLOAD);
+
+    const html = renderToStaticMarkup(
+      <PublicHomeHero trackedTelegramBotUrl={trackedUrl} />,
+    );
+
+    expect(html).toContain("data-analytics-event=\"hero_cta_click\"");
+    expect(html).toContain("data-analytics-section=\"hero\"");
+    expect(html).toContain("data-analytics-cta=\"telegram_bot\"");
+    expect(html).toContain("data-analytics-cta=\"contact_anchor\"");
+  });
+
   it("includes section-level navigation in header with in-page targets", () => {
     const html = renderToStaticMarkup(<PublicHomeHeader />);
 

@@ -105,12 +105,18 @@ export function PublicHomeHero({ trackedTelegramBotUrl }: PublicHomeHeroProps) {
           target="_blank"
           rel="noreferrer"
           className={ORANGE_BUTTON_CLASS}
+          data-analytics-event="hero_cta_click"
+          data-analytics-section="hero"
+          data-analytics-cta="telegram_bot"
         >
           Bot öffnen
         </a>
         <a
           href="#contact"
           className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-[0_10px_18px_rgba(15,23,42,0.14)] transition hover:bg-white/90"
+          data-analytics-event="hero_cta_click"
+          data-analytics-section="hero"
+          data-analytics-cta="contact_anchor"
         >
           Beratung anfragen
         </a>
@@ -173,6 +179,9 @@ export function PublicHomeChannelSection() {
           target="_blank"
           rel="noreferrer"
           className={ORANGE_BUTTON_CLASS}
+          data-analytics-event="channel_cta_click"
+          data-analytics-section="channel"
+          data-analytics-cta="telegram_channel"
         >
           Kanal öffnen
         </a>
@@ -226,6 +235,9 @@ export function PublicHomeBotSection({
             target="_blank"
             rel="noreferrer"
             className={`mt-6 ${ORANGE_BUTTON_CLASS}`}
+            data-analytics-event="hero_cta_click"
+            data-analytics-section="bot_block"
+            data-analytics-cta="telegram_bot"
           >
             Bot öffnen
           </a>

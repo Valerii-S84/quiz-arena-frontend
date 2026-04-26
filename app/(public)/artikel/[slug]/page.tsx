@@ -116,6 +116,37 @@ function buildArticleStructuredData(slug: string, title: string, description: st
   };
 }
 
+function buildArticleBreadcrumbStructuredData(
+  slug: string,
+  title: string,
+  siteUrl: string,
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Startseite",
+        item: siteUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Wissen",
+        item: `${siteUrl}/#knowledge`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: title,
+        item: `${siteUrl}/artikel/${slug}`,
+      },
+    ],
+  };
+}
+
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
   const article = ARTICLE_EMBEDS[slug];
@@ -176,6 +207,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(buildArticleStructuredData(slug, article.title, article.description, getSiteUrl())),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(buildArticleBreadcrumbStructuredData(slug, article.title, getSiteUrl())),
           }}
         />
       </div>

@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { renderToStaticMarkup } from "react-dom/server";
 
 vi.mock("next/font/google", () => ({
   Fraunces: () => ({
@@ -26,6 +27,17 @@ import { extractArticleBodyAndStyles } from "@/lib/article-content";
 import { ARTICLE_EMBEDS, ARTICLE_SLUGS } from "@/lib/article-definitions";
 import robots from "@/app/robots";
 import sitemap from "@/app/sitemap";
+
+type JsonLdPayload = Record<string, unknown>;
+
+function parseJsonLdScripts(html: string): JsonLdPayload[] {
+  const matches = html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g);
+
+  return Array.from(matches).map((match) => {
+    const raw = match[1];
+    return JSON.parse(raw) as JsonLdPayload;
+  });
+}
 
 describe("public SEO metadata contracts", () => {
   it("defines a consistent root metadata template and Open Graph payload", () => {
@@ -75,6 +87,49 @@ describe("public SEO metadata contracts", () => {
       expect(pageMetadata.alternates?.canonical).toBe(`/artikel/${slug}`);
       expect(articleOpenGraph?.url).toBe(`/artikel/${slug}`);
       expect(articleOpenGraph?.type).toBe("article");
+    }
+  });
+
+  it("renders complete structured data for all article pages", async () => {
+    const { default: ArticlePage } = await import("./artikel/[slug]/page");
+    const siteUrl = getSiteUrl();
+
+    for (const slug of ARTICLE_SLUGS) {
+      const article = ARTICLE_EMBEDS[slug];
+      const html = renderToStaticMarkup(
+        await ArticlePage({
+          params: Promise.resolve({ slug }),
+        }),
+      );
+
+      const jsonLd = parseJsonLdScripts(html);
+
+      const articleData = jsonLd.find((entry) => entry["@type"] === "Article");
+      const breadcrumbData = jsonLd.find((entry) => entry["@type"] === "BreadcrumbList");
+
+      expect(articleData).toBeDefined();
+      expect(articleData?.headline).toBe(article.title);
+      expect(articleData?.description).toBe(article.description);
+      expect(articleData?.mainEntityOfPage).toBe(`${siteUrl}/artikel/${slug}`);
+
+      const breadcrumbItems = (breadcrumbData?.itemListElement ?? []) as Array<JsonLdPayload>;
+      expect(breadcrumbData).toBeDefined();
+      expect(breadcrumbItems).toHaveLength(3);
+      expect(breadcrumbItems?.[0]).toMatchObject({
+        "@type": "ListItem",
+        name: "Startseite",
+        position: 1,
+      });
+      expect(breadcrumbItems?.[1]).toMatchObject({
+        "@type": "ListItem",
+        name: "Wissen",
+        position: 2,
+      });
+      expect(breadcrumbItems?.[2]).toMatchObject({
+        "@type": "ListItem",
+        name: article.title,
+        position: 3,
+      });
     }
   });
 
@@ -169,6 +224,35 @@ describe("knowledge transport implementation", () => {
       expect(extracted.content).toContain("<script");
       expect(extracted.content).toContain("onclick=");
       expect(extracted.content).toContain("function ");
+    }
+  });
+
+  it("throws notFound for missing article content during render", async () => {
+    const { default: ArticlePage } = await import("./artikel/[slug]/page");
+
+    await expect(
+      ArticlePage({
+        params: Promise.resolve({ slug: "missing-article" }),
+      }),
+    ).rejects.toBeDefined();
+  });
+
+  it("renders Article and BreadcrumbList structured data on article pages", async () => {
+    const { default: ArticlePage } = await import("./artikel/[slug]/page");
+
+    for (const slug of ARTICLE_SLUGS) {
+      const article = ARTICLE_EMBEDS[slug];
+      const html = renderToStaticMarkup(
+        await ArticlePage({
+          params: Promise.resolve({ slug }),
+        }),
+      );
+
+      expect(html).toContain('"@type":"Article"');
+      expect(html).toContain('"@type":"BreadcrumbList"');
+      expect(html).toContain(`"position":3`);
+      expect(html).toContain(`"name":"${article.title}"`);
+      expect(html).toContain(`"name":"Wissen"`);
     }
   });
 });
