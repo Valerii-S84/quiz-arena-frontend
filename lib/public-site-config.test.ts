@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   getPublicContactEmail,
   TELEGRAM_BOT_START_PAYLOAD,
+  getItQuizBotUrl,
   getTelegramBotUrl,
   getTelegramChannelUrl,
   getSiteUrl,
@@ -10,6 +11,7 @@ import {
 
 const ORIGINAL_TELEGRAM_BOT_URL = process.env.NEXT_PUBLIC_TELEGRAM_BOT_URL;
 const ORIGINAL_TELEGRAM_CHANNEL_URL = process.env.NEXT_PUBLIC_TELEGRAM_CHANNEL_URL;
+const ORIGINAL_IT_QUIZ_BOT_URL = process.env.NEXT_PUBLIC_IT_QUIZ_BOT_URL;
 const ORIGINAL_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
 const ORIGINAL_CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
 
@@ -17,6 +19,7 @@ function restoreEnv(
   name:
     | "NEXT_PUBLIC_TELEGRAM_BOT_URL"
     | "NEXT_PUBLIC_TELEGRAM_CHANNEL_URL"
+    | "NEXT_PUBLIC_IT_QUIZ_BOT_URL"
     | "NEXT_PUBLIC_SITE_URL"
     | "NEXT_PUBLIC_CONTACT_EMAIL",
   value: string | undefined,
@@ -32,6 +35,7 @@ function restoreEnv(
 afterEach(() => {
   restoreEnv("NEXT_PUBLIC_TELEGRAM_BOT_URL", ORIGINAL_TELEGRAM_BOT_URL);
   restoreEnv("NEXT_PUBLIC_TELEGRAM_CHANNEL_URL", ORIGINAL_TELEGRAM_CHANNEL_URL);
+  restoreEnv("NEXT_PUBLIC_IT_QUIZ_BOT_URL", ORIGINAL_IT_QUIZ_BOT_URL);
   restoreEnv("NEXT_PUBLIC_SITE_URL", ORIGINAL_SITE_URL);
   restoreEnv("NEXT_PUBLIC_CONTACT_EMAIL", ORIGINAL_CONTACT_EMAIL);
 });
@@ -40,17 +44,21 @@ describe("public site config", () => {
   it("uses the default Telegram URLs when env values are unset", () => {
     delete process.env.NEXT_PUBLIC_TELEGRAM_BOT_URL;
     delete process.env.NEXT_PUBLIC_TELEGRAM_CHANNEL_URL;
+    delete process.env.NEXT_PUBLIC_IT_QUIZ_BOT_URL;
 
     expect(getTelegramBotUrl()).toBe("https://t.me/Deine_Deutsch_Quiz_bot");
     expect(getTelegramChannelUrl()).toBe("https://t.me/doechkurse");
+    expect(getItQuizBotUrl()).toBe("https://t.me/ITQuizBot");
   });
 
   it("trims and uses configured Telegram URLs", () => {
     process.env.NEXT_PUBLIC_TELEGRAM_BOT_URL = " https://t.me/custom_bot ";
     process.env.NEXT_PUBLIC_TELEGRAM_CHANNEL_URL = " https://t.me/custom_channel ";
+    process.env.NEXT_PUBLIC_IT_QUIZ_BOT_URL = " https://t.me/custom_it_bot ";
 
     expect(getTelegramBotUrl()).toBe("https://t.me/custom_bot");
     expect(getTelegramChannelUrl()).toBe("https://t.me/custom_channel");
+    expect(getItQuizBotUrl()).toBe("https://t.me/custom_it_bot");
   });
 
   it("keeps the public home start payload stable", () => {

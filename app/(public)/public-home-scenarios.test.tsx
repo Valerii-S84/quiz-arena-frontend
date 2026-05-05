@@ -27,10 +27,10 @@ describe("public home scenarios", () => {
       <PublicHomeHero trackedTelegramBotUrl={trackedUrl} />,
     );
 
-    expect(html).toContain("Bot öffnen");
+    expect(html).toContain("Quiz-Bot starten");
     expect(html).toContain(`href="${trackedUrl}"`);
-    expect(html).toContain("href=\"#contact\"");
-    expect(html).toContain("Beratung anfragen");
+    expect(html).toContain("href=\"#projects\"");
+    expect(html).toContain("Projekte entdecken");
     expect(html).toContain("start=site_public_home");
   });
 
@@ -45,15 +45,15 @@ describe("public home scenarios", () => {
     expect(html).toContain("data-analytics-event=\"hero_cta_click\"");
     expect(html).toContain("data-analytics-section=\"hero\"");
     expect(html).toContain("data-analytics-cta=\"telegram_bot\"");
-    expect(html).toContain("data-analytics-cta=\"contact_anchor\"");
+    expect(html).toContain("data-analytics-cta=\"projects_anchor\"");
   });
 
   it("includes section-level navigation in header with in-page targets", () => {
     const html = renderToStaticMarkup(<PublicHomeHeader />);
 
-    expect(html).toContain('href="#bot"');
-    expect(html).toContain('href="#products"');
+    expect(html).toContain('href="#projects"');
     expect(html).toContain('href="#knowledge"');
+    expect(html).toContain('href="#unterricht"');
     expect(html).toContain('href="#contact"');
   });
 
@@ -72,7 +72,7 @@ describe("public home scenarios", () => {
       <PublicHomeContactSection onOpenStudentWizard={() => undefined} onOpenPartnerWizard={() => undefined} />,
     );
 
-    expect(html).toContain("Anfrage senden");
+    expect(html).toContain("Deutsch-Unterricht anfragen");
     expect(html).toContain("Kontakt aufnehmen");
   });
 });

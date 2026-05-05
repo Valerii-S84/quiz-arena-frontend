@@ -182,7 +182,7 @@ describe("public home analytics event wiring", () => {
 
     try {
       const studentButton = Array.from(container.querySelectorAll("button")).find((button) =>
-        button.textContent?.includes("Anfrage senden"),
+        button.textContent?.includes("Deutsch-Unterricht anfragen"),
       );
       const partnerButton = Array.from(container.querySelectorAll("button")).find((button) =>
         button.textContent?.includes("Kontakt aufnehmen"),
