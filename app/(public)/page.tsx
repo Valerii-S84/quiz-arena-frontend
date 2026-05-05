@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 
 import {
   PublicHomeBotSection,
+  PublicHomeChannelSection,
   PublicHomeContactSection,
   PublicHomeFooter,
   PublicHomeHeader,
   PublicHomeHero,
   PublicHomeKnowledgeSection,
   PublicHomeProductsSection,
-  PublicHomeStatsSection,
 } from "./public-home-sections";
 import { buildTrackedTelegramBotUrl } from "./public-home-helpers";
 import { fetchPublicHomeServerStats } from "./public-home-server-stats";
@@ -18,14 +18,14 @@ import PublicHomeClient from "./public-home-client";
 export const metadata: Metadata = {
   title: "Startseite",
   description:
-    "Deutsch Quiz Arena als wachsendes Lern-Ökosystem mit Quiz-Bot, Unterricht, Telegram-Kanälen, IT-Quiz, Worklog und Wissen & Tipps.",
+    "Deutsch Quiz Arena für motiviertes Sprachlernen im Alltag: tägliche Quizze, Telegram-Insights und direkte Beratung.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
     title: "Startseite | Deutsch Quiz Arena",
     description:
-      "Deutsch lernen, Wissen testen und digitale Lernprodukte entdecken: Quiz-Bot, Unterricht, IT-Quiz, Worklog und Wissen & Tipps.",
+      "Deutsch lernen mit täglichen Quizzen, Lernstatistiken und personalisierten Lernwegen.",
     url: "/",
   },
 };
@@ -43,18 +43,21 @@ export default async function PublicHomePage() {
     <>
       <main
         id="public-home-root"
-        className="min-h-screen bg-[linear-gradient(135deg,#06111f_0%,#0b1726_48%,#13151d_100%)] text-white"
+        className="min-h-screen bg-[linear-gradient(135deg,#d7ebf5_0%,#e4f1e0_50%,#f8ecd8_100%)] text-slate-900"
       >
-        <PublicHomeHeader trackedTelegramBotUrl={trackedTelegramBotUrl} />
+        <PublicHomeHeader />
 
-        <div className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+        <div className="mx-auto max-w-6xl px-4 pb-16 pt-10 sm:px-6">
           <PublicHomeHero trackedTelegramBotUrl={trackedTelegramBotUrl} />
-          <PublicHomeStatsSection stats={statsState} />
-          <PublicHomeBotSection trackedTelegramBotUrl={trackedTelegramBotUrl} />
-          <PublicHomeProductsSection trackedTelegramBotUrl={trackedTelegramBotUrl} />
-          <PublicHomeKnowledgeSection />
+          <PublicHomeChannelSection />
+          <PublicHomeBotSection
+            trackedTelegramBotUrl={trackedTelegramBotUrl}
+            stats={statsState}
+          />
+          <PublicHomeProductsSection />
           <PublicHomeContactSection />
-          <PublicHomeFooter trackedTelegramBotUrl={trackedTelegramBotUrl} />
+          <PublicHomeKnowledgeSection />
+          <PublicHomeFooter />
         </div>
       </main>
 
