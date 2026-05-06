@@ -255,4 +255,67 @@ describe("knowledge transport implementation", () => {
       expect(html).toContain(`"name":"Wissen"`);
     }
   });
+
+  it("renders article pages inside the dark premium reader shell", async () => {
+    const { default: ArticlePage } = await import("./artikel/[slug]/page");
+
+    for (const slug of ["sprachniveaus-a1-c1", "deutsche-sprache-geschichte"] as const) {
+      const html = renderToStaticMarkup(
+        await ArticlePage({
+          params: Promise.resolve({ slug }),
+        }),
+      );
+
+      expect(html).toContain("← Zur Startseite");
+      expect(html).toContain("bg-slate-950/40");
+      expect(html).toContain("border-white/10");
+      expect(html).toContain("text-slate-100");
+      expect(html).toContain("dq-article-document");
+
+      expect(html).not.toContain("bg-white/90");
+      expect(html).not.toContain("bg-white/82");
+      expect(html).not.toContain("border-slate-200");
+      expect(html).not.toContain("--bg: #cedde8");
+      expect(html).not.toContain("--surface: #f4f7fa");
+    }
+  });
+
+  it("keeps the article source files on the dark readable palette", () => {
+    const articleFiles = [
+      "sprachniveaus-a1-c1.html",
+      "deutsche-sprache-geschichte.html",
+    ] as const;
+
+    for (const articleFile of articleFiles) {
+      const source = readFileSync(
+        join(process.cwd(), "public", "artikel", articleFile),
+        "utf-8",
+      );
+
+      expect(source).toContain("font-weight: 400;");
+      expect(source).toContain("--surface: rgba(15, 23, 42, 0.72);");
+      expect(source).toContain("--border: rgba(148, 163, 184, 0.18);");
+      expect(source).toContain("--text: #eaf2ff;");
+      expect(source).toContain("--muted: #a9b7c9;");
+
+      expect(source).not.toContain("font-weight: 300;");
+      expect(source).not.toContain("--bg: #cedde8");
+      expect(source).not.toContain("--surface: #f4f7fa");
+      expect(source).not.toContain("rgba(255,255,255,0.97)");
+    }
+
+    const cefrSource = readFileSync(
+      join(process.cwd(), "public", "artikel", "sprachniveaus-a1-c1.html"),
+      "utf-8",
+    );
+    const historySource = readFileSync(
+      join(process.cwd(), "public", "artikel", "deutsche-sprache-geschichte.html"),
+      "utf-8",
+    );
+
+    expect(cefrSource).toContain("--bg: #0b1220;");
+    expect(cefrSource).toContain("--accent: #facc15;");
+    expect(historySource).toContain("--bg: #07111f;");
+    expect(historySource).toContain("--accent: #f3cf78;");
+  });
 });
