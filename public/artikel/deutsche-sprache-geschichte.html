@@ -7,13 +7,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Sans+3:wght@300;400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f0f13;
-    --surface: #17171e;
-    --border: #2a2a38;
-    --text: #e8e6f0;
-    --muted: #8a8aa0;
-    --accent: #c8a96e;
-    --accent2: #7eb8c8;
+    --bg: #07111f;
+    --surface: rgba(15, 23, 42, 0.72);
+    --surface-strong: rgba(8, 15, 31, 0.88);
+    --surface-soft: rgba(15, 23, 42, 0.54);
+    --border: rgba(148, 163, 184, 0.18);
+    --text: #eaf2ff;
+    --muted: #a9b7c9;
+    --accent: #f3cf78;
+    --accent2: #8dd1e7;
+    --shadow: 0 24px 60px rgba(2, 6, 23, 0.28);
 
     --indg:  #a07850;
     --germ:  #7890b0;
@@ -35,10 +38,13 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    background: var(--bg);
+    background:
+      radial-gradient(circle at top, rgba(243,207,120,0.12), transparent 28%),
+      radial-gradient(circle at 16% 24%, rgba(104,120,192,0.08), transparent 24%),
+      linear-gradient(180deg, #04101d 0%, var(--bg) 100%);
     color: var(--text);
     font-family: 'Source Sans 3', sans-serif;
-    font-weight: 300;
+    font-weight: 400;
     line-height: 1.78;
     min-height: 100vh;
   }
@@ -55,7 +61,7 @@
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 80% 55% at 50% 0%, rgba(200,169,110,0.14) 0%, transparent 68%),
+      radial-gradient(ellipse 80% 55% at 50% 0%, rgba(243,207,120,0.16) 0%, transparent 68%),
       radial-gradient(ellipse 50% 40% at 15% 90%, rgba(104,120,192,0.10) 0%, transparent 60%),
       radial-gradient(ellipse 40% 35% at 85% 70%, rgba(192,104,96,0.08) 0%, transparent 55%);
     pointer-events: none;
@@ -85,6 +91,7 @@
     margin: 0 auto 44px;
     color: var(--muted);
     font-size: 1.08rem;
+    line-height: 1.82;
     opacity: 0;
     animation: fadeUp 0.6s ease 0.4s forwards;
   }
@@ -132,6 +139,10 @@
     max-width: 880px;
     margin: 0 auto;
     padding: 28px 24px 0;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: rgba(8, 15, 31, 0.42);
+    box-shadow: var(--shadow);
     opacity: 0;
     animation: fadeUp 0.6s ease 0.75s forwards;
   }
@@ -162,7 +173,7 @@
 
   /* ── MAIN CONTAINER ── */
   .container {
-    max-width: 900px;
+    max-width: 880px;
     margin: 0 auto;
     padding: 0 24px 90px;
   }
@@ -191,10 +202,13 @@
 
   /* ── ERA CARD ── */
   .era-card {
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.7), rgba(8, 15, 31, 0.78));
     border: 1px solid var(--border);
     border-radius: 16px;
     overflow: hidden;
     margin-bottom: 28px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(14px);
     opacity: 0;
     animation: fadeUp 0.5s ease forwards;
     transition: border-color 0.25s;
@@ -265,12 +279,13 @@
   /* ── DESCRIPTION ── */
   .era-description {
     font-size: 0.97rem;
-    color: var(--muted);
+    color: var(--text);
     margin-bottom: 24px;
-    line-height: 1.82;
+    line-height: 1.8;
     padding: 16px 20px;
-    background: rgba(255,255,255,0.025);
+    background: rgba(8, 15, 31, 0.78);
     border-radius: 10px;
+    border: 1px solid var(--border);
     border-left: 3px solid currentColor;
   }
 
@@ -289,7 +304,8 @@
   }
 
   .era-block {
-    background: var(--surface);
+    background: var(--surface-strong);
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 18px 20px;
   }
@@ -298,7 +314,7 @@
     font-size: 10px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: #d7e2f1;
     margin-bottom: 13px;
   }
   .era-block ul {
@@ -312,7 +328,7 @@
     padding-left: 20px;
     position: relative;
     color: var(--text);
-    line-height: 1.65;
+    line-height: 1.72;
   }
   .era-block ul li::before {
     content: '→';
@@ -334,14 +350,14 @@
     font-size: 11px;
     padding: 4px 11px;
     border-radius: 6px;
-    background: rgba(255,255,255,0.05);
+    background: rgba(15, 23, 42, 0.84);
     border: 1px solid var(--border);
-    color: var(--muted);
+    color: #dde8f5;
   }
 
   /* ── TEXT EXAMPLES ── */
   .text-example {
-    background: rgba(255,255,255,0.03);
+    background: rgba(8, 15, 31, 0.82);
     border: 1px solid var(--border);
     border-left: 3px solid currentColor;
     border-radius: 0 10px 10px 0;
@@ -358,7 +374,7 @@
   }
   .text-example .translation {
     font-size: 0.82rem;
-    color: var(--muted);
+    color: #cfdbeb;
     line-height: 1.5;
   }
   .text-example .source {
@@ -403,12 +419,12 @@
 
   /* ── NOTICE ── */
   .notice {
-    background: rgba(200,169,110,0.07);
-    border: 1px solid rgba(200,169,110,0.22);
+    background: rgba(243,207,120,0.1);
+    border: 1px solid rgba(243,207,120,0.22);
     border-radius: 10px;
     padding: 18px 22px;
     font-size: 0.89rem;
-    color: var(--muted);
+    color: #e7eef8;
     margin-bottom: 26px;
     line-height: 1.75;
   }
@@ -416,13 +432,13 @@
 
   /* ── FACT BOX ── */
   .fact-box {
-    background: rgba(126,184,200,0.06);
-    border: 1px solid rgba(126,184,200,0.18);
+    background: rgba(12, 32, 48, 0.7);
+    border: 1px solid rgba(141,209,231,0.22);
     border-radius: 10px;
     padding: 16px 20px;
     margin-bottom: 20px;
     font-size: 0.88rem;
-    color: var(--muted);
+    color: #d5e3f2;
     line-height: 1.7;
   }
   .fact-box strong { color: var(--accent2); }
@@ -430,29 +446,36 @@
   /* ── COMPARISON TABLE ── */
   .compare-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     margin-bottom: 28px;
     font-size: 0.88rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(8, 15, 31, 0.56);
   }
   .compare-table th {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: #dbe7f5;
     text-align: left;
     padding: 12px 16px;
     border-bottom: 1px solid var(--border);
-    background: var(--surface);
+    background: rgba(15, 23, 42, 0.9);
   }
   .compare-table td {
     padding: 12px 16px;
     border-bottom: 1px solid var(--border);
     vertical-align: top;
-    line-height: 1.55;
+    line-height: 1.65;
+    color: #d7e4f4;
+    background: rgba(8, 15, 31, 0.72);
   }
   .compare-table tr:last-child td { border-bottom: none; }
-  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.04); }
   .compare-table td:first-child {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
@@ -473,7 +496,7 @@
   }
   @media (max-width: 600px) { .family-grid { grid-template-columns: 1fr; } }
   .fg-cell {
-    background: var(--surface);
+    background: var(--surface-strong);
     padding: 20px 18px;
     text-align: center;
   }
@@ -488,8 +511,8 @@
   }
   .fg-langs {
     font-size: 0.84rem;
-    color: var(--muted);
-    line-height: 1.6;
+    color: #d3dfef;
+    line-height: 1.68;
   }
 
   /* ── KEY FACTS GRID ── */
@@ -501,10 +524,11 @@
   }
   @media (max-width: 600px) { .keyfact-grid { grid-template-columns: 1fr; } }
   .keyfact-card {
-    background: var(--surface);
+    background: var(--surface-strong);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 20px;
+    box-shadow: var(--shadow);
   }
   .keyfact-icon { font-size: 24px; margin-bottom: 10px; }
   .keyfact-title {
@@ -512,7 +536,7 @@
     font-size: 0.96rem;
     margin-bottom: 6px;
   }
-  .keyfact-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+  .keyfact-desc { font-size: 0.85rem; color: #cfdbeb; line-height: 1.72; }
 
   /* ── FOOTER ── */
   footer {
@@ -545,7 +569,7 @@
   }
   @media (max-width: 580px) { .laut-grid { grid-template-columns: 1fr 1fr; } }
   .laut-cell {
-    background: var(--surface);
+    background: var(--surface-strong);
     padding: 14px 12px;
     text-align: center;
   }
@@ -563,7 +587,7 @@
     font-weight: 600;
     color: var(--fnhd);
   }
-  .laut-ex { font-size: 0.75rem; color: var(--muted); margin-top: 5px; }
+  .laut-ex { font-size: 0.75rem; color: #cfdbeb; margin-top: 5px; line-height: 1.55; }
 </style>
 </head>
 <body>

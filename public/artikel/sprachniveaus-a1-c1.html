@@ -7,12 +7,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Sans+3:wght@300;400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f0f13;
-    --surface: #17171e;
-    --border: #2a2a38;
-    --text: #e8e6f0;
-    --muted: #8a8aa0;
-    --accent: #f0c040;
+    --bg: #0b1220;
+    --surface: rgba(15, 23, 42, 0.72);
+    --surface-strong: rgba(8, 15, 31, 0.86);
+    --surface-soft: rgba(15, 23, 42, 0.52);
+    --border: rgba(148, 163, 184, 0.18);
+    --text: #eaf2ff;
+    --muted: #a9b7c9;
+    --accent: #facc15;
+    --shadow: 0 24px 60px rgba(2, 6, 23, 0.26);
 
     --a0: #9b9b9b;
     --a1: #6ec6e0;
@@ -34,11 +37,14 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    background: var(--bg);
+    background:
+      radial-gradient(circle at top, rgba(250,204,21,0.12), transparent 28%),
+      radial-gradient(circle at 85% 18%, rgba(110,198,224,0.08), transparent 24%),
+      linear-gradient(180deg, #07111f 0%, var(--bg) 100%);
     color: var(--text);
     font-family: 'Source Sans 3', sans-serif;
-    font-weight: 300;
-    line-height: 1.75;
+    font-weight: 400;
+    line-height: 1.78;
     min-height: 100vh;
   }
 
@@ -54,8 +60,8 @@
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(240,192,64,0.13) 0%, transparent 70%),
-      radial-gradient(ellipse 50% 40% at 80% 80%, rgba(208,72,112,0.09) 0%, transparent 60%);
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(250,204,21,0.15) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 40% at 80% 80%, rgba(208,72,112,0.08) 0%, transparent 60%);
     pointer-events: none;
   }
   .hero-eyebrow {
@@ -83,6 +89,7 @@
     margin: 0 auto 44px;
     color: var(--muted);
     font-size: 1.08rem;
+    line-height: 1.8;
     opacity: 0;
     animation: fadeUp 0.6s ease 0.4s forwards;
   }
@@ -133,11 +140,14 @@
     border: 1px solid var(--border);
     border-radius: 14px;
     overflow: hidden;
+    background: rgba(2, 6, 23, 0.32);
+    box-shadow: var(--shadow);
     opacity: 0;
     animation: fadeUp 0.6s ease 0.75s forwards;
   }
   @media (max-width: 600px) { .cefr-bar { grid-template-columns: 1fr; } }
   .cefr-group {
+    background: var(--surface-soft);
     padding: 22px 26px;
     border-right: 1px solid var(--border);
     text-align: center;
@@ -164,7 +174,7 @@
 
   /* ── MAIN CONTAINER ── */
   .container {
-    max-width: 900px;
+    max-width: 880px;
     margin: 0 auto;
     padding: 0 24px 88px;
   }
@@ -193,10 +203,13 @@
 
   /* ── LEVEL CARD ── */
   .level-card {
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.72), rgba(8, 15, 31, 0.78));
     border: 1px solid var(--border);
     border-radius: 16px;
     overflow: hidden;
     margin-bottom: 28px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(14px);
     opacity: 0;
     animation: fadeUp 0.5s ease forwards;
     transition: border-color 0.25s;
@@ -256,12 +269,13 @@
   /* ── DESCRIPTION PARAGRAPH ── */
   .card-description {
     font-size: 0.97rem;
-    color: var(--muted);
+    color: var(--text);
     margin-bottom: 24px;
     line-height: 1.8;
     padding: 16px 20px;
-    background: rgba(255,255,255,0.025);
+    background: rgba(8, 15, 31, 0.76);
     border-radius: 10px;
+    border: 1px solid var(--border);
     border-left: 3px solid currentColor;
   }
 
@@ -279,7 +293,8 @@
   }
 
   .card-block {
-    background: var(--surface);
+    background: var(--surface-strong);
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 18px 20px;
   }
@@ -288,7 +303,7 @@
     font-size: 10px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: #cbd5e1;
     margin-bottom: 13px;
   }
   .card-block ul {
@@ -302,7 +317,7 @@
     padding-left: 20px;
     position: relative;
     color: var(--text);
-    line-height: 1.6;
+    line-height: 1.72;
   }
   .card-block ul li::before {
     content: '→';
@@ -323,9 +338,9 @@
     font-size: 11px;
     padding: 4px 11px;
     border-radius: 6px;
-    background: rgba(255,255,255,0.05);
+    background: rgba(15, 23, 42, 0.84);
     border: 1px solid var(--border);
-    color: var(--muted);
+    color: #dbe7f5;
   }
 
   .example-item {
@@ -336,7 +351,8 @@
     padding: 9px 15px;
     border-left: 2.5px solid currentColor;
     margin-bottom: 9px;
-    background: rgba(255,255,255,0.025);
+    background: rgba(8, 15, 31, 0.82);
+    border: 1px solid var(--border);
     border-radius: 0 7px 7px 0;
     line-height: 1.6;
   }
@@ -345,7 +361,7 @@
     font-family: 'Source Sans 3', sans-serif;
     font-style: normal;
     font-size: 0.8rem;
-    color: var(--muted);
+    color: #c8d5e7;
     margin-top: 3px;
   }
 
@@ -355,7 +371,8 @@
     gap: 10px;
     font-size: 0.91rem;
     margin-bottom: 9px;
-    line-height: 1.6;
+    line-height: 1.7;
+    color: var(--text);
   }
   .selftest-check {
     width: 20px;
@@ -372,8 +389,8 @@
     gap: 7px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
-    color: var(--muted);
-    background: var(--surface);
+    color: #dbe7f5;
+    background: rgba(8, 15, 31, 0.88);
     border: 1px solid var(--border);
     border-radius: 7px;
     padding: 5px 12px;
@@ -457,7 +474,7 @@
   }
   @media (max-width: 600px) { .assessment-grid { grid-template-columns: 1fr 1fr; } }
   .ag-cell {
-    background: var(--surface);
+    background: var(--surface-strong);
     padding: 22px 16px;
     text-align: center;
   }
@@ -470,34 +487,41 @@
     color: var(--accent);
     margin-bottom: 7px;
   }
-  .ag-desc { font-size: 0.83rem; color: var(--muted); line-height: 1.5; }
+  .ag-desc { font-size: 0.83rem; color: #cfdbeb; line-height: 1.65; }
 
   /* ── EXAMS TABLE ── */
   .exams-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     margin-bottom: 28px;
     font-size: 0.88rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(8, 15, 31, 0.56);
   }
   .exams-table th {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: #dbe7f5;
     text-align: left;
     padding: 13px 16px;
     border-bottom: 1px solid var(--border);
-    background: var(--surface);
+    background: rgba(15, 23, 42, 0.9);
   }
   .exams-table td {
     padding: 13px 16px;
     border-bottom: 1px solid var(--border);
     vertical-align: top;
-    line-height: 1.5;
+    line-height: 1.65;
+    color: #d7e4f4;
+    background: rgba(8, 15, 31, 0.72);
   }
   .exams-table tr:last-child td { border-bottom: none; }
-  .exams-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .exams-table tr:hover td { background: rgba(255,255,255,0.04); }
 
   /* ── TIPS GRID ── */
   .tips-grid {
@@ -508,10 +532,11 @@
   }
   @media (max-width: 600px) { .tips-grid { grid-template-columns: 1fr; } }
   .tip-card {
-    background: var(--surface);
+    background: var(--surface-strong);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 22px;
+    box-shadow: var(--shadow);
   }
   .tip-icon { font-size: 26px; margin-bottom: 12px; }
   .tip-title {
@@ -520,18 +545,18 @@
     font-size: 0.97rem;
     margin-bottom: 7px;
   }
-  .tip-desc { font-size: 0.86rem; color: var(--muted); line-height: 1.65; }
+  .tip-desc { font-size: 0.86rem; color: #cfdbeb; line-height: 1.72; }
 
   /* ── NOTICE BOX ── */
   .notice {
-    background: rgba(240,192,64,0.07);
-    border: 1px solid rgba(240,192,64,0.2);
+    background: rgba(250,204,21,0.1);
+    border: 1px solid rgba(250,204,21,0.2);
     border-radius: 10px;
     padding: 18px 22px;
     font-size: 0.89rem;
-    color: var(--muted);
+    color: #e6edf8;
     margin-bottom: 28px;
-    line-height: 1.7;
+    line-height: 1.75;
   }
   .notice strong { color: var(--accent); }
 
