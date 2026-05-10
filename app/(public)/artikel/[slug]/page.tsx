@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ARTICLE_EMBEDS } from "@/lib/article-definitions";
 import { ARTICLE_SERVER_RENDERED_PAYLOAD } from "@/lib/article-server-rendered-content";
 import { getSiteUrl } from "@/lib/public-site-config";
+import { ArticleInteractions } from "./article-interactions";
 
 type ArticlePageProps = {
   params: Promise<{
@@ -12,6 +13,11 @@ type ArticlePageProps = {
 };
 
 const ARTICLE_DOCUMENT_CLASS = "dq-article-document";
+const ARTICLE_DEFAULT_OPEN_SECTIONS: Record<string, string> = {
+  "deutsche-sprache-geschichte": "era-indg",
+  "pruefungen-goethe-telc-testdaf": "prov-goethe",
+  "sprachniveaus-a1-c1": "lv-a1",
+};
 
 export const dynamicParams = false;
 
@@ -238,6 +244,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               __html: articleHtml,
             }}
           />
+          <ArticleInteractions defaultOpenSectionId={ARTICLE_DEFAULT_OPEN_SECTIONS[slug]} />
         </article>
         <script
           type="application/ld+json"
