@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 const QUIZ_BANK_NEXT_PATH = "/v1/quiz-items/next";
 const QUIZ_BANK_TEASER_LEVEL = "A2";
 const QUIZ_BANK_TEASER_THEME_IDS = ["T02"];
+const QUIZ_TEASER_QUOTA_COOKIE = "quiz_teaser_scope";
+const QUIZ_TEASER_QUOTA_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
 type QuizBankConfig = {
   baseUrl: string;
@@ -58,6 +60,50 @@ function quotaExceededResponse() {
       },
     },
   );
+}
+
+function safeDecodeCookieValue(value: string): string {
+  try {
+    return decodeURIComponent(value).trim();
+  } catch {
+    return "";
+  }
+}
+
+function getOrCreateQuotaKey(request: Request): { quotaKey: string; shouldSetCookie: boolean } {
+  const cookieHeader = request.headers.get("cookie") ?? "";
+  const existingCookie = cookieHeader
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${QUIZ_TEASER_QUOTA_COOKIE}=`));
+  const existingValue = existingCookie
+    ? safeDecodeCookieValue(existingCookie.slice(QUIZ_TEASER_QUOTA_COOKIE.length + 1))
+    : "";
+
+  if (/^[0-9a-f-]{36}$/i.test(existingValue)) {
+    return { quotaKey: `website-quiz-teaser:${existingValue.toLowerCase()}`, shouldSetCookie: false };
+  }
+
+  const nextValue = crypto.randomUUID();
+  return { quotaKey: `website-quiz-teaser:${nextValue}`, shouldSetCookie: true };
+}
+
+function withQuotaCookie(response: NextResponse, quotaKey: string, shouldSetCookie: boolean) {
+  if (!shouldSetCookie) {
+    return response;
+  }
+
+  response.cookies.set({
+    name: QUIZ_TEASER_QUOTA_COOKIE,
+    value: quotaKey.replace("website-quiz-teaser:", ""),
+    httpOnly: true,
+    sameSite: "lax",
+    secure: true,
+    path: "/",
+    maxAge: QUIZ_TEASER_QUOTA_COOKIE_MAX_AGE_SECONDS,
+  });
+
+  return response;
 }
 
 function asRecord(value: unknown): JsonRecord | null {
@@ -191,6 +237,7 @@ export async function POST(request: Request) {
   }
 
   await readRequestBody(request);
+  const quota = getOrCreateQuotaKey(request);
 
   try {
     const upstreamResponse = await fetch(`${config.baseUrl}${QUIZ_BANK_NEXT_PATH}`, {
@@ -201,6 +248,7 @@ export async function POST(request: Request) {
         "X-API-Key": config.edgeApiKey,
         "X-Consumer-Id": config.consumerId,
         "X-QuizBank-API-Key": config.consumerApiKey,
+        "X-QuizBank-Quota-Key": quota.quotaKey,
       },
       body: JSON.stringify({
         consumer_id: config.consumerId,
@@ -211,29 +259,33 @@ export async function POST(request: Request) {
     });
 
     if (upstreamResponse.status === 429) {
-      return quotaExceededResponse();
+      return withQuotaCookie(quotaExceededResponse(), quota.quotaKey, quota.shouldSetCookie);
     }
 
     if (!upstreamResponse.ok) {
-      return unavailableResponse();
+      return withQuotaCookie(unavailableResponse(), quota.quotaKey, quota.shouldSetCookie);
     }
 
     const payload = (await upstreamResponse.json()) as unknown;
     const question = normalizeQuestion(payload);
 
     if (!question) {
-      return unavailableResponse();
+      return withQuotaCookie(unavailableResponse(), quota.quotaKey, quota.shouldSetCookie);
     }
 
-    return NextResponse.json(
-      { question },
-      {
-        headers: {
-          "Cache-Control": "no-store",
+    return withQuotaCookie(
+      NextResponse.json(
+        { question },
+        {
+          headers: {
+            "Cache-Control": "no-store",
+          },
         },
-      },
+      ),
+      quota.quotaKey,
+      quota.shouldSetCookie,
     );
   } catch {
-    return unavailableResponse();
+    return withQuotaCookie(unavailableResponse(), quota.quotaKey, quota.shouldSetCookie);
   }
 }
