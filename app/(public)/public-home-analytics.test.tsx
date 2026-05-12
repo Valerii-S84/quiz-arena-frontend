@@ -13,6 +13,7 @@ import {
 } from "./public-home-sections";
 import { buildTrackedTelegramBotUrl } from "./public-home-helpers";
 import { TELEGRAM_BOT_START_PAYLOAD, getTelegramBotUrl } from "@/lib/public-site-config";
+import type { PublicAnalyticsEventName } from "@/lib/analytics";
 
 vi.mock("@/app/analytics-provider", () => ({
   usePublicAnalytics: () => ({
@@ -215,5 +216,17 @@ describe("public home analytics event wiring", () => {
 describe("public home analytics telemetry hooks", () => {
   it("reads trackEvent from shared analytics context", () => {
     expect(trackEventSpy).toBeDefined();
+  });
+
+  it("accepts quiz teaser analytics event names", () => {
+    const eventNames: PublicAnalyticsEventName[] = [
+      "quiz_teaser_started",
+      "quiz_teaser_question_answered",
+      "quiz_teaser_completed",
+      "quiz_teaser_cta_clicked",
+      "quiz_teaser_error",
+    ];
+
+    expect(eventNames).toContain("quiz_teaser_completed");
   });
 });
