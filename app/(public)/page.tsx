@@ -8,6 +8,7 @@ import {
   PublicHomeHero,
   PublicHomeKnowledgeSection,
   PublicHomeProductsSection,
+  PublicHomeQuizTeaserSection,
   PublicHomeStatsSection,
 } from "./public-home-sections";
 import { buildTrackedTelegramBotUrl } from "./public-home-helpers";
@@ -50,6 +51,7 @@ export default async function PublicHomePage() {
         <div className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
           <PublicHomeHero trackedTelegramBotUrl={trackedTelegramBotUrl} />
           <PublicHomeStatsSection stats={statsState} />
+          <PublicHomeQuizTeaserSection trackedTelegramBotUrl={trackedTelegramBotUrl} />
           <PublicHomeBotSection trackedTelegramBotUrl={trackedTelegramBotUrl} />
           <PublicHomeProductsSection trackedTelegramBotUrl={trackedTelegramBotUrl} />
           <PublicHomeKnowledgeSection />

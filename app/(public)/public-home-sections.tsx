@@ -18,6 +18,7 @@ import {
   WORKLOG_DOWNLOAD_PATH,
   WORKLOG_LOGO_PATH,
 } from "./public-home-content";
+import { PublicHomeQuizTeaserWidget } from "./_components/quiz-teaser-widget";
 import { buildTrackedTelegramBotUrl, formatStatValue } from "./public-home-helpers";
 import type { StatsState } from "./public-home-types";
 
@@ -34,6 +35,10 @@ type PublicHomeStatsSectionProps = {
 };
 
 type PublicHomeBotSectionProps = {
+  trackedTelegramBotUrl: string;
+};
+
+type PublicHomeQuizTeaserSectionProps = {
   trackedTelegramBotUrl: string;
 };
 
@@ -348,6 +353,41 @@ export function PublicHomeStatsSection({ stats }: PublicHomeStatsSectionProps) {
             ))}
           </div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+export function PublicHomeQuizTeaserSection({
+  trackedTelegramBotUrl,
+}: PublicHomeQuizTeaserSectionProps) {
+  return (
+    <section id="quiz-teaser" className="py-8">
+      <div
+        className={`${GLASS_CARD_CLASS} grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.75fr)] lg:items-center`}
+      >
+        <div>
+          <p className="text-sm font-semibold text-[#FFD166]">Interaktiver Test</p>
+          <h2 className="mt-2 max-w-2xl text-3xl font-semibold leading-tight text-white sm:text-4xl">
+            Teste dein Deutsch in 5 Fragen.
+          </h2>
+          <p className="mt-4 max-w-2xl text-base leading-8 text-slate-300">
+            Beantworte fünf kurze Quizfragen und sieh sofort, wie gut du abschneidest. Danach
+            kannst du im Telegram-Bot mit Daily Challenge, Duellen und Fortschritt weitermachen.
+          </p>
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            {["Sofortiges Feedback", "Nur 5 Fragen", "Weiter im Bot"].map((item) => (
+              <div
+                key={item}
+                className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-slate-200"
+              >
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <PublicHomeQuizTeaserWidget trackedTelegramBotUrl={trackedTelegramBotUrl} />
       </div>
     </section>
   );

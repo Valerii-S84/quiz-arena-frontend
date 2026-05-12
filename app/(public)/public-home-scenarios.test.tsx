@@ -5,10 +5,13 @@ import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import {
+  PublicHomeBotSection,
   PublicHomeContactSection,
   PublicHomeHeader,
   PublicHomeHero,
   PublicHomeKnowledgeSection,
+  PublicHomeQuizTeaserSection,
+  PublicHomeStatsSection,
 } from "./public-home-sections";
 import { WISSEN_ARTICLES } from "./public-home-content";
 import { buildTrackedTelegramBotUrl } from "./public-home-helpers";
@@ -67,6 +70,36 @@ describe("public home scenarios", () => {
     }
   });
 
+  it("renders quiz teaser after stats and before bot section", () => {
+    const botUrl = getTelegramBotUrl();
+    const trackedUrl = buildTrackedTelegramBotUrl(botUrl, TELEGRAM_BOT_START_PAYLOAD);
+
+    const html = renderToStaticMarkup(
+      <>
+        <PublicHomeStatsSection stats={{ users: 12, quizzes: 34, isUnavailable: false }} />
+        <PublicHomeQuizTeaserSection trackedTelegramBotUrl={trackedUrl} />
+        <PublicHomeBotSection trackedTelegramBotUrl={trackedUrl} />
+      </>,
+    );
+
+    expect(html.indexOf('id="stats"')).toBeLessThan(html.indexOf('id="quiz-teaser"'));
+    expect(html.indexOf('id="quiz-teaser"')).toBeLessThan(html.indexOf('id="bot"'));
+  });
+
+  it("renders public German quiz teaser copy and CTA labels", () => {
+    const botUrl = getTelegramBotUrl();
+    const trackedUrl = buildTrackedTelegramBotUrl(botUrl, TELEGRAM_BOT_START_PAYLOAD);
+
+    const html = renderToStaticMarkup(
+      <PublicHomeQuizTeaserSection trackedTelegramBotUrl={trackedUrl} />,
+    );
+
+    expect(html).toContain("Interaktiver Test");
+    expect(html).toContain("Teste dein Deutsch in 5 Fragen.");
+    expect(html).toContain("Quiz starten");
+    expect(html).toContain("Im Telegram-Bot weitermachen");
+  });
+
   it("provides distinct student and partner contact entry points", () => {
     const html = renderToStaticMarkup(
       <PublicHomeContactSection onOpenStudentWizard={() => undefined} onOpenPartnerWizard={() => undefined} />,
@@ -94,6 +127,35 @@ describe("public content isolation", () => {
     expect(source).not.toContain("PublicHomeAdminLoginModal");
     expect(source).not.toContain("/admin/login");
     expect(source).not.toContain("admin login");
+  });
+
+  it("does not render Quiz Bank secret names into public quiz teaser markup", () => {
+    const botUrl = getTelegramBotUrl();
+    const trackedUrl = buildTrackedTelegramBotUrl(botUrl, TELEGRAM_BOT_START_PAYLOAD);
+
+    const html = renderToStaticMarkup(
+      <PublicHomeQuizTeaserSection trackedTelegramBotUrl={trackedUrl} />,
+    );
+
+    expect(html).not.toContain("QUIZ_BANK_API_BASE_URL");
+    expect(html).not.toContain("QUIZ_BANK_EDGE_API_KEY");
+    expect(html).not.toContain("QUIZ_BANK_CONSUMER_ID");
+    expect(html).not.toContain("QUIZ_BANK_CONSUMER_API_KEY");
+  });
+
+  it("keeps Quiz Bank credentials out of browser quiz teaser code", () => {
+    const widgetSource = readFile(
+      join(process.cwd(), "app", "(public)", "_components", "quiz-teaser-widget.tsx"),
+    );
+    const apiSource = readFile(
+      join(process.cwd(), "app", "(public)", "_components", "quiz-teaser-api.ts"),
+    );
+
+    expect(`${widgetSource}\n${apiSource}`).toContain("/api/quiz-teaser/next");
+    expect(`${widgetSource}\n${apiSource}`).not.toContain("QUIZ_BANK_API_BASE_URL");
+    expect(`${widgetSource}\n${apiSource}`).not.toContain("QUIZ_BANK_EDGE_API_KEY");
+    expect(`${widgetSource}\n${apiSource}`).not.toContain("QUIZ_BANK_CONSUMER_ID");
+    expect(`${widgetSource}\n${apiSource}`).not.toContain("QUIZ_BANK_CONSUMER_API_KEY");
   });
 
   it("adds privacy/contact legal paths and avoids placeholder local email on contact page", () => {

@@ -4,7 +4,12 @@ export type PublicAnalyticsEventName =
   | "hero_cta_click"
   | "channel_cta_click"
   | "wizard_open"
-  | "lead_submit_success";
+  | "lead_submit_success"
+  | "quiz_teaser_started"
+  | "quiz_teaser_question_answered"
+  | "quiz_teaser_completed"
+  | "quiz_teaser_cta_clicked"
+  | "quiz_teaser_error";
 
 export type PublicAnalyticsPayload = Record<
   string,
