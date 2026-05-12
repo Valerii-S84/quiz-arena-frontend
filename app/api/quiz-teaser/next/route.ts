@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
 const QUIZ_BANK_NEXT_PATH = "/v1/quiz-items/next";
+const QUIZ_BANK_TEASER_LEVEL = "A2";
+const QUIZ_BANK_TEASER_THEME_IDS = ["T02"];
 
 type QuizBankConfig = {
   baseUrl: string;
@@ -39,6 +41,18 @@ function unavailableResponse() {
     { error: "quiz_teaser_unavailable" },
     {
       status: 503,
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    },
+  );
+}
+
+function quotaExceededResponse() {
+  return NextResponse.json(
+    { error: "quiz_teaser_quota_exceeded" },
+    {
+      status: 429,
       headers: {
         "Cache-Control": "no-store",
       },
@@ -119,6 +133,7 @@ function normalizeQuestion(payload: unknown) {
       ? readString(questionText, ["text", "prompt", "stem"])
       : null);
   const answerRecords = asRecordArray(questionRecord.answers ?? questionRecord.options);
+  const feedbackRecord = asRecord(questionRecord.feedback);
 
   if (!id || !prompt || answerRecords.length < 2) {
     return null;
@@ -133,6 +148,9 @@ function normalizeQuestion(payload: unknown) {
 
   const correctAnswerId =
     readString(questionRecord, ["correctAnswerId", "correct_answer_id", "correct_id"]) ??
+    (feedbackRecord
+      ? readString(feedbackRecord, ["correctAnswerId", "correct_answer_id", "correct_id"])
+      : null) ??
     answers.find((answer) => {
       const source = answerRecords.find((answerRecord) => {
         const answerId = readString(answerRecord, ["id", "answer_id", "answerId", "value"]);
@@ -150,7 +168,10 @@ function normalizeQuestion(payload: unknown) {
     prompt,
     answers,
     correctAnswerId,
-    explanation: readString(questionRecord, ["explanation", "hint", "feedback"]) ?? undefined,
+    explanation:
+      readString(questionRecord, ["explanation", "hint"]) ??
+      (feedbackRecord ? readString(feedbackRecord, ["explanation", "hint", "text"]) : null) ??
+      undefined,
   };
 }
 
@@ -183,9 +204,15 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         consumer_id: config.consumerId,
+        cefr_level: QUIZ_BANK_TEASER_LEVEL,
+        theme_ids: QUIZ_BANK_TEASER_THEME_IDS,
       }),
       cache: "no-store",
     });
+
+    if (upstreamResponse.status === 429) {
+      return quotaExceededResponse();
+    }
 
     if (!upstreamResponse.ok) {
       return unavailableResponse();

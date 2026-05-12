@@ -13,12 +13,16 @@ export type QuizTeaserQuestion = {
 
 type QuizTeaserApiResponse = {
   question?: QuizTeaserQuestion;
+  error?: string;
 };
 
 export class QuizTeaserApiError extends Error {
-  constructor() {
+  code: string;
+
+  constructor(code = "quiz_teaser_unavailable") {
     super("Quiz teaser is unavailable");
     this.name = "QuizTeaserApiError";
+    this.code = code;
   }
 }
 
@@ -37,7 +41,8 @@ export async function fetchQuizTeaserQuestion(
   });
 
   if (!response.ok) {
-    throw new QuizTeaserApiError();
+    const payload = (await response.json().catch(() => ({}))) as QuizTeaserApiResponse;
+    throw new QuizTeaserApiError(payload.error);
   }
 
   const payload = (await response.json()) as QuizTeaserApiResponse;

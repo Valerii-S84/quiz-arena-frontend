@@ -6,6 +6,7 @@ import { usePublicAnalytics } from "@/app/analytics-provider";
 import { ORANGE_BUTTON_CLASS, SECONDARY_BUTTON_CLASS } from "../public-home-content";
 import {
   fetchQuizTeaserQuestion,
+  QuizTeaserApiError,
   type QuizTeaserAnswer,
   type QuizTeaserQuestion,
 } from "./quiz-teaser-api";
@@ -14,6 +15,8 @@ const TOTAL_QUESTIONS = 5;
 const SECTION_NAME = "quiz_teaser";
 const UNAVAILABLE_MESSAGE =
   "Das Quiz ist gerade nicht verfügbar. Bitte versuche es später erneut.";
+const QUOTA_EXCEEDED_MESSAGE =
+  "Das Quiz-Limit für heute ist erreicht. Bitte versuche es später erneut oder mache im Telegram-Bot weiter.";
 
 type QuizStage = "start" | "loading" | "question" | "result" | "error";
 
@@ -54,6 +57,7 @@ export function PublicHomeQuizTeaserWidget({
   const [answeredQuestionIds, setAnsweredQuestionIds] = useState<string[]>([]);
   const [selectedAnswerId, setSelectedAnswerId] = useState<string | null>(null);
   const [score, setScore] = useState(0);
+  const [errorMessage, setErrorMessage] = useState(UNAVAILABLE_MESSAGE);
 
   const loadQuestion = async (nextAnsweredQuestionIds: string[], nextQuestionIndex: number) => {
     setStage("loading");
@@ -64,7 +68,12 @@ export function PublicHomeQuizTeaserWidget({
       setQuestion(nextQuestion);
       setQuestionIndex(nextQuestionIndex);
       setStage("question");
-    } catch {
+    } catch (error) {
+      setErrorMessage(
+        error instanceof QuizTeaserApiError && error.code === "quiz_teaser_quota_exceeded"
+          ? QUOTA_EXCEEDED_MESSAGE
+          : UNAVAILABLE_MESSAGE,
+      );
       setStage("error");
       trackEvent("quiz_teaser_error", {
         section: SECTION_NAME,
@@ -79,6 +88,7 @@ export function PublicHomeQuizTeaserWidget({
     setQuestionIndex(1);
     setAnsweredQuestionIds([]);
     setSelectedAnswerId(null);
+    setErrorMessage(UNAVAILABLE_MESSAGE);
     trackEvent("quiz_teaser_started", { section: SECTION_NAME, question_index: 0 });
     void loadQuestion([], 1);
   };
@@ -235,7 +245,7 @@ export function PublicHomeQuizTeaserWidget({
 
       {stage === "error" ? (
         <div className="mt-6 rounded-2xl border border-[#FFD166]/30 bg-[#FFD166]/10 p-5" role="status">
-          <p className="text-sm font-semibold text-[#FFE3A0]">{UNAVAILABLE_MESSAGE}</p>
+          <p className="text-sm font-semibold text-[#FFE3A0]">{errorMessage}</p>
           <button type="button" onClick={startQuiz} className={`mt-5 w-full ${SECONDARY_BUTTON_CLASS}`}>
             Noch einmal versuchen
           </button>

@@ -92,6 +92,34 @@ describe("public quiz teaser widget", () => {
     }
   });
 
+  it("renders a clean quota state when the local teaser route reports quota exhaustion", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ error: "quiz_teaser_quota_exceeded" }), { status: 429 }),
+    );
+
+    const { container, cleanup } = renderInContainer(
+      <PublicHomeQuizTeaserWidget trackedTelegramBotUrl="https://t.me/quiz_bot" />,
+    );
+
+    try {
+      await act(async () => {
+        findButton(container, "Quiz starten").click();
+        await Promise.resolve();
+      });
+
+      expect(container.textContent).toContain(
+        "Das Quiz-Limit für heute ist erreicht. Bitte versuche es später erneut oder mache im Telegram-Bot weiter.",
+      );
+      expect(container.textContent).not.toContain("QUOTA_EXCEEDED");
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        "quiz_teaser_error",
+        expect.objectContaining({ section: "quiz_teaser", question_index: 1 }),
+      );
+    } finally {
+      cleanup();
+    }
+  });
+
   it("runs five questions, shows the final score, and exposes the Telegram CTA", async () => {
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(async () => {
       const callNumber = fetchSpy.mock.calls.length;
