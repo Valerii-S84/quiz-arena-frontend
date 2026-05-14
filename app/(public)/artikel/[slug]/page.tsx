@@ -153,6 +153,175 @@ function embeddedArticleTheme(): string {
 `;
 }
 
+function embeddedArticleResponsiveOverrides(): string {
+  return `
+.${ARTICLE_DOCUMENT_CLASS} {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.${ARTICLE_DOCUMENT_CLASS} .container {
+  width: 100%;
+  max-width: min(100%, 58rem);
+  min-width: 0;
+}
+.${ARTICLE_DOCUMENT_CLASS} .exams-table,
+.${ARTICLE_DOCUMENT_CLASS} .level-table,
+.${ARTICLE_DOCUMENT_CLASS} .big-table {
+  max-width: 100%;
+}
+.${ARTICLE_DOCUMENT_CLASS} .exams-table th,
+.${ARTICLE_DOCUMENT_CLASS} .exams-table td,
+.${ARTICLE_DOCUMENT_CLASS} .level-table th,
+.${ARTICLE_DOCUMENT_CLASS} .level-table td,
+.${ARTICLE_DOCUMENT_CLASS} .big-table th,
+.${ARTICLE_DOCUMENT_CLASS} .big-table td {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 640px) {
+  .${ARTICLE_DOCUMENT_CLASS} .exams-table,
+  .${ARTICLE_DOCUMENT_CLASS} .level-table,
+  .${ARTICLE_DOCUMENT_CLASS} .big-table {
+    display: block;
+    width: 100%;
+    border: 0;
+    border-radius: 0;
+    overflow: visible;
+    background: transparent;
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .exams-table thead,
+  .${ARTICLE_DOCUMENT_CLASS} .level-table thead,
+  .${ARTICLE_DOCUMENT_CLASS} .big-table thead {
+    display: none;
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .exams-table tbody,
+  .${ARTICLE_DOCUMENT_CLASS} .level-table tbody,
+  .${ARTICLE_DOCUMENT_CLASS} .big-table tbody {
+    display: grid;
+    gap: 14px;
+    width: 100%;
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .exams-table tr,
+  .${ARTICLE_DOCUMENT_CLASS} .level-table tr,
+  .${ARTICLE_DOCUMENT_CLASS} .big-table tr {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: rgba(8, 15, 31, 0.72);
+    box-shadow: 0 18px 40px rgba(2, 6, 23, 0.16);
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .exams-table td,
+  .${ARTICLE_DOCUMENT_CLASS} .level-table td,
+  .${ARTICLE_DOCUMENT_CLASS} .big-table td {
+    display: grid;
+    grid-template-columns: minmax(6.75rem, 38%) minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+    width: 100%;
+    min-width: 0;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(8, 15, 31, 0.72);
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .exams-table td:last-child,
+  .${ARTICLE_DOCUMENT_CLASS} .level-table td:last-child,
+  .${ARTICLE_DOCUMENT_CLASS} .big-table td:last-child {
+    border-bottom: 0;
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .exams-table td::before,
+  .${ARTICLE_DOCUMENT_CLASS} .level-table td::before,
+  .${ARTICLE_DOCUMENT_CLASS} .big-table td::before {
+    content: "";
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .exams-table td:nth-child(1)::before {
+    content: "Niveau";
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .exams-table td:nth-child(2)::before {
+    content: "Goethe";
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .exams-table td:nth-child(3)::before {
+    content: "ÖSD";
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .exams-table td:nth-child(4)::before {
+    content: "telc";
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .exams-table td:nth-child(5)::before {
+    content: "Wozu";
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .level-table td:nth-child(1)::before {
+    content: "Niveau";
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .level-table td:nth-child(2)::before {
+    content: "Hören";
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .level-table td:nth-child(3)::before {
+    content: "Lesen";
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .level-table td:nth-child(4)::before {
+    content: "Schreiben";
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .level-table td:nth-child(5)::before {
+    content: "Sprechen";
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .level-table td:nth-child(6)::before {
+    content: "Gesamt";
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .big-table td:nth-child(1)::before {
+    content: "Prüfung";
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .big-table td:nth-child(2)::before {
+    content: "Niveaus";
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .big-table td:nth-child(3)::before {
+    content: "Dauer";
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .big-table td:nth-child(4)::before {
+    content: "Besonderheit";
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .big-table td:nth-child(5)::before {
+    content: "Anerkannt";
+  }
+}
+@media (max-width: 430px) {
+  .${ARTICLE_DOCUMENT_CLASS} .hero {
+    padding-inline: 16px;
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .container {
+    padding-inline: 16px;
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .exams-table td,
+  .${ARTICLE_DOCUMENT_CLASS} .level-table td,
+  .${ARTICLE_DOCUMENT_CLASS} .big-table td {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .section-header {
+    min-width: 0;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .section-header h2 {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .section-header::after {
+    flex: 0 1 40px;
+    margin-top: 0.75rem;
+  }
+}
+`;
+}
+
 function buildArticleStructuredData(slug: string, title: string, description: string, siteUrl: string) {
   return {
     "@context": "https://schema.org",
@@ -213,7 +382,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   }
 
   const articleHtml = articlePayload.content;
-  const articleStyles = `${embeddedArticleTheme()}\n${articlePayload.styles}`;
+  const articleStyles = `${embeddedArticleTheme()}\n${articlePayload.styles}\n${embeddedArticleResponsiveOverrides()}`;
 
   return (
     <main
@@ -232,14 +401,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       </div>
 
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        <article className="overflow-hidden rounded-[28px] border border-white/10 bg-slate-950/40 shadow-[0_28px_90px_rgba(2,6,23,0.45)] backdrop-blur-xl">
+        <article className="min-w-0 rounded-[28px] border border-white/10 bg-slate-950/40 shadow-[0_28px_90px_rgba(2,6,23,0.45)] backdrop-blur-xl">
           <style
             dangerouslySetInnerHTML={{
               __html: articleStyles,
             }}
           />
           <div
-            className={`${ARTICLE_DOCUMENT_CLASS} overflow-hidden rounded-[28px]`}
+            className={`${ARTICLE_DOCUMENT_CLASS} min-w-0 rounded-[28px]`}
             dangerouslySetInnerHTML={{
               __html: articleHtml,
             }}
