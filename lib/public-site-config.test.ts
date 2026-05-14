@@ -69,8 +69,8 @@ describe("public site config", () => {
     delete process.env.NEXT_PUBLIC_SITE_URL;
     delete process.env.NEXT_PUBLIC_CONTACT_EMAIL;
 
-    expect(getSiteUrl()).toBe("https://deutchquizarena.de");
-    expect(getPublicContactEmail()).toBe("info@deutchquizarena.de");
+    expect(getSiteUrl()).toBe("https://deutschmit.de");
+    expect(getPublicContactEmail()).toBe("info@deutschmit.de");
   });
 
   it("trims and uses configured site URL and contact email", () => {

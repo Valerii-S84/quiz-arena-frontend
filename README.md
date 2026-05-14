@@ -23,7 +23,7 @@ NEXT_PUBLIC_IT_QUIZ_BOT_URL=https://t.me/ITQuizBot
 
 - `NEXT_PUBLIC_API_URL` is the browser-facing API base.
 - In production behind the reverse proxy, prefer a relative `/api`.
-- If `NEXT_PUBLIC_API_URL` is absolute, it must already point to the API base, for example `https://deutchquizarena.de/api`.
+- If `NEXT_PUBLIC_API_URL` is absolute, it must already point to the API base, for example `https://deutschmit.de/api`.
 - `API_INTERNAL_URL` is server-only and used by SSR/admin session checks.
 - If `NEXT_PUBLIC_API_URL` is relative, set `API_INTERNAL_URL` explicitly for SSR.
 - If `API_INTERNAL_URL` is unset, SSR falls back to an absolute `NEXT_PUBLIC_API_URL` or `http://localhost:8000`.

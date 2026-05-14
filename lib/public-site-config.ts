@@ -1,8 +1,8 @@
 const DEFAULT_TELEGRAM_BOT_URL = "https://t.me/Deine_Deutsch_Quiz_bot";
 const DEFAULT_TELEGRAM_CHANNEL_URL = "https://t.me/doechkurse";
 const DEFAULT_IT_QUIZ_BOT_URL = "https://t.me/ITQuizBot";
-const DEFAULT_SITE_URL = "https://deutchquizarena.de";
-const DEFAULT_CONTACT_EMAIL = "info@deutchquizarena.de";
+const DEFAULT_SITE_URL = "https://deutschmit.de";
+const DEFAULT_CONTACT_EMAIL = "info@deutschmit.de";
 
 function normalizePublicEnv(value: string | undefined): string | undefined {
   const trimmedValue = value?.trim();

@@ -76,9 +76,9 @@ describe("api config", () => {
 
   it("falls back to an absolute NEXT_PUBLIC_API_URL for server requests when no internal URL is set", () => {
     setNodeEnv("production");
-    process.env.NEXT_PUBLIC_API_URL = "https://deutchquizarena.de/api/";
+    process.env.NEXT_PUBLIC_API_URL = "https://deutschmit.de/api/";
     delete process.env.API_INTERNAL_URL;
 
-    expect(getServerApiBaseUrl()).toBe("https://deutchquizarena.de/api");
+    expect(getServerApiBaseUrl()).toBe("https://deutschmit.de/api");
   });
 });
