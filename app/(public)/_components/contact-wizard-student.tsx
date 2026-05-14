@@ -243,14 +243,16 @@ export function StudentWizard({ onClose }: WizardProps) {
     return (
       <div className="space-y-4 py-6 text-center">
         <p className="text-5xl">✅</p>
-        <h4 className="text-2xl font-semibold text-slate-900">Danke, {submittedName}!</h4>
+        <h4 className="break-words text-xl font-semibold text-slate-900 sm:text-2xl">
+          Danke, {submittedName}!
+        </h4>
         <p className="text-sm text-slate-600">
           Wir haben deine Anfrage erhalten und suchen die beste Lernoption für dich. Wir melden uns
           innerhalb von 24 Stunden.
         </p>
         <button
           type="button"
-          className="rounded-full bg-slate-800 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
+          className="min-h-11 w-full rounded-full bg-slate-800 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-700 sm:w-auto"
           onClick={onClose}
         >
           Zurück zur Startseite
@@ -468,11 +470,11 @@ export function StudentWizard({ onClose }: WizardProps) {
         </p>
       ) : null}
 
-      <div className="flex items-center justify-between gap-3 pt-1">
+      <div className="flex flex-col-reverse items-stretch gap-3 pt-1 sm:flex-row sm:items-center sm:justify-between">
         <button
           type="button"
           onClick={handleBack}
-          className={`rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 ${step === 1 ? "invisible" : ""}`}
+          className={`min-h-11 rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 sm:w-auto ${step === 1 ? "hidden sm:invisible sm:inline-flex" : ""}`}
         >
           ← Zurück
         </button>
@@ -481,7 +483,7 @@ export function StudentWizard({ onClose }: WizardProps) {
           <button
             type="button"
             onClick={handleNext}
-            className="rounded-full bg-slate-800 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
+            className="min-h-11 w-full rounded-full bg-slate-800 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-700 sm:w-auto"
           >
             Weiter →
           </button>
@@ -489,7 +491,7 @@ export function StudentWizard({ onClose }: WizardProps) {
           <button
             type="submit"
             disabled={submitState === "loading"}
-            className="inline-flex items-center gap-2 rounded-full bg-slate-800 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-slate-800 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400 sm:w-auto"
           >
             {submitState === "loading" ? (
               <>

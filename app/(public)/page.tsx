@@ -48,7 +48,7 @@ export default async function PublicHomePage() {
       >
         <PublicHomeHeader trackedTelegramBotUrl={trackedTelegramBotUrl} />
 
-        <div className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+        <div className="mx-auto w-full max-w-6xl px-3 pb-12 sm:px-6 sm:pb-16">
           <PublicHomeHero trackedTelegramBotUrl={trackedTelegramBotUrl} />
           <PublicHomeStatsSection stats={statsState} />
           <PublicHomeQuizTeaserSection trackedTelegramBotUrl={trackedTelegramBotUrl} />

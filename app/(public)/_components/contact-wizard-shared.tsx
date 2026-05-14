@@ -25,7 +25,7 @@ type WizardModalProps = {
 };
 
 export const SELECT_BASE_CLASS =
-  "rounded-xl border border-white/60 bg-white/70 p-3 text-left transition hover:border-sky-300 hover:bg-white";
+  "min-w-0 rounded-xl border border-white/60 bg-white/70 p-3 text-left transition hover:border-sky-300 hover:bg-white";
 
 export const SELECT_ACTIVE_CLASS =
   "border-sky-500 bg-sky-50 shadow-[0_8px_24px_rgba(2,132,199,0.15)]";
@@ -74,7 +74,7 @@ export function ChoiceCards({
   columnsClass?: string;
 }) {
   return (
-    <div className={`grid gap-2 ${columnsClass}`}>
+    <div className={`grid min-w-0 gap-2 ${columnsClass}`}>
       {options.map((option) => {
         const isActive = option.value === value;
         return (
@@ -85,7 +85,7 @@ export function ChoiceCards({
             aria-pressed={isActive}
             onClick={() => onChange(option.value)}
           >
-            <span className="text-sm font-medium text-slate-800">
+            <span className="block min-w-0 break-words text-sm font-medium leading-snug text-slate-800">
               {option.icon ? `${option.icon} ` : ""}
               {option.label}
             </span>
@@ -111,7 +111,7 @@ export function MultiChoiceCards({
   columnsClass?: string;
 }) {
   return (
-    <div className={`grid gap-2 ${columnsClass}`}>
+    <div className={`grid min-w-0 gap-2 ${columnsClass}`}>
       {options.map((option) => {
         const isActive = values.includes(option.value);
         return (
@@ -122,7 +122,7 @@ export function MultiChoiceCards({
             aria-pressed={isActive}
             onClick={() => onToggle(option.value)}
           >
-            <span className="text-sm font-medium text-slate-800">
+            <span className="block min-w-0 break-words text-sm font-medium leading-snug text-slate-800">
               {isActive ? "☑ " : "☐ "}
               {option.label}
             </span>
@@ -176,13 +176,15 @@ export function WizardModal({ title, onClose, children, open }: WizardModalProps
   return (
     <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-[59] bg-white/35 px-4 py-6 backdrop-blur-sm">
+        <Dialog.Overlay className="fixed inset-0 z-[59] overflow-y-auto bg-white/35 px-3 py-4 backdrop-blur-sm sm:px-4 sm:py-6">
           <Dialog.Content
-            className="fixed inset-x-0 top-1/2 mx-auto flex w-full max-w-[560px] -translate-y-1/2 items-center justify-center px-4"
+            className="relative mx-auto flex min-h-full w-full max-w-[560px] items-center justify-center"
           >
-            <div className="h-[78vh] w-full max-w-[560px] overflow-y-auto rounded-2xl border border-white/50 bg-white/90 p-5 shadow-[0_24px_60px_rgba(15,23,42,0.18)] backdrop-blur-xl">
+            <div className="max-h-[calc(100svh-2rem)] w-full max-w-[560px] overflow-y-auto rounded-2xl border border-white/50 bg-white/90 p-4 shadow-[0_24px_60px_rgba(15,23,42,0.18)] backdrop-blur-xl sm:max-h-[calc(100svh-3rem)] sm:p-5">
               <div className="flex items-start justify-between gap-3">
-                <Dialog.Title className="text-xl font-semibold text-slate-900">{title}</Dialog.Title>
+                <Dialog.Title className="min-w-0 break-words text-lg font-semibold leading-tight text-slate-900 sm:text-xl">
+                  {title}
+                </Dialog.Title>
                 <Dialog.Description className="sr-only">
                   Dialog zum Ausfüllen des Kontaktformulars. Zum Schließen Esc oder Schaltfläche schließen.
                 </Dialog.Description>
@@ -196,7 +198,7 @@ export function WizardModal({ title, onClose, children, open }: WizardModalProps
                   </button>
                 </Dialog.Close>
               </div>
-              <div className="mt-4 max-h-[calc(78vh-112px)] overflow-y-auto pr-1">{children}</div>
+              <div className="mt-4 min-w-0">{children}</div>
             </div>
           </Dialog.Content>
         </Dialog.Overlay>

@@ -145,7 +145,7 @@ function getProjectCards(trackedTelegramBotUrl: string): ProductCard[] {
 function ProductIcon({ product }: { product: ProductCard }) {
   if (product.imageSrc && product.imageAlt) {
     return (
-      <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-white/10">
+      <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-white/10 sm:h-11 sm:w-11">
         <Image
           src={product.imageSrc}
           alt={product.imageAlt}
@@ -158,7 +158,7 @@ function ProductIcon({ product }: { product: ProductCard }) {
   }
 
   return (
-    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#FFD166]/30 bg-[#FFD166]/10 text-sm font-bold text-[#FFD166]">
+    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[#FFD166]/30 bg-[#FFD166]/10 text-sm font-bold text-[#FFD166] sm:h-11 sm:w-11">
       IT
     </span>
   );
@@ -171,13 +171,13 @@ function SmallProductCard({ product }: { product: ProductCard }) {
       target={product.download ? undefined : "_blank"}
       rel={product.download ? undefined : "noreferrer"}
       download={product.download}
-      className={`group rounded-2xl border border-white/10 bg-gradient-to-br ${product.accentClass} p-4 transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.08]`}
+      className={`group block min-w-0 rounded-2xl border border-white/10 bg-gradient-to-br ${product.accentClass} p-3 transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.08] sm:p-4`}
     >
       <div className="flex items-start gap-3">
         <ProductIcon product={product} />
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase text-slate-400">{product.eyebrow}</p>
-          <h3 className="mt-1 text-base font-semibold leading-snug text-white">
+          <h3 className="mt-1 break-words text-base font-semibold leading-snug text-white">
             {product.title}
           </h3>
           <p className="mt-2 line-clamp-2 text-sm leading-5 text-slate-300">
@@ -191,12 +191,14 @@ function SmallProductCard({ product }: { product: ProductCard }) {
 
 function ProjectCard({ product }: { product: ProductCard }) {
   return (
-    <article className={`${GLASS_CARD_CLASS} flex h-full flex-col p-5 sm:p-6`}>
+    <article className={`${GLASS_CARD_CLASS} flex h-full min-w-0 flex-col p-4 sm:p-6`}>
       <div className="flex items-start gap-4">
         <ProductIcon product={product} />
-        <div>
+        <div className="min-w-0">
           <p className="text-xs font-semibold uppercase text-slate-400">{product.eyebrow}</p>
-          <h3 className="mt-2 text-xl font-semibold leading-tight text-white">{product.title}</h3>
+          <h3 className="mt-2 break-words text-lg font-semibold leading-tight text-white sm:text-xl">
+            {product.title}
+          </h3>
         </div>
       </div>
       <p className="mt-4 text-sm leading-6 text-slate-300">{product.description}</p>
@@ -205,7 +207,7 @@ function ProjectCard({ product }: { product: ProductCard }) {
         target={product.download ? undefined : "_blank"}
         rel={product.download ? undefined : "noreferrer"}
         download={product.download}
-        className="mt-6 inline-flex w-fit items-center justify-center rounded-full border border-white/10 bg-white/[0.08] px-4 py-2 text-sm font-semibold text-white transition hover:border-[#2AABEE]/70 hover:bg-[#2AABEE]/20"
+        className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-white/10 bg-white/[0.08] px-4 py-2 text-center text-sm font-semibold leading-snug text-white transition hover:border-[#2AABEE]/70 hover:bg-[#2AABEE]/20 sm:w-fit"
       >
         {product.actionLabel}
       </a>
@@ -218,9 +220,9 @@ export function PublicHomeHeader({ trackedTelegramBotUrl }: PublicHomeHeaderProp
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[#07111f]/88 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
-        <Link href="/" className="flex items-center gap-3">
-          <span className="relative h-10 w-10 overflow-hidden rounded-2xl border border-white/20 shadow-[0_12px_28px_rgba(0,0,0,0.24)]">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-3 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+        <Link href="/" className="flex min-w-0 items-center gap-3">
+          <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-2xl border border-white/20 shadow-[0_12px_28px_rgba(0,0,0,0.24)] sm:h-10 sm:w-10">
             <Image
               src={BOT_LOGO_PATH}
               alt="Deutsch Quiz Arena Logo"
@@ -229,16 +231,18 @@ export function PublicHomeHeader({ trackedTelegramBotUrl }: PublicHomeHeaderProp
               className="object-cover"
             />
           </span>
-          <span className="text-base font-bold text-white">Deutsch Quiz Arena</span>
+          <span className="min-w-0 text-base font-bold leading-tight text-white">
+            Deutsch Quiz Arena
+          </span>
         </Link>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center lg:justify-end">
-          <nav aria-label="Primary" className="flex flex-wrap gap-2 text-sm text-slate-300">
+        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center lg:justify-end">
+          <nav aria-label="Primary" className="flex min-w-0 flex-wrap gap-1.5 text-sm text-slate-300 sm:gap-2">
             {publicNavigation.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
-                className="rounded-full border border-transparent px-3 py-2 transition hover:border-white/10 hover:bg-white/[0.06] hover:text-white"
+                className="rounded-full border border-transparent px-2.5 py-2 transition hover:border-white/10 hover:bg-white/[0.06] hover:text-white sm:px-3"
               >
                 {item.label}
               </a>
@@ -248,7 +252,7 @@ export function PublicHomeHeader({ trackedTelegramBotUrl }: PublicHomeHeaderProp
             href={headerCtaUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center justify-center rounded-full bg-[#2AABEE] px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(42,171,238,0.28)] transition hover:bg-[#169bdc]"
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#2AABEE] px-4 py-2 text-center text-sm font-semibold leading-snug text-white shadow-[0_12px_26px_rgba(42,171,238,0.28)] transition hover:bg-[#169bdc] sm:w-auto"
             data-analytics-event="hero_cta_click"
             data-analytics-section="header"
             data-analytics-cta="telegram_bot"
@@ -265,15 +269,15 @@ export function PublicHomeHero({ trackedTelegramBotUrl }: PublicHomeHeroProps) {
   const liveProducts = getProjectCards(trackedTelegramBotUrl);
 
   return (
-    <section id="hero" className="grid gap-8 py-12 lg:grid-cols-[minmax(0,1fr)_420px] lg:py-20">
-      <div className="flex flex-col justify-center">
-        <p className="inline-flex w-fit rounded-full border border-[#4DE2C6]/25 bg-[#4DE2C6]/10 px-3 py-1 text-xs font-semibold uppercase text-[#4DE2C6]">
+    <section id="hero" className="grid min-w-0 gap-6 py-8 sm:gap-8 sm:py-12 lg:grid-cols-[minmax(0,1fr)_420px] lg:py-20">
+      <div className="flex min-w-0 flex-col justify-center">
+        <p className="inline-flex max-w-full rounded-full border border-[#4DE2C6]/25 bg-[#4DE2C6]/10 px-3 py-1 text-xs font-semibold uppercase leading-snug text-[#4DE2C6]">
           Lern-Ökosystem für Deutsch, Wissen und digitale Tools
         </p>
-        <h1 className="mt-5 max-w-4xl text-4xl font-semibold leading-tight text-white sm:text-5xl lg:text-6xl">
+        <h1 className="mt-5 max-w-4xl break-words text-[2rem] font-semibold leading-[1.08] text-white sm:text-5xl sm:leading-tight lg:text-6xl">
           Deutsch lernen. Wissen testen. Jeden Tag besser werden.
         </h1>
-        <p className="mt-5 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
+        <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
           Deutsch Quiz Arena ist ein wachsendes Lern-Ökosystem mit Quiz-Bot,
           Telegram-Kanälen, Unterricht, IT-Quiz und eigenen digitalen Tools.
         </p>
@@ -282,7 +286,7 @@ export function PublicHomeHero({ trackedTelegramBotUrl }: PublicHomeHeroProps) {
             href={trackedTelegramBotUrl}
             target="_blank"
             rel="noreferrer"
-            className={ORANGE_BUTTON_CLASS}
+            className={`w-full sm:w-auto ${ORANGE_BUTTON_CLASS}`}
             data-analytics-event="hero_cta_click"
             data-analytics-section="hero"
             data-analytics-cta="telegram_bot"
@@ -291,7 +295,7 @@ export function PublicHomeHero({ trackedTelegramBotUrl }: PublicHomeHeroProps) {
           </a>
           <a
             href="#projects"
-            className={SECONDARY_BUTTON_CLASS}
+            className={`w-full sm:w-auto ${SECONDARY_BUTTON_CLASS}`}
             data-analytics-event="hero_cta_click"
             data-analytics-section="hero"
             data-analytics-cta="projects_anchor"
@@ -301,13 +305,15 @@ export function PublicHomeHero({ trackedTelegramBotUrl }: PublicHomeHeroProps) {
         </div>
       </div>
 
-      <aside className={`${GLASS_CARD_CLASS} p-5 sm:p-6`} aria-label="Live-Projekte">
-        <div className="flex items-center justify-between gap-4">
-          <div>
+      <aside className={`${GLASS_CARD_CLASS} min-w-0 p-4 sm:p-6`} aria-label="Live-Projekte">
+        <div className="flex flex-wrap items-start justify-between gap-3 sm:items-center sm:gap-4">
+          <div className="min-w-0">
             <p className="text-sm font-semibold text-[#FFD166]">Live-Projekte</p>
-            <h2 className="mt-1 text-2xl font-semibold text-white">Ein Einstieg, mehrere Wege.</h2>
+            <h2 className="mt-1 break-words text-xl font-semibold text-white sm:text-2xl">
+              Ein Einstieg, mehrere Wege.
+            </h2>
           </div>
-          <span className="rounded-full border border-[#4DE2C6]/30 bg-[#4DE2C6]/10 px-3 py-1 text-xs font-semibold text-[#4DE2C6]">
+          <span className="shrink-0 rounded-full border border-[#4DE2C6]/30 bg-[#4DE2C6]/10 px-3 py-1 text-xs font-semibold text-[#4DE2C6]">
             aktiv
           </span>
         </div>
@@ -328,24 +334,26 @@ export function PublicHomeStatsSection({ stats }: PublicHomeStatsSectionProps) {
   ];
 
   return (
-    <section id="stats" className="py-6">
-      <div className={`${GLASS_CARD_CLASS} p-5 sm:p-6`}>
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-end">
-          <div>
+    <section id="stats" className="py-5 sm:py-6">
+      <div className={`${GLASS_CARD_CLASS} min-w-0 p-4 sm:p-6`}>
+        <div className="grid min-w-0 gap-5 sm:gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-end">
+          <div className="min-w-0">
             <p className="text-sm font-semibold text-[#FFD166]">Live-Statistik</p>
-            <h2 className="mt-2 text-3xl font-semibold text-white">Die Arena wächst</h2>
+            <h2 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">Die Arena wächst</h2>
             <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">
               Echte Menschen. Echte Nutzung. Jeden Tag mehr Bewegung.
             </p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid min-w-0 gap-3 sm:grid-cols-2">
             {metricCards.map((metric) => (
               <article
                 key={metric.label}
-                className="rounded-2xl border border-white/10 bg-[#0b1726] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.22)]"
+                className="min-w-0 rounded-2xl border border-white/10 bg-[#0b1726] p-4 shadow-[0_18px_40px_rgba(0,0,0,0.22)] sm:p-5"
               >
                 <p className="text-sm font-semibold text-slate-400">{metric.label}</p>
-                <p className="mt-2 text-4xl font-semibold text-white">{metric.value}</p>
+                <p className="mt-2 break-words text-3xl font-semibold text-white sm:text-4xl">
+                  {metric.value}
+                </p>
                 {stats.isUnavailable ? (
                   <p className="mt-2 text-xs text-slate-500">vorübergehend nicht verfügbar</p>
                 ) : null}
@@ -362,24 +370,24 @@ export function PublicHomeQuizTeaserSection({
   trackedTelegramBotUrl,
 }: PublicHomeQuizTeaserSectionProps) {
   return (
-    <section id="quiz-teaser" className="py-8">
+    <section id="quiz-teaser" className="py-7 sm:py-8">
       <div
-        className={`${GLASS_CARD_CLASS} grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.75fr)] lg:items-center`}
+        className={`${GLASS_CARD_CLASS} grid min-w-0 gap-5 p-4 sm:gap-6 sm:p-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,0.75fr)] lg:items-center`}
       >
-        <div>
+        <div className="min-w-0">
           <p className="text-sm font-semibold text-[#FFD166]">Interaktiver Test</p>
-          <h2 className="mt-2 max-w-2xl text-3xl font-semibold leading-tight text-white sm:text-4xl">
+          <h2 className="mt-2 max-w-2xl break-words text-2xl font-semibold leading-tight text-white sm:text-4xl">
             Teste dein Deutsch in 5 Fragen.
           </h2>
-          <p className="mt-4 max-w-2xl text-base leading-8 text-slate-300">
+          <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300 sm:leading-8">
             Beantworte fünf kurze Quizfragen und sieh sofort, wie gut du abschneidest. Danach
             kannst du im Telegram-Bot mit Daily Challenge, Duellen und Fortschritt weitermachen.
           </p>
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          <div className="mt-6 grid gap-2 sm:grid-cols-3 sm:gap-3">
             {["Sofortiges Feedback", "Nur 5 Fragen", "Weiter im Bot"].map((item) => (
               <div
                 key={item}
-                className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-slate-200"
+                className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold leading-snug text-slate-200"
               >
                 {item}
               </div>
@@ -399,9 +407,9 @@ export function PublicHomeChannelSection() {
   return (
     <section id="channel" className="py-6">
       <div
-        className={`${GLASS_CARD_CLASS} flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between`}
+        className={`${GLASS_CARD_CLASS} flex min-w-0 flex-col gap-5 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6`}
       >
-        <div className="flex items-start gap-4">
+        <div className="flex min-w-0 items-start gap-4">
           <ProductIcon
             product={{
               title: "Deutsch ist einfach! Schule",
@@ -414,9 +422,11 @@ export function PublicHomeChannelSection() {
               accentClass: "",
             }}
           />
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-semibold text-[#4DE2C6]">Telegram-Kanal</p>
-            <h3 className="mt-1 text-xl font-semibold text-white">Deutsch ist einfach! Schule</h3>
+            <h3 className="mt-1 break-words text-lg font-semibold text-white sm:text-xl">
+              Deutsch ist einfach! Schule
+            </h3>
             <p className="mt-2 text-sm leading-6 text-slate-300">
               Kurze Lernposts, Mini-Übungen, Dialoge und alltagstaugliche Redemittel.
             </p>
@@ -426,7 +436,7 @@ export function PublicHomeChannelSection() {
           href={telegramChannelUrl}
           target="_blank"
           rel="noreferrer"
-          className={ORANGE_BUTTON_CLASS}
+          className={`w-full sm:w-auto ${ORANGE_BUTTON_CLASS}`}
           data-analytics-event="channel_cta_click"
           data-analytics-section="channel"
           data-analytics-cta="telegram_channel"
@@ -440,14 +450,14 @@ export function PublicHomeChannelSection() {
 
 export function PublicHomeBotSection({ trackedTelegramBotUrl }: PublicHomeBotSectionProps) {
   return (
-    <section id="bot" className="py-10">
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-center">
-        <div>
+    <section id="bot" className="py-8 sm:py-10">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-center">
+        <div className="min-w-0">
           <p className="text-sm font-semibold text-[#4DE2C6]">Deutsch Quiz Arena Bot</p>
-          <h2 className="mt-2 max-w-2xl text-3xl font-semibold leading-tight text-white sm:text-4xl">
+          <h2 className="mt-2 max-w-2xl break-words text-2xl font-semibold leading-tight text-white sm:text-4xl">
             Dein täglicher Trainingsraum für Deutsch.
           </h2>
-          <p className="mt-4 max-w-2xl text-base leading-8 text-slate-300">
+          <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300 sm:leading-8">
             Kurze Quizrunden, Daily Challenge, Streaks, Duelle und klare Rückmeldung — direkt in
             Telegram, ohne extra App.
           </p>
@@ -455,7 +465,7 @@ export function PublicHomeBotSection({ trackedTelegramBotUrl }: PublicHomeBotSec
             href={trackedTelegramBotUrl}
             target="_blank"
             rel="noreferrer"
-            className={`mt-7 ${ORANGE_BUTTON_CLASS}`}
+            className={`mt-7 w-full sm:w-auto ${ORANGE_BUTTON_CLASS}`}
             data-analytics-event="hero_cta_click"
             data-analytics-section="bot_block"
             data-analytics-cta="telegram_bot"
@@ -464,13 +474,15 @@ export function PublicHomeBotSection({ trackedTelegramBotUrl }: PublicHomeBotSec
           </a>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid min-w-0 gap-3 sm:grid-cols-2">
           {botFeatures.map((feature) => (
-            <article key={feature.title} className={`${GLASS_CARD_CLASS} p-5`}>
+            <article key={feature.title} className={`${GLASS_CARD_CLASS} min-w-0 p-4 sm:p-5`}>
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[#2AABEE]/30 bg-[#2AABEE]/10 text-sm font-bold text-[#2AABEE]">
                 {feature.title.slice(0, 2)}
               </div>
-              <h3 className="mt-4 text-xl font-semibold text-white">{feature.title}</h3>
+              <h3 className="mt-4 break-words text-lg font-semibold text-white sm:text-xl">
+                {feature.title}
+              </h3>
               <p className="mt-2 text-sm leading-6 text-slate-300">{feature.description}</p>
             </article>
           ))}
@@ -486,18 +498,20 @@ export function PublicHomeProductsSection({
   const productCards = getProjectCards(trackedTelegramBotUrl ?? getTrackedTelegramBotFallback());
 
   return (
-    <section id="projects" className="py-10">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
+    <section id="projects" className="py-8 sm:py-10">
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
           <p className="text-sm font-semibold text-[#FFD166]">Unsere Projekte</p>
-          <h2 className="mt-2 text-3xl font-semibold text-white sm:text-4xl">Unsere Projekte</h2>
+          <h2 className="mt-2 break-words text-2xl font-semibold text-white sm:text-4xl">
+            Unsere Projekte
+          </h2>
         </div>
         <p className="max-w-xl text-sm leading-6 text-slate-300">
           Ein kompaktes Produkt- und Lernsystem rund um Deutsch, Wissen, Unterricht und eigene
           digitale Werkzeuge.
         </p>
       </div>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-6 grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {productCards.map((product) => (
           <ProjectCard key={product.title} product={product} />
         ))}
@@ -508,28 +522,32 @@ export function PublicHomeProductsSection({
 
 export function PublicHomeKnowledgeSection() {
   return (
-    <section id="knowledge" className="py-10">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
+    <section id="knowledge" className="py-8 sm:py-10">
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
           <p className="text-sm font-semibold text-[#4DE2C6]">Wissen & Tipps</p>
-          <h2 className="mt-2 text-3xl font-semibold text-white sm:text-4xl">Wissen & Tipps</h2>
+          <h2 className="mt-2 break-words text-2xl font-semibold text-white sm:text-4xl">
+            Wissen & Tipps
+          </h2>
         </div>
         <p className="max-w-lg text-sm leading-6 text-slate-300">
           Lesestoff für Orientierung, Prüfungsvorbereitung und ein besseres Gefühl für Sprache.
         </p>
       </div>
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
+      <div className="mt-6 grid min-w-0 gap-4 lg:grid-cols-3">
         {WISSEN_ARTICLES.map((article) => (
           <article
             key={article.slug}
-            className={`${GLASS_CARD_CLASS} flex h-full flex-col p-5 sm:p-6`}
+            className={`${GLASS_CARD_CLASS} flex h-full min-w-0 flex-col p-4 sm:p-6`}
           >
             <p className="text-sm font-semibold text-[#FFD166]">{article.category}</p>
-            <h3 className="mt-3 text-xl font-semibold leading-tight text-white">{article.title}</h3>
+            <h3 className="mt-3 break-words text-lg font-semibold leading-tight text-white sm:text-xl">
+              {article.title}
+            </h3>
             <p className="mt-3 text-sm leading-6 text-slate-300">{article.description}</p>
             <Link
               href={`/artikel/${article.slug}`}
-              className="mt-6 inline-flex w-fit items-center justify-center rounded-full border border-white/10 bg-white/[0.08] px-4 py-2 text-sm font-semibold text-white transition hover:border-[#FFD166]/70 hover:bg-[#FFD166]/10"
+              className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-white/10 bg-white/[0.08] px-4 py-2 text-sm font-semibold text-white transition hover:border-[#FFD166]/70 hover:bg-[#FFD166]/10 sm:w-fit"
             >
               Lesen
             </Link>
@@ -546,16 +564,16 @@ export function PublicHomeContactSection({
 }: PublicHomeContactSectionProps = {}) {
   return (
     <>
-      <section id="unterricht" className="py-10">
+      <section id="unterricht" className="py-8 sm:py-10">
         <div
-          className={`${GLASS_CARD_CLASS} grid gap-6 p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center`}
+          className={`${GLASS_CARD_CLASS} grid min-w-0 gap-5 p-4 sm:gap-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center`}
         >
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-semibold text-[#FFD166]">Unterricht</p>
-            <h2 className="mt-2 max-w-3xl text-3xl font-semibold leading-tight text-white sm:text-4xl">
+            <h2 className="mt-2 max-w-3xl break-words text-2xl font-semibold leading-tight text-white sm:text-4xl">
               Du willst nicht nur Quizze machen, sondern richtig lernen?
             </h2>
-            <p className="mt-4 max-w-2xl text-base leading-8 text-slate-300">
+            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300 sm:leading-8">
               Dann kannst du Unterricht, Prüfungstraining oder einen passenden Deutschkurs
               anfragen.
             </p>
@@ -564,21 +582,21 @@ export function PublicHomeContactSection({
             type="button"
             onClick={onOpenStudentWizard}
             data-wizard="student"
-            className={ORANGE_BUTTON_CLASS}
+            className={`w-full sm:w-auto ${ORANGE_BUTTON_CLASS}`}
           >
             Deutsch-Unterricht anfragen
           </button>
         </div>
       </section>
 
-      <section id="contact" className="py-10">
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-stretch">
-          <article className={`${GLASS_CARD_CLASS} p-6 sm:p-8`}>
+      <section id="contact" className="py-8 sm:py-10">
+        <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-stretch">
+          <article className={`${GLASS_CARD_CLASS} min-w-0 p-4 sm:p-8`}>
             <p className="text-sm font-semibold text-[#4DE2C6]">Kooperation / Partnerschaft</p>
-            <h2 className="mt-2 text-3xl font-semibold leading-tight text-white">
+            <h2 className="mt-2 break-words text-2xl font-semibold leading-tight text-white sm:text-3xl">
               Gemeinsam Lernräume bauen, die wirklich genutzt werden.
             </h2>
-            <p className="mt-4 text-base leading-8 text-slate-300">
+            <p className="mt-4 text-base leading-7 text-slate-300 sm:leading-8">
               Deutsch Quiz Arena ist offen für Partner, Kanäle, Lehrkräfte, Schulen und
               Lerncommunities, die Deutschlernen, Quizformate oder digitale Bildungsprodukte
               sinnvoll verbinden wollen.
@@ -587,16 +605,16 @@ export function PublicHomeContactSection({
               type="button"
               onClick={onOpenPartnerWizard}
               data-wizard="partner"
-              className="mt-7 inline-flex items-center justify-center rounded-full border border-[#4DE2C6]/30 bg-[#4DE2C6]/10 px-5 py-2.5 text-sm font-semibold text-[#B9FFF2] transition hover:bg-[#4DE2C6]/20"
+              className="mt-7 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-[#4DE2C6]/30 bg-[#4DE2C6]/10 px-5 py-2.5 text-center text-sm font-semibold leading-snug text-[#B9FFF2] transition hover:bg-[#4DE2C6]/20 sm:w-auto"
             >
               Kontakt aufnehmen
             </button>
           </article>
 
-          <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
+          <div className="grid min-w-0 gap-4 sm:grid-cols-3 lg:grid-cols-1">
             {["Kanäle", "Lehrkräfte", "Schulen & Communities"].map((item) => (
-              <article key={item} className="rounded-3xl border border-white/10 bg-[#0b1726] p-5">
-                <h3 className="text-lg font-semibold text-white">{item}</h3>
+              <article key={item} className="min-w-0 rounded-2xl border border-white/10 bg-[#0b1726] p-4 sm:rounded-3xl sm:p-5">
+                <h3 className="break-words text-lg font-semibold text-white">{item}</h3>
                 <p className="mt-2 text-sm leading-6 text-slate-300">
                   Seriöse Zusammenarbeit mit klaren Zielen, passendem Format und realistischem
                   Timing.
@@ -614,10 +632,10 @@ export function PublicHomeFooter({ trackedTelegramBotUrl }: PublicHomeFooterProp
   const telegramUrl = trackedTelegramBotUrl ?? getTrackedTelegramBotFallback();
 
   return (
-    <footer className="mt-8 border-t border-white/10 py-8 text-sm text-slate-400">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <footer className="mt-6 border-t border-white/10 py-7 text-sm text-slate-400 sm:mt-8 sm:py-8">
+      <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p>© 2026 Deutsch Quiz Arena</p>
-        <nav aria-label="Footer" className="flex flex-wrap gap-3">
+        <nav aria-label="Footer" className="flex min-w-0 flex-wrap gap-3">
           <Link href="/impressum" className="transition hover:text-white">
             Impressum
           </Link>

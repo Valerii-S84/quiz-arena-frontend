@@ -30,7 +30,7 @@ function getAnswerClass(
   correctAnswerId: string,
 ): string {
   const baseClass =
-    "w-full rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition disabled:cursor-default";
+    "w-full rounded-2xl border px-4 py-3 text-left text-sm font-semibold leading-snug transition disabled:cursor-default";
 
   if (!selectedAnswerId) {
     return `${baseClass} border-white/10 bg-white/[0.06] text-white hover:border-[#2AABEE]/60 hover:bg-[#2AABEE]/10`;
@@ -143,8 +143,8 @@ export function PublicHomeQuizTeaserWidget({
   };
 
   return (
-    <div className="rounded-3xl border border-white/10 bg-[#07111f]/80 p-4 shadow-[0_18px_46px_rgba(0,0,0,0.24)] sm:p-5">
-      <div className="flex items-center justify-between gap-3">
+    <div className="min-w-0 rounded-2xl border border-white/10 bg-[#07111f]/80 p-4 shadow-[0_18px_46px_rgba(0,0,0,0.24)] sm:rounded-3xl sm:p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
         <p className="text-sm font-semibold text-[#4DE2C6]">5-Fragen-Teaser</p>
         <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-slate-300">
           {stage === "question" ? `Frage ${questionIndex} von ${TOTAL_QUESTIONS}` : "kurz & direkt"}
@@ -153,7 +153,9 @@ export function PublicHomeQuizTeaserWidget({
 
       {stage === "start" ? (
         <div className="mt-6">
-          <h3 className="text-2xl font-semibold leading-tight text-white">Bereit für eine Runde?</h3>
+          <h3 className="break-words text-xl font-semibold leading-tight text-white sm:text-2xl">
+            Bereit für eine Runde?
+          </h3>
           <p className="mt-3 text-sm leading-6 text-slate-300">
             Starte den kurzen Test, beantworte fünf Fragen und bekomme dein Ergebnis sofort.
           </p>
@@ -219,7 +221,7 @@ export function PublicHomeQuizTeaserWidget({
         <div className="mt-6">
           <div className="rounded-3xl border border-[#4DE2C6]/25 bg-[#4DE2C6]/10 p-5 text-center">
             <p className="text-sm font-semibold text-[#B9FFF2]">Dein Ergebnis</p>
-            <p className="mt-2 text-5xl font-semibold text-white">
+            <p className="mt-2 text-4xl font-semibold text-white sm:text-5xl">
               {score}/{TOTAL_QUESTIONS}
             </p>
             <p className="mt-3 text-sm leading-6 text-slate-300">
@@ -232,11 +234,11 @@ export function PublicHomeQuizTeaserWidget({
               target="_blank"
               rel="noreferrer"
               onClick={trackTelegramCta}
-              className={ORANGE_BUTTON_CLASS}
+              className={`w-full ${ORANGE_BUTTON_CLASS}`}
             >
               Im Telegram-Bot weitermachen
             </a>
-            <button type="button" onClick={startQuiz} className={SECONDARY_BUTTON_CLASS}>
+            <button type="button" onClick={startQuiz} className={`w-full ${SECONDARY_BUTTON_CLASS}`}>
               Noch einmal spielen
             </button>
           </div>
