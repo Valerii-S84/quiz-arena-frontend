@@ -11,6 +11,7 @@ import {
 import { findPeakHourlyActivity, mapFunnelStep, mapProductLabel } from "./dashboard-helpers";
 import type {
   AlertItem,
+  DashboardDistributionSection,
   DashboardHourlyInsights,
   DashboardMetricCard,
   DashboardMetricSection,
@@ -22,6 +23,8 @@ import type {
   RevenueSeriesItem,
   TopProductItem,
   TopProductChartItem,
+  UserDistributionItem,
+  UserLanguageDistributionItem,
   UsersSeriesItem,
 } from "./dashboard-types";
 
@@ -31,6 +34,119 @@ type MetricDefinition = {
   hint: string;
   unit: MetricUnit;
 };
+
+const DISTRIBUTION_COLORS = [
+  "#295065",
+  "#f58d74",
+  "#89f5c7",
+  "#e6bc77",
+  "#7c6ee6",
+  "#4f9a94",
+  "#c96d9f",
+  "#8c7a6b",
+] as const;
+
+const LANGUAGE_LABELS: Record<string, string> = {
+  de: "Deutsch",
+  en: "Englisch",
+  uk: "Ukrainisch",
+  ru: "Russisch",
+  pl: "Polnisch",
+  tr: "Türkisch",
+  ar: "Arabisch",
+  es: "Spanisch",
+  fr: "Französisch",
+  it: "Italienisch",
+  unknown: "Unbekannt",
+};
+
+function formatDistributionPercent(users: number, totalUsers: number): number {
+  if (totalUsers <= 0) {
+    return 0;
+  }
+  return (users / totalUsers) * 100;
+}
+
+function mapLanguageLabel(language: string): string {
+  const normalized = language.trim().toLowerCase();
+  return LANGUAGE_LABELS[normalized] ?? normalized.toUpperCase();
+}
+
+function buildDistributionSection(
+  result: OverviewSectionResult<Array<{ key: string; label: string; users: number }>>,
+  emptyMessage: string,
+): DashboardDistributionSection {
+  if (result.data === null) {
+    return {
+      status: "invalid",
+      message: "Die Nutzerverteilung konnte nicht validiert werden.",
+      totalUsers: 0,
+      items: [],
+    };
+  }
+
+  const totalUsers = result.data.reduce((sum, item) => sum + item.users, 0);
+  const items = result.data
+    .filter((item) => item.users > 0)
+    .map((item, index) => ({
+      key: item.key,
+      label: item.label,
+      users: item.users,
+      percent: formatDistributionPercent(item.users, totalUsers),
+      fill: DISTRIBUTION_COLORS[index % DISTRIBUTION_COLORS.length],
+    }));
+
+  if (items.length === 0 || totalUsers === 0) {
+    return {
+      status: "empty",
+      message: emptyMessage,
+      totalUsers,
+      items,
+    };
+  }
+
+  return {
+    status: "valid",
+    message: null,
+    totalUsers,
+    items,
+  };
+}
+
+function buildLanguageDistributionSection(
+  result: OverviewSectionResult<UserLanguageDistributionItem[]>,
+): DashboardDistributionSection {
+  return buildDistributionSection(
+    {
+      ...result,
+      data:
+        result.data?.map((item) => ({
+          key: item.language.trim().toLowerCase() || "unknown",
+          label: mapLanguageLabel(item.language),
+          users: item.users,
+        })) ?? null,
+    },
+    "Noch keine Sprachcodes für registrierte Nutzer vorhanden.",
+  );
+}
+
+function buildGenericDistributionSection(
+  result: OverviewSectionResult<UserDistributionItem[]>,
+  emptyMessage: string,
+): DashboardDistributionSection {
+  return buildDistributionSection(
+    {
+      ...result,
+      data:
+        result.data?.map((item) => ({
+          key: item.group.trim().toLowerCase() || "unknown",
+          label: item.group,
+          users: item.users,
+        })) ?? null,
+    },
+    emptyMessage,
+  );
+}
 
 function buildMetricCards(
   metrics: Partial<Record<string, KpiMetric>> | null,
@@ -351,6 +467,15 @@ export function normalizeOverviewData(data: OverviewPayloadSections): DashboardO
     hourlyActivity: buildHourlyActivitySection(data.hourly_activity_series),
     revenueSection: buildRevenueSection(data.revenue_series),
     usersSection: buildUsersSection(data.users_series),
+    userLanguageSection: buildLanguageDistributionSection(data.user_language_distribution),
+    userAgeSection: buildGenericDistributionSection(
+      data.user_age_distribution,
+      "Alter kann aktuell nicht ausgewertet werden, weil das Backend kein Alter am Nutzer speichert.",
+    ),
+    userGenderSection: buildGenericDistributionSection(
+      data.user_gender_distribution,
+      "Geschlecht kann aktuell nicht ausgewertet werden, weil das Backend kein Geschlecht am Nutzer speichert.",
+    ),
     funnelSection: buildFunnelSection(data.funnel),
     topProductsSection: buildTopProductsSection(data.top_products),
     alertsSection: buildAlertsSection(data.alerts),

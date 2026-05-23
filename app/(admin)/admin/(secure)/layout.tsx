@@ -22,7 +22,7 @@ function isNonEmptyString(value: unknown): value is string {
 }
 
 async function ensureSession() {
-  const cookieHeader = cookies().toString();
+  const cookieHeader = (await cookies()).toString();
   const timeoutMs = 3000;
   const abortController = new AbortController();
   const timeout = setTimeout(() => abortController.abort(), timeoutMs);

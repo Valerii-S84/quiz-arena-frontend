@@ -84,6 +84,9 @@ Response shape:
 | `hourly_activity_series` | `Array<{ hour, active_users }>` | Hour-of-day activity aggregation for the current window |
 | `funnel` | `Array<{ step, value }>` | Milestone counts in fixed backend order |
 | `top_products` | `Array<{ product, revenue_stars }>` | Top 5 products by revenue in stars for the current window |
+| `user_language_distribution` | `Array<{ language, users }>` | Registered users grouped by stored Telegram language code |
+| `user_age_distribution` | `Array<{ group, users }>` | Reserved for age buckets; currently empty because `User` has no age field |
+| `user_gender_distribution` | `Array<{ group, users }>` | Reserved for gender buckets; currently empty because `User` has no gender field |
 | `feature_usage` | `Record<string, { current, previous, delta_pct }>` | Feature usage cards described below |
 | `alerts` | `Array<object>` | Alert cards described below |
 
@@ -218,7 +221,21 @@ Contract notes:
 - Ordered descending by `revenue_stars`.
 - `top_products` does not apply the stricter KPI purchase status filter. It uses purchase rows with `paid_at` inside the selected window.
 
-### 2.8 `feature_usage`
+### 2.8 User distribution
+
+Language shape:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `language` | `string` | Lowercase `User.language_code`; blank values are normalized to `unknown` |
+| `users` | `number` | Count of registered users with that language code |
+
+Contract notes:
+
+- `user_language_distribution` is a lifetime registered-user distribution, not scoped to the selected dashboard period.
+- `user_age_distribution` and `user_gender_distribution` are emitted as empty arrays until the backend stores age or gender on user profiles.
+
+### 2.9 `feature_usage`
 
 | Key | Actual backend meaning |
 |---|---|
@@ -233,7 +250,7 @@ Important note:
 
 - `duel_completion_rate` is user-level completion rate, not duel-level completion rate.
 
-### 2.9 `alerts`
+### 2.10 `alerts`
 
 | Type | Actual backend trigger |
 |---|---|

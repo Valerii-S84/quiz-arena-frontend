@@ -29,6 +29,51 @@ describe("statistics payload parsing", () => {
     expect(parseOverviewPayload(overviewFixture)).toEqual(overviewFixture);
   });
 
+  it("accepts optional user distribution sections from overview payloads", () => {
+    const parsed = parseOverviewPayloadSections({
+      ...overviewFixture,
+      user_language_distribution: [
+        {
+          language: "de",
+          users: 2,
+        },
+        {
+          language: "unknown",
+          users: 1,
+        },
+      ],
+    });
+
+    expect(parsed.user_language_distribution.status).toBe("valid");
+    expect(parsed.user_language_distribution.data).toEqual([
+      {
+        language: "de",
+        users: 2,
+      },
+      {
+        language: "unknown",
+        users: 1,
+      },
+    ]);
+    expect(parsed.user_age_distribution.data).toEqual([]);
+    expect(parsed.user_gender_distribution.data).toEqual([]);
+  });
+
+  it("rejects invalid user language distribution counts", () => {
+    const parsed = parseOverviewPayloadSections({
+      ...overviewFixture,
+      user_language_distribution: [
+        {
+          language: "de",
+          users: -1,
+        },
+      ],
+    });
+
+    expect(parsed.user_language_distribution.status).toBe("invalid");
+    expect(parsed.user_language_distribution.error).toBeInstanceOf(StatisticsPayloadError);
+  });
+
   it("accepts the empty overview fixture with 24 hourly buckets", () => {
     const parsed = parseOverviewPayload(emptyOverviewFixture);
     expect(parsed.hourly_activity_series).toHaveLength(24);

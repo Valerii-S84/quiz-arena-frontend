@@ -219,6 +219,18 @@
       "revenue_stars": 100
     }
   ],
+  "user_language_distribution": [
+    {
+      "language": "de",
+      "users": 2
+    },
+    {
+      "language": "en",
+      "users": 1
+    }
+  ],
+  "user_age_distribution": [],
+  "user_gender_distribution": [],
   "feature_usage": {
     "duel_created_users": {
       "current": 0.0,

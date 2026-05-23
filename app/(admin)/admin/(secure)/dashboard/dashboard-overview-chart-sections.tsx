@@ -6,8 +6,11 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   Line,
   LineChart,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -26,7 +29,7 @@ import {
   mapAlert,
 } from "./dashboard-helpers";
 import { ChartFallback, formatMetricValue, SectionStateNotice } from "./dashboard-overview-section-shared";
-import type { DashboardOverviewModel } from "./dashboard-types";
+import type { DashboardDistributionSection, DashboardOverviewModel } from "./dashboard-types";
 
 type DashboardOverviewSectionsProps = {
   model: DashboardOverviewModel;
@@ -58,6 +61,94 @@ function buildAverageHourDescription(model: DashboardOverviewModel): string {
   }
 
   return "Durchschnitt distinct aktiver Nutzer je Berliner Stundenfenster im gewählten Zeitraum.";
+}
+
+function formatPercent(value: number): string {
+  return `${value.toLocaleString("de-DE", { maximumFractionDigits: 1 })}%`;
+}
+
+function DistributionPieCard({
+  eyebrow,
+  title,
+  description,
+  section,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  section: DashboardDistributionSection;
+}) {
+  const canRenderChart = section.status !== "invalid" && section.items.length > 0;
+
+  return (
+    <article className="surface overflow-hidden rounded-3xl p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-ember/45">
+            {eyebrow}
+          </p>
+          <h2 className="mt-1 text-xl">{title}</h2>
+          <p className="mt-1 text-sm text-ember/70">{description}</p>
+        </div>
+        <div className="rounded-full border border-ember/15 bg-white/80 px-3 py-1 text-xs text-ember/75">
+          Gesamt: {section.totalUsers.toLocaleString("de-DE")}
+        </div>
+      </div>
+      <div className="mt-4">
+        <SectionStateNotice status={section.status} message={section.message} />
+      </div>
+      <div className="mt-4 h-[18rem] rounded-2xl border border-white/70 bg-[radial-gradient(circle_at_top_left,rgba(41,80,101,0.12),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,244,241,0.98))] p-3">
+        {canRenderChart ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+              <Tooltip
+                contentStyle={CHART_TOOLTIP_STYLE}
+                formatter={(value, _name, props) => {
+                  const percent = Number(props.payload?.percent ?? 0);
+                  return [
+                    `${Number(value).toLocaleString("de-DE")} Nutzer · ${formatPercent(percent)}`,
+                    props.payload?.label ?? "Nutzer",
+                  ];
+                }}
+              />
+              <Pie
+                data={section.items}
+                dataKey="users"
+                nameKey="label"
+                innerRadius="56%"
+                outerRadius="82%"
+                paddingAngle={2}
+                stroke="#ffffff"
+                strokeWidth={3}
+              >
+                {section.items.map((item) => (
+                  <Cell key={item.key} fill={item.fill} />
+                ))}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+        ) : (
+          <ChartFallback message={section.message ?? "Keine Verteilungsdaten verfügbar."} />
+        )}
+      </div>
+      <div className="mt-4 space-y-2">
+        {section.items.map((item) => (
+          <div key={item.key} className="flex items-center justify-between gap-3 text-sm">
+            <div className="flex min-w-0 items-center gap-2">
+              <span
+                className="h-3 w-3 shrink-0 rounded-full"
+                style={{ backgroundColor: item.fill }}
+              />
+              <span className="truncate font-medium text-[#1f4257]">{item.label}</span>
+            </div>
+            <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-ember/70">
+              {formatPercent(item.percent)} · {item.users.toLocaleString("de-DE")}
+            </span>
+          </div>
+        ))}
+      </div>
+    </article>
+  );
 }
 
 export function DashboardActivitySection({
@@ -198,6 +289,33 @@ export function DashboardActivitySection({
           </div>
         </div>
       </article>
+    </section>
+  );
+}
+
+export function DashboardUserDemographicsSection({
+  model,
+}: DashboardOverviewSectionsProps) {
+  return (
+    <section className="grid gap-4 xl:grid-cols-3">
+      <DistributionPieCard
+        eyebrow="Nutzerprofil"
+        title="Nutzer nach Sprache"
+        description="Registrierte Nutzer nach Telegram-Sprachcode als prozentuale Verteilung."
+        section={model.userLanguageSection}
+      />
+      <DistributionPieCard
+        eyebrow="Demografie"
+        title="Nutzer nach Alter"
+        description="Wird automatisch als Kreisdiagramm gefüllt, sobald Altersgruppen vom Backend kommen."
+        section={model.userAgeSection}
+      />
+      <DistributionPieCard
+        eyebrow="Demografie"
+        title="Nutzer nach Geschlecht"
+        description="Wird automatisch als Kreisdiagramm gefüllt, sobald Geschlechtsgruppen vom Backend kommen."
+        section={model.userGenderSection}
+      />
     </section>
   );
 }

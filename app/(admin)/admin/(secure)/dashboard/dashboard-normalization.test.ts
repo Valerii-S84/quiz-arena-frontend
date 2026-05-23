@@ -23,6 +23,25 @@ describe("normalizeOverviewData", () => {
       step_label: "Neue Nutzer",
       ratio_to_previous: null,
     });
+    expect(model.userLanguageSection).toMatchObject({
+      status: "valid",
+      totalUsers: 3,
+      items: [
+        {
+          key: "de",
+          label: "Deutsch",
+          users: 2,
+        },
+        {
+          key: "en",
+          label: "Englisch",
+          users: 1,
+        },
+      ],
+    });
+    expect(model.userLanguageSection.items[0]?.percent).toBeCloseTo(66.666, 2);
+    expect(model.userAgeSection.status).toBe("empty");
+    expect(model.userGenderSection.status).toBe("empty");
   });
 
   it("keeps valid zero metrics distinct from missing KPI data", () => {
@@ -39,6 +58,49 @@ describe("normalizeOverviewData", () => {
       },
     });
     expect(model.hourlyActivity.status).toBe("empty");
+  });
+
+  it("maps language distribution labels and percentages for unknown language codes", () => {
+    const model = normalizeOverviewData(
+      parseOverviewPayloadSections({
+        ...overviewFixture,
+        user_language_distribution: [
+          {
+            language: "de",
+            users: 2,
+          },
+          {
+            language: "unknown",
+            users: 1,
+          },
+          {
+            language: "pt-br",
+            users: 1,
+          },
+        ],
+      }),
+    );
+
+    expect(model.userLanguageSection.totalUsers).toBe(4);
+    expect(model.userLanguageSection.items).toMatchObject([
+      {
+        key: "de",
+        label: "Deutsch",
+        users: 2,
+      },
+      {
+        key: "unknown",
+        label: "Unbekannt",
+        users: 1,
+      },
+      {
+        key: "pt-br",
+        label: "PT-BR",
+        users: 1,
+      },
+    ]);
+    expect(model.userLanguageSection.items[0]?.percent).toBe(50);
+    expect(model.userLanguageSection.items[1]?.percent).toBe(25);
   });
 
   it("marks the KPI section as partial when only some cards are missing", () => {
