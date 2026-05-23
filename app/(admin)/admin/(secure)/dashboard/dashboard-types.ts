@@ -35,6 +35,16 @@ export type TopProductItem = {
   revenue_stars: number;
 };
 
+export type UserLanguageDistributionItem = {
+  language: string;
+  users: number;
+};
+
+export type UserDistributionItem = {
+  group: string;
+  users: number;
+};
+
 export type AlertItem = {
   type: string;
   severity: string;
@@ -53,6 +63,9 @@ export type OverviewData = {
   hourly_activity_series: HourlyActivityItem[];
   funnel: FunnelItem[];
   top_products: TopProductItem[];
+  user_language_distribution: UserLanguageDistributionItem[];
+  user_age_distribution: UserDistributionItem[];
+  user_gender_distribution: UserDistributionItem[];
   feature_usage: Record<string, KpiMetric>;
   alerts: AlertItem[];
 };
@@ -86,6 +99,14 @@ export type TopProductChartItem = {
   product: string;
   product_label: string;
   revenue_stars: number;
+};
+
+export type DistributionChartItem = {
+  key: string;
+  label: string;
+  users: number;
+  percent: number;
+  fill: string;
 };
 
 export type DashboardMetricCard = {
@@ -128,6 +149,13 @@ export type DashboardUsersSection = {
   averageActiveUsersPerDay: number | null;
 };
 
+export type DashboardDistributionSection = {
+  status: DashboardSectionStatus;
+  message: string | null;
+  totalUsers: number;
+  items: DistributionChartItem[];
+};
+
 export type DashboardOverviewModel = {
   generatedAtLabel: string;
   kpiSection: DashboardMetricSection;
@@ -135,6 +163,9 @@ export type DashboardOverviewModel = {
   hourlyActivity: DashboardHourlyInsights;
   revenueSection: DashboardRevenueSection;
   usersSection: DashboardUsersSection;
+  userLanguageSection: DashboardDistributionSection;
+  userAgeSection: DashboardDistributionSection;
+  userGenderSection: DashboardDistributionSection;
   funnelSection: {
     status: DashboardSectionStatus;
     message: string | null;

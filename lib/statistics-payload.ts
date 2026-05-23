@@ -15,6 +15,8 @@ import type {
   OverviewData,
   RevenueSeriesItem,
   TopProductItem,
+  UserDistributionItem,
+  UserLanguageDistributionItem,
   UsersSeriesItem,
 } from "@/app/(admin)/admin/(secure)/dashboard/dashboard-types";
 
@@ -36,6 +38,9 @@ export type OverviewPayloadSections = {
   hourly_activity_series: OverviewSectionResult<HourlyActivityItem[]>;
   funnel: OverviewSectionResult<FunnelItem[]>;
   top_products: OverviewSectionResult<TopProductItem[]>;
+  user_language_distribution: OverviewSectionResult<UserLanguageDistributionItem[]>;
+  user_age_distribution: OverviewSectionResult<UserDistributionItem[]>;
+  user_gender_distribution: OverviewSectionResult<UserDistributionItem[]>;
   feature_usage: OverviewSectionResult<OverviewMetricRecord>;
   alerts: OverviewSectionResult<AlertItem[]>;
 };
@@ -95,6 +100,20 @@ const topProductSchema = z
   .object({
     product: z.string().min(1),
     revenue_stars: nonNegativeIntegerSchema,
+  })
+  .passthrough();
+
+const userLanguageDistributionItemSchema = z
+  .object({
+    language: z.string().min(1),
+    users: nonNegativeIntegerSchema,
+  })
+  .passthrough();
+
+const userDistributionItemSchema = z
+  .object({
+    group: z.string().min(1),
+    users: nonNegativeIntegerSchema,
   })
   .passthrough();
 
@@ -223,6 +242,18 @@ function parseArraySection<T>(
   return createValidSectionResult(result.data);
 }
 
+function parseOptionalArraySection<T>(
+  sectionKey: string,
+  sectionValue: unknown,
+  schema: z.ZodType<T>,
+  fallbackData: T,
+): OverviewSectionResult<T> {
+  if (sectionValue === undefined || sectionValue === null) {
+    return createValidSectionResult(fallbackData);
+  }
+  return parseArraySection(sectionKey, sectionValue, schema);
+}
+
 function parseHourlyActivitySection(sectionValue: unknown): OverviewSectionResult<HourlyActivityItem[]> {
   const result = z.array(hourlyActivityItemSchema).max(24).safeParse(sectionValue);
   if (!result.success) {
@@ -349,6 +380,24 @@ export function parseOverviewPayloadSections(payload: unknown): OverviewPayloadS
       rawPayload.top_products,
       z.array(topProductSchema).max(5),
     ),
+    user_language_distribution: parseOptionalArraySection(
+      "user_language_distribution",
+      rawPayload.user_language_distribution,
+      z.array(userLanguageDistributionItemSchema).max(32),
+      [],
+    ),
+    user_age_distribution: parseOptionalArraySection(
+      "user_age_distribution",
+      rawPayload.user_age_distribution,
+      z.array(userDistributionItemSchema).max(16),
+      [],
+    ),
+    user_gender_distribution: parseOptionalArraySection(
+      "user_gender_distribution",
+      rawPayload.user_gender_distribution,
+      z.array(userDistributionItemSchema).max(16),
+      [],
+    ),
     feature_usage: parseMetricSection(
       "feature_usage",
       rawPayload.feature_usage,
@@ -370,6 +419,9 @@ export function parseOverviewPayload(payload: unknown): OverviewData {
     hourly_activity_series: requireValidSection(sections.hourly_activity_series),
     funnel: requireValidSection(sections.funnel),
     top_products: requireValidSection(sections.top_products),
+    user_language_distribution: requireValidSection(sections.user_language_distribution),
+    user_age_distribution: requireValidSection(sections.user_age_distribution),
+    user_gender_distribution: requireValidSection(sections.user_gender_distribution),
     feature_usage: requireValidSection(sections.feature_usage) as Record<string, KpiMetric>,
     alerts: requireValidSection(sections.alerts),
   };

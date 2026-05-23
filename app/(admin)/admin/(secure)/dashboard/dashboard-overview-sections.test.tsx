@@ -19,8 +19,11 @@ vi.mock("recharts", async () => {
     Bar: MockChart,
     BarChart: MockChart,
     CartesianGrid: MockChart,
+    Cell: MockChart,
     Line: MockChart,
     LineChart: MockChart,
+    Pie: MockChart,
+    PieChart: MockChart,
     ResponsiveContainer: MockChart,
     Tooltip: MockChart,
     XAxis: MockChart,
@@ -68,6 +71,23 @@ describe("DashboardOverviewSections", () => {
     );
     expect(markup).toContain("Aktuell keine kritischen Warnungen.");
     expect(markup).toContain("Im gewählten Zeitraum wurden keine aktiven Nutzer erfasst.");
+  });
+
+  it("renders user language distribution and unavailable demographic sources", () => {
+    const model = normalizeOverviewData(parseOverviewPayloadSections(overviewFixture));
+    const markup = renderToStaticMarkup(
+      React.createElement(DashboardOverviewSections, { model }),
+    );
+
+    expect(markup).toContain("Nutzer nach Sprache");
+    expect(markup).toContain("Deutsch");
+    expect(markup).toContain("66,7%");
+    expect(markup).toContain(
+      "Alter kann aktuell nicht ausgewertet werden, weil das Backend kein Alter am Nutzer speichert.",
+    );
+    expect(markup).toContain(
+      "Geschlecht kann aktuell nicht ausgewertet werden, weil das Backend kein Geschlecht am Nutzer speichert.",
+    );
   });
 
   it("renders funnel milestones in normalized order with stable conversion copy", () => {

@@ -7,6 +7,7 @@ import {
   DashboardAlertsSection,
   DashboardFunnelProductsSection,
   DashboardRevenueUsersSection,
+  DashboardUserDemographicsSection,
 } from "./dashboard-overview-chart-sections";
 import type { DashboardOverviewModel } from "./dashboard-types";
 
@@ -102,6 +103,7 @@ export function DashboardOverviewSections({ model }: DashboardOverviewSectionsPr
       <DashboardFeatureUsageSection model={model} />
       <DashboardActivitySection model={model} />
       <DashboardRevenueUsersSection model={model} />
+      <DashboardUserDemographicsSection model={model} />
       <DashboardFunnelProductsSection model={model} />
       <DashboardAlertsSection model={model} />
     </>

@@ -182,6 +182,9 @@
     }
   ],
   "top_products": [],
+  "user_language_distribution": [],
+  "user_age_distribution": [],
+  "user_gender_distribution": [],
   "feature_usage": {
     "duel_created_users": {
       "current": 0.0,
