@@ -6,9 +6,11 @@ describe("api routes", () => {
   it("keeps the public contract on stripped paths behind the browser API base", () => {
     expect(apiRoutes.public.stats).toBe("/stats");
     expect(apiRoutes.public.contact).toBe("/contact");
+    expect(apiRoutes.public.websiteAnalyticsEvents).toBe("/public/website-analytics/events");
   });
 
   it("builds dynamic admin promo and contact-request routes", () => {
+    expect(apiRoutes.admin.websiteAnalytics.overview).toBe("/admin/website-analytics/overview");
     expect(apiRoutes.admin.promo.detail(17)).toBe("/admin/promo/17");
     expect(apiRoutes.admin.promo.stats(17)).toBe("/admin/promo/17/stats");
     expect(apiRoutes.admin.promo.audit(17)).toBe("/admin/promo/17/audit");

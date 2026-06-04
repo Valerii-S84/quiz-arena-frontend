@@ -200,6 +200,13 @@ export async function fetchOverview(period: string) {
   return parseOverviewPayloadSections(data);
 }
 
+export async function fetchWebsiteAnalyticsOverview(days: number) {
+  const { data } = await api.get(apiRoutes.admin.websiteAnalytics.overview, {
+    params: { days },
+  });
+  return data;
+}
+
 export async function fetchEconomyPurchases() {
   const { data } = await api.get(apiRoutes.admin.economy.purchases, {
     params: { page: 1, limit: 50 },

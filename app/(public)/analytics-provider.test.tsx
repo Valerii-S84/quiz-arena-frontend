@@ -12,6 +12,8 @@ type AnalyticsWindowShape = {
   dataLayer: Array<Record<string, unknown>>;
 };
 
+type FetchSpy = ReturnType<typeof vi.fn>;
+
 declare global {
   interface Window {
     __quizArenaPublicAnalytics?: Array<Record<string, unknown>>;
@@ -27,6 +29,8 @@ const windowAnalytics = (): AnalyticsWindowShape => {
 };
 
 const mockUsePathname = vi.fn();
+const CONSENT_STORAGE_KEY = "quiz_arena_public_analytics_consent_v1";
+const VISITOR_ID_STORAGE_KEY = "quiz_arena_public_visitor_id_v1";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => mockUsePathname(),
@@ -58,15 +62,64 @@ function AnalyticsProbe() {
   return <button type="button" onClick={() => trackEvent("hero_cta_click", { source: "probe" })}>track</button>;
 }
 
+function TelegramCtaProbe() {
+  const { trackEvent } = usePublicAnalytics();
+
+  return (
+    <button
+      type="button"
+      onClick={() =>
+        trackEvent("hero_cta_click", {
+          section: "hero",
+          cta: "telegram_bot",
+          destination: "https://t.me/deutsch_quiz_arena",
+        })
+      }
+    >
+      telegram cta
+    </button>
+  );
+}
+
+function disableSendBeacon() {
+  Object.defineProperty(window.navigator, "sendBeacon", {
+    configurable: true,
+    value: undefined,
+  });
+}
+
+function installFetchSpy(): FetchSpy {
+  disableSendBeacon();
+  const fetchSpy = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+  vi.stubGlobal("fetch", fetchSpy);
+  return fetchSpy;
+}
+
+async function flushEffects() {
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+}
+
+function fetchPayloads(fetchSpy: FetchSpy): Array<Record<string, unknown>> {
+  return fetchSpy.mock.calls.map((call) => {
+    const [, options] = call as [string, { body: string }];
+    return JSON.parse(options.body) as Record<string, unknown>;
+  });
+}
+
 afterEach(() => {
   document.body.innerHTML = "";
   document.title = "";
   const analyticsWindow = windowAnalytics();
   analyticsWindow.__quizArenaPublicAnalytics = [];
   analyticsWindow.dataLayer = [];
-  window.localStorage.removeItem("quiz_arena_public_analytics_consent_v1");
+  window.localStorage.removeItem(CONSENT_STORAGE_KEY);
+  window.localStorage.removeItem(VISITOR_ID_STORAGE_KEY);
   mockUsePathname.mockReset();
   mockUsePathname.mockReturnValue("/");
+  vi.unstubAllGlobals();
   vi.clearAllMocks();
 });
 
@@ -130,8 +183,148 @@ function DuplicateMarkerProbe() {
 }
 
 describe("public analytics consent and event queue", () => {
+  it("does not send backend analytics when stored consent is denied", async () => {
+    window.localStorage.setItem(CONSENT_STORAGE_KEY, "denied");
+    const fetchSpy = installFetchSpy();
+
+    const { cleanup } = renderInContainer(
+      <AnalyticsProvider>
+        <AnalyticsProbe />
+      </AnalyticsProvider>,
+    );
+
+    try {
+      await flushEffects();
+
+      expect(fetchSpy).not.toHaveBeenCalled();
+      expect(window.localStorage.getItem(VISITOR_ID_STORAGE_KEY)).toBeNull();
+    } finally {
+      cleanup();
+    }
+  });
+
+  it("sends a backend page_view when stored consent is granted", async () => {
+    window.localStorage.setItem(CONSENT_STORAGE_KEY, "granted");
+    window.history.pushState({}, "", "/projects?utm_source=ads&utm_medium=cpc&utm_campaign=summer");
+    mockUsePathname.mockReturnValue("/projects");
+    const fetchSpy = installFetchSpy();
+
+    const { cleanup } = renderInContainer(
+      <AnalyticsProvider>
+        <AnalyticsProbe />
+      </AnalyticsProvider>,
+    );
+
+    try {
+      await flushEffects();
+
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      const [url, options] = fetchSpy.mock.calls[0] as [
+        string,
+        { body: string; keepalive: boolean; credentials: string },
+      ];
+      expect(url).toBe("/api/public/website-analytics/events");
+      expect(options.keepalive).toBe(true);
+      expect(options.credentials).toBe("omit");
+
+      const payload = JSON.parse(options.body) as Record<string, unknown>;
+      expect(payload).toMatchObject({
+        event_type: "page_view",
+        path: "/projects",
+        utm_source: "ads",
+        utm_medium: "cpc",
+        utm_campaign: "summer",
+      });
+      expect(typeof payload.visitor_id).toBe("string");
+      expect(window.localStorage.getItem(VISITOR_ID_STORAGE_KEY)).toBe(payload.visitor_id);
+    } finally {
+      cleanup();
+    }
+  });
+
+  it("sends backend analytics for Telegram CTA clicks after granted consent", async () => {
+    window.localStorage.setItem(CONSENT_STORAGE_KEY, "granted");
+    const fetchSpy = installFetchSpy();
+
+    const { container, cleanup } = renderInContainer(
+      <AnalyticsProvider>
+        <TelegramCtaProbe />
+      </AnalyticsProvider>,
+    );
+
+    try {
+      await flushEffects();
+      fetchSpy.mockClear();
+
+      const trackButton = Array.from(container.querySelectorAll("button")).find(
+        (button) => button.textContent === "telegram cta",
+      );
+      expect(trackButton).not.toBeNull();
+
+      act(() => {
+        trackButton?.click();
+      });
+
+      await flushEffects();
+
+      const payloads = fetchPayloads(fetchSpy);
+      expect(payloads).toHaveLength(1);
+      expect(payloads[0]).toMatchObject({
+        event_type: "telegram_cta_click",
+        path: window.location.pathname,
+        metadata: {
+          public_event_name: "hero_cta_click",
+          section: "hero",
+          cta: "telegram_bot",
+          destination: "https://t.me/deutsch_quiz_arena",
+        },
+      });
+    } finally {
+      cleanup();
+    }
+  });
+
+  it("flushes queued Telegram CTA events to backend after accepting consent", async () => {
+    const fetchSpy = installFetchSpy();
+    const { container, cleanup } = renderInContainer(
+      <AnalyticsProvider>
+        <TelegramCtaProbe />
+      </AnalyticsProvider>,
+    );
+
+    try {
+      const trackButton = Array.from(container.querySelectorAll("button")).find(
+        (button) => button.textContent === "telegram cta",
+      );
+      expect(trackButton).not.toBeNull();
+
+      act(() => {
+        trackButton?.click();
+      });
+
+      expect(fetchSpy).not.toHaveBeenCalled();
+
+      const acceptButton = Array.from(container.querySelectorAll("button")).find(
+        (button) => button.textContent === "Analytics erlauben",
+      );
+      expect(acceptButton).not.toBeNull();
+
+      act(() => {
+        acceptButton?.click();
+      });
+
+      await flushEffects();
+
+      const payloads = fetchPayloads(fetchSpy);
+      expect(payloads.some((payload) => payload.event_type === "telegram_cta_click")).toBe(true);
+      expect(payloads.some((payload) => payload.event_type === "page_view")).toBe(true);
+    } finally {
+      cleanup();
+    }
+  });
+
   it("tracks events instantly when consent is already granted before mount", async () => {
-    window.localStorage.setItem("quiz_arena_public_analytics_consent_v1", "granted");
+    window.localStorage.setItem(CONSENT_STORAGE_KEY, "granted");
 
     const receivedEvents: Array<Record<string, unknown>> = [];
     const onAnalyticsEvent = (event: Event) => {
@@ -199,7 +392,7 @@ describe("public analytics consent and event queue", () => {
       });
 
       expect(window.__quizArenaPublicAnalytics).toHaveLength(0);
-      expect(window.localStorage.getItem("quiz_arena_public_analytics_consent_v1")).toBeNull();
+      expect(window.localStorage.getItem(CONSENT_STORAGE_KEY)).toBeNull();
 
       window.history.pushState({}, "", "/contact");
       document.title = "Kontakt";
@@ -213,7 +406,7 @@ describe("public analytics consent and event queue", () => {
         acceptButton?.click();
       });
 
-      expect(window.localStorage.getItem("quiz_arena_public_analytics_consent_v1")).toBe("granted");
+      expect(window.localStorage.getItem(CONSENT_STORAGE_KEY)).toBe("granted");
 
       await act(async () => {
         await Promise.resolve();
@@ -262,7 +455,7 @@ describe("public analytics consent and event queue", () => {
         await Promise.resolve();
       });
 
-      expect(window.localStorage.getItem("quiz_arena_public_analytics_consent_v1")).toBe("denied");
+      expect(window.localStorage.getItem(CONSENT_STORAGE_KEY)).toBe("denied");
       const deniedAnalyticsWindow = windowAnalytics();
       expect(deniedAnalyticsWindow.__quizArenaPublicAnalytics).toHaveLength(0);
 

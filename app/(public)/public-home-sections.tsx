@@ -66,6 +66,9 @@ type ProductCard = {
   imageAlt?: string;
   accentClass: string;
   download?: string;
+  analyticsEventName?: "hero_cta_click" | "channel_cta_click";
+  analyticsSection?: string;
+  analyticsCta?: string;
 };
 
 const publicNavigation = [
@@ -109,6 +112,9 @@ function getProjectCards(trackedTelegramBotUrl: string): ProductCard[] {
       imageSrc: BOT_LOGO_PATH,
       imageAlt: "Deutsch Quiz Arena Bot Logo",
       accentClass: "from-[#2AABEE]/20 to-[#FFD166]/10",
+      analyticsEventName: "hero_cta_click",
+      analyticsSection: "product_card",
+      analyticsCta: "telegram_bot",
     },
     {
       title: "Deutsch ist einfach! Schule",
@@ -119,6 +125,9 @@ function getProjectCards(trackedTelegramBotUrl: string): ProductCard[] {
       imageSrc: CHANNEL_LOGO_PATH,
       imageAlt: "Deutsch ist einfach! Schule Logo",
       accentClass: "from-[#4DE2C6]/20 to-[#2AABEE]/10",
+      analyticsEventName: "channel_cta_click",
+      analyticsSection: "product_card",
+      analyticsCta: "telegram_channel",
     },
     {
       title: "Deutsch Trainer Bot",
@@ -130,6 +139,9 @@ function getProjectCards(trackedTelegramBotUrl: string): ProductCard[] {
       imageSrc: DEUTSCH_TRAINER_LOGO_PATH,
       imageAlt: "Deutsch Trainer Bot Logo",
       accentClass: "from-[#FFD166]/20 to-[#4DE2C6]/10",
+      analyticsEventName: "hero_cta_click",
+      analyticsSection: "product_card",
+      analyticsCta: "telegram_bot",
     },
     {
       title: "Worklog APK",
@@ -175,6 +187,9 @@ function SmallProductCard({ product }: { product: ProductCard }) {
       target={product.download ? undefined : "_blank"}
       rel={product.download ? undefined : "noreferrer"}
       download={product.download}
+      data-analytics-event={product.analyticsEventName}
+      data-analytics-section={product.analyticsSection}
+      data-analytics-cta={product.analyticsCta}
       className={`group block min-w-0 rounded-2xl border border-white/10 bg-gradient-to-br ${product.accentClass} p-3 transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.08] sm:p-4`}
     >
       <div className="flex items-start gap-3">
@@ -211,6 +226,9 @@ function ProjectCard({ product }: { product: ProductCard }) {
         target={product.download ? undefined : "_blank"}
         rel={product.download ? undefined : "noreferrer"}
         download={product.download}
+        data-analytics-event={product.analyticsEventName}
+        data-analytics-section={product.analyticsSection}
+        data-analytics-cta={product.analyticsCta}
         className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-white/10 bg-white/[0.08] px-4 py-2 text-center text-sm font-semibold leading-snug text-white transition hover:border-[#2AABEE]/70 hover:bg-[#2AABEE]/20 sm:w-fit"
       >
         {product.actionLabel}

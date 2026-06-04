@@ -1,4 +1,5 @@
 export const ANALYTICS_CONSENT_STORAGE_KEY = "quiz_arena_public_analytics_consent_v1";
+export const PUBLIC_VISITOR_ID_STORAGE_KEY = "quiz_arena_public_visitor_id_v1";
 
 export type PublicAnalyticsEventName =
   | "hero_cta_click"
@@ -15,6 +16,8 @@ export type PublicAnalyticsPayload = Record<
   string,
   string | number | boolean | null | undefined
 >;
+
+export type WebsiteAnalyticsEventType = "page_view" | "telegram_cta_click";
 
 export type QueuedPublicAnalyticsEvent = {
   name: PublicAnalyticsEventName;

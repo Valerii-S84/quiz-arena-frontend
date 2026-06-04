@@ -2,9 +2,13 @@ export const apiRoutes = {
   public: {
     stats: "/stats",
     contact: "/contact",
+    websiteAnalyticsEvents: "/public/website-analytics/events",
   },
   admin: {
     overview: "/admin/overview",
+    websiteAnalytics: {
+      overview: "/admin/website-analytics/overview",
+    },
     economy: {
       purchases: "/admin/economy/purchases",
       subscriptions: "/admin/economy/subscriptions",

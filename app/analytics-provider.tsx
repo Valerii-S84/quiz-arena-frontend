@@ -2,11 +2,16 @@
 
 import {
   ANALYTICS_CONSENT_STORAGE_KEY,
+  PUBLIC_VISITOR_ID_STORAGE_KEY,
   type PublicAnalyticsEventName,
   type PublicAnalyticsPayload,
   type QueuedPublicAnalyticsEvent,
 } from "@/lib/analytics";
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  getOrCreatePublicVisitorId,
+  sendWebsiteAnalyticsEvent,
+} from "@/lib/public-analytics-client";
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
 type AnalyticsConsent = "pending" | "granted" | "denied";
@@ -68,7 +73,7 @@ function getPageContext(timestamp = new Date().toISOString()): PageEventContext 
 function emitToWindow(
   name: PublicAnalyticsEventName,
   payload: PublicAnalyticsPayload,
-  context?: PageEventContext,
+  context: PageEventContext,
 ) {
   if (typeof window === "undefined") {
     return;
@@ -76,12 +81,11 @@ function emitToWindow(
 
   const eventPayload = buildBaseEventPayload(name, payload);
   const eventWindow = window as WindowWithAnalytics;
-  const eventContext = context ?? getPageContext();
 
   eventWindow.__quizArenaPublicAnalytics = eventWindow.__quizArenaPublicAnalytics ?? [];
   eventWindow.__quizArenaPublicAnalytics.push({
     ...eventPayload,
-    ...eventContext,
+    ...context,
   });
 
   if (eventWindow.dataLayer) {
@@ -93,6 +97,47 @@ function emitToWindow(
       detail: eventPayload,
     }),
   );
+}
+
+function isTelegramCtaEvent(
+  name: PublicAnalyticsEventName,
+  payload: PublicAnalyticsPayload,
+): boolean {
+  const cta = typeof payload.cta === "string" ? payload.cta : "";
+  const destination = typeof payload.destination === "string" ? payload.destination : "";
+
+  if (name === "channel_cta_click") {
+    return true;
+  }
+
+  if (name === "quiz_teaser_cta_clicked") {
+    return destination === "telegram_bot";
+  }
+
+  return name === "hero_cta_click" && cta === "telegram_bot";
+}
+
+function dispatchTrackedEvent(
+  name: PublicAnalyticsEventName,
+  payload: PublicAnalyticsPayload,
+  context?: PageEventContext,
+) {
+  const eventContext = context ?? getPageContext();
+  emitToWindow(name, payload, eventContext);
+
+  if (!isTelegramCtaEvent(name, payload)) {
+    return;
+  }
+
+  sendWebsiteAnalyticsEvent({
+    eventType: "telegram_cta_click",
+    path: eventContext.page_path,
+    timestamp: eventContext.timestamp,
+    metadata: {
+      public_event_name: name,
+      ...payload,
+    },
+  });
 }
 
 export function usePublicAnalytics() {
@@ -145,6 +190,7 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
   const [consent, setConsent] = useState<AnalyticsConsent>("pending");
   const [isLoaded, setIsLoaded] = useState(false);
   const [queuedEvents, setQueuedEvents] = useState<QueuedPublicAnalyticsEvent[]>([]);
+  const lastPageViewPathRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined" || !isPublicScope) {
@@ -163,6 +209,11 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
 
     const nextState: AnalyticsConsent = isAllowed ? "granted" : "denied";
     window.localStorage.setItem(ANALYTICS_CONSENT_STORAGE_KEY, nextState);
+    if (isAllowed) {
+      getOrCreatePublicVisitorId();
+    } else {
+      window.localStorage.removeItem(PUBLIC_VISITOR_ID_STORAGE_KEY);
+    }
     setConsent(nextState);
   }, []);
 
@@ -173,7 +224,7 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
 
     setQueuedEvents((events) => {
       events.forEach((queuedEvent) => {
-        emitToWindow(queuedEvent.name, queuedEvent.payload, {
+        dispatchTrackedEvent(queuedEvent.name, queuedEvent.payload, {
           page_path: queuedEvent.page_path,
           page_title: queuedEvent.page_title,
           timestamp: queuedEvent.timestamp,
@@ -210,7 +261,7 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
         return;
       }
 
-      emitToWindow(name, payload);
+      dispatchTrackedEvent(name, payload);
     },
     [consent],
   );
@@ -224,6 +275,29 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
       flushEvents();
     }
   }, [consent, flushEvents]);
+
+  useEffect(() => {
+    if (
+      typeof window === "undefined" ||
+      !isPublicScope ||
+      !isLoaded ||
+      consent !== "granted"
+    ) {
+      return;
+    }
+
+    const pagePath = window.location.pathname || pathname || "/";
+    if (lastPageViewPathRef.current === pagePath) {
+      return;
+    }
+
+    lastPageViewPathRef.current = pagePath;
+    sendWebsiteAnalyticsEvent({
+      eventType: "page_view",
+      path: pagePath,
+      timestamp: new Date().toISOString(),
+    });
+  }, [consent, isLoaded, isPublicScope, pathname]);
 
   const value = useMemo(
     () => ({
