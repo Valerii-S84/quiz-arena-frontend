@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import {
   TELEGRAM_BOT_START_PAYLOAD,
-  getItQuizBotUrl,
+  getDeutschTrainerBotUrl,
   getTelegramBotUrl,
   getTelegramChannelUrl,
 } from "@/lib/public-site-config";
@@ -11,6 +11,7 @@ import {
 import {
   BOT_LOGO_PATH,
   CHANNEL_LOGO_PATH,
+  DEUTSCH_TRAINER_LOGO_PATH,
   GLASS_CARD_CLASS,
   ORANGE_BUTTON_CLASS,
   SECONDARY_BUTTON_CLASS,
@@ -120,11 +121,14 @@ function getProjectCards(trackedTelegramBotUrl: string): ProductCard[] {
       accentClass: "from-[#4DE2C6]/20 to-[#2AABEE]/10",
     },
     {
-      title: "IT Quiz Bot",
-      eyebrow: "IT Training",
-      description: "Technisches Wissen in kurzen Quizformaten testen und schrittweise ausbauen.",
-      href: getItQuizBotUrl(),
-      actionLabel: "IT-Quiz öffnen",
+      title: "Deutsch Trainer Bot",
+      eyebrow: "Deutsch Training",
+      description:
+        "Kurze Deutsch-Quizsessions mit Fortschritt, Fehlerwiederholung und Free/Plus/Pro-Plänen direkt in Telegram.",
+      href: getDeutschTrainerBotUrl(),
+      actionLabel: "Trainer Bot öffnen",
+      imageSrc: DEUTSCH_TRAINER_LOGO_PATH,
+      imageAlt: "Deutsch Trainer Bot Logo",
       accentClass: "from-[#FFD166]/20 to-[#4DE2C6]/10",
     },
     {
@@ -159,7 +163,7 @@ function ProductIcon({ product }: { product: ProductCard }) {
 
   return (
     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[#FFD166]/30 bg-[#FFD166]/10 text-sm font-bold text-[#FFD166] sm:h-11 sm:w-11">
-      IT
+      {product.title.slice(0, 2).toUpperCase()}
     </span>
   );
 }
@@ -279,7 +283,7 @@ export function PublicHomeHero({ trackedTelegramBotUrl }: PublicHomeHeroProps) {
         </h1>
         <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
           Deutsch Quiz Arena ist ein wachsendes Lern-Ökosystem mit Quiz-Bot,
-          Telegram-Kanälen, Unterricht, IT-Quiz und eigenen digitalen Tools.
+          Telegram-Kanälen, Unterricht, Deutsch-Training und eigenen digitalen Tools.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
           <a

@@ -18,7 +18,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 API_INTERNAL_URL=http://localhost:8000
 NEXT_PUBLIC_TELEGRAM_BOT_URL=https://t.me/Deine_Deutsch_Quiz_bot
 NEXT_PUBLIC_TELEGRAM_CHANNEL_URL=https://t.me/doechkurse
-NEXT_PUBLIC_IT_QUIZ_BOT_URL=https://t.me/ITQuizBot
+NEXT_PUBLIC_DEUTSCH_TRAINER_BOT_URL=https://t.me/Trainer1512_bot
 ```
 
 - `NEXT_PUBLIC_API_URL` is the browser-facing API base.
@@ -29,7 +29,7 @@ NEXT_PUBLIC_IT_QUIZ_BOT_URL=https://t.me/ITQuizBot
 - If `API_INTERNAL_URL` is unset, SSR falls back to an absolute `NEXT_PUBLIC_API_URL` or `http://localhost:8000`.
 - `NEXT_PUBLIC_TELEGRAM_BOT_URL` configures the public bot CTA target.
 - `NEXT_PUBLIC_TELEGRAM_CHANNEL_URL` configures the public Telegram channel CTA target.
-- `NEXT_PUBLIC_IT_QUIZ_BOT_URL` configures the public IT Quiz Bot CTA target.
+- `NEXT_PUBLIC_DEUTSCH_TRAINER_BOT_URL` configures the public Deutsch Trainer Bot CTA target.
 
 ## Docker
 
@@ -43,10 +43,10 @@ docker build \
   --build-arg API_INTERNAL_URL=http://localhost:8000 \
   --build-arg NEXT_PUBLIC_TELEGRAM_BOT_URL=https://t.me/Deine_Deutsch_Quiz_bot \
   --build-arg NEXT_PUBLIC_TELEGRAM_CHANNEL_URL=https://t.me/doechkurse \
-  --build-arg NEXT_PUBLIC_IT_QUIZ_BOT_URL=https://t.me/ITQuizBot
+  --build-arg NEXT_PUBLIC_DEUTSCH_TRAINER_BOT_URL=https://t.me/Trainer1512_bot
 ```
 
-The Dockerfile accepts all five values in both the `builder` and `production` stages.
+The Dockerfile accepts the same frontend runtime values in both the `builder` and `production` stages.
 
 For the backend repo cutover, the production image contract is:
 

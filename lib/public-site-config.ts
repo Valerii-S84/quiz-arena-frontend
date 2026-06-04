@@ -1,6 +1,6 @@
 const DEFAULT_TELEGRAM_BOT_URL = "https://t.me/Deine_Deutsch_Quiz_bot";
 const DEFAULT_TELEGRAM_CHANNEL_URL = "https://t.me/doechkurse";
-const DEFAULT_IT_QUIZ_BOT_URL = "https://t.me/ITQuizBot";
+const DEFAULT_DEUTSCH_TRAINER_BOT_URL = "https://t.me/Trainer1512_bot";
 const DEFAULT_SITE_URL = "https://deutschmit.de";
 const DEFAULT_CONTACT_EMAIL = "info@deutschmit.de";
 
@@ -20,10 +20,10 @@ export function getTelegramChannelUrl(): string {
   );
 }
 
-export function getItQuizBotUrl(): string {
+export function getDeutschTrainerBotUrl(): string {
   return (
-    normalizePublicEnv(process.env.NEXT_PUBLIC_IT_QUIZ_BOT_URL) ??
-    DEFAULT_IT_QUIZ_BOT_URL
+    normalizePublicEnv(process.env.NEXT_PUBLIC_DEUTSCH_TRAINER_BOT_URL) ??
+    DEFAULT_DEUTSCH_TRAINER_BOT_URL
   );
 }
 
