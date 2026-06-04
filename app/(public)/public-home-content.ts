@@ -1,5 +1,6 @@
 export const BOT_LOGO_PATH = "/logo/bot-logo.jpg";
 export const CHANNEL_LOGO_PATH = "/logo/channel-logo.jpg";
+export const DEUTSCH_TRAINER_LOGO_PATH = "/logo/deutsch-trainer-logo.png";
 export const WORKLOG_LOGO_PATH = "/products/worklog/logo.png";
 export const WORKLOG_DOWNLOAD_PATH = "/downloads/worklog/direct-hoofdrapport.apk";
 

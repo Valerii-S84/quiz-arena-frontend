@@ -19,14 +19,14 @@ import PublicHomeClient from "./public-home-client";
 export const metadata: Metadata = {
   title: "Startseite",
   description:
-    "Deutsch Quiz Arena als wachsendes Lern-Ökosystem mit Quiz-Bot, Unterricht, Telegram-Kanälen, IT-Quiz, Worklog und Wissen & Tipps.",
+    "Deutsch Quiz Arena als wachsendes Lern-Ökosystem mit Quiz-Bot, Unterricht, Telegram-Kanälen, Deutsch Trainer Bot, Worklog und Wissen & Tipps.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
     title: "Startseite | Deutsch Quiz Arena",
     description:
-      "Deutsch lernen, Wissen testen und digitale Lernprodukte entdecken: Quiz-Bot, Unterricht, IT-Quiz, Worklog und Wissen & Tipps.",
+      "Deutsch lernen, Wissen testen und digitale Lernprodukte entdecken: Quiz-Bot, Unterricht, Deutsch Trainer Bot, Worklog und Wissen & Tipps.",
     url: "/",
   },
 };
