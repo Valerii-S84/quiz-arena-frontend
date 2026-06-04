@@ -3,18 +3,30 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { fetchContactRequests, fetchOverview, updateContactRequestStatus } from "@/lib/api";
+import {
+  fetchContactRequests,
+  fetchOverview,
+  fetchWebsiteAnalyticsOverview,
+  updateContactRequestStatus,
+} from "@/lib/api";
 import type { OverviewPayloadSections } from "@/lib/statistics-payload";
 
 import { normalizeOverviewData } from "./dashboard-normalization";
 import { PERIOD_OPTIONS } from "./dashboard-config";
 import { DashboardContactRequestsSection } from "./dashboard-contact-requests-section";
 import { DashboardOverviewSections } from "./dashboard-overview-sections";
-import type { ContactRequestsData } from "./dashboard-types";
+import { DashboardWebsiteAnalyticsSection } from "./dashboard-website-analytics-section";
+import type { ContactRequestsData, WebsiteAnalyticsOverviewData } from "./dashboard-types";
+
+function periodToDays(period: string): number {
+  const parsed = Number.parseInt(period, 10);
+  return Number.isFinite(parsed) ? parsed : 7;
+}
 
 export default function DashboardPage() {
   const [period, setPeriod] = useState("7d");
   const queryClient = useQueryClient();
+  const websiteAnalyticsDays = periodToDays(period);
 
   const { data, error: queryError, isLoading } = useQuery<OverviewPayloadSections, Error>({
     queryKey: ["overview", period],
@@ -26,6 +38,15 @@ export default function DashboardPage() {
       queryKey: ["contact-requests"],
       queryFn: fetchContactRequests,
     });
+
+  const {
+    data: websiteAnalyticsData,
+    error: websiteAnalyticsError,
+    isLoading: isWebsiteAnalyticsLoading,
+  } = useQuery<WebsiteAnalyticsOverviewData, Error>({
+    queryKey: ["website-analytics", websiteAnalyticsDays],
+    queryFn: () => fetchWebsiteAnalyticsOverview(websiteAnalyticsDays),
+  });
 
   const statusMutation = useMutation({
     mutationFn: ({ requestId, status }: { requestId: number; status: string }) =>
@@ -85,6 +106,12 @@ export default function DashboardPage() {
       ) : null}
 
       {overviewModel ? <DashboardOverviewSections model={overviewModel} /> : null}
+
+      <DashboardWebsiteAnalyticsSection
+        data={websiteAnalyticsData}
+        isLoading={isWebsiteAnalyticsLoading}
+        error={websiteAnalyticsError}
+      />
 
       <DashboardContactRequestsSection
         data={contactRequestsData}

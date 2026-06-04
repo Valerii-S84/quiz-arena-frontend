@@ -178,6 +178,28 @@ describe("public home analytics event wiring", () => {
     }
   });
 
+  it("tracks Telegram product card clicks via delegated listener", () => {
+    const { container, cleanup } = renderHomeForAnalytics();
+
+    try {
+      const productCard = container.querySelector<HTMLAnchorElement>(
+        '[data-analytics-section="product_card"][data-analytics-cta="telegram_bot"]',
+      );
+      expect(productCard).not.toBeNull();
+
+      act(() => {
+        productCard?.click();
+      });
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        "hero_cta_click",
+        expect.objectContaining({ section: "product_card", cta: "telegram_bot" }),
+      );
+    } finally {
+      cleanup();
+    }
+  });
+
   it("tracks wizard_open for both student and partner entry points", () => {
     const { container, cleanup } = renderHomeForAnalytics();
 
