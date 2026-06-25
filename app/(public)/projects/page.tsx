@@ -1,18 +1,20 @@
 import type { Metadata } from "next";
 
+import { PublicLegalFooter } from "../_components/public-legal-footer";
+
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Projekte",
+  title: "Projektübersicht",
   description:
-    "Übersicht über den Telegram-Bot, Admin-Dashboard und ergänzende Lernwerkzeuge.",
+    "Uebersicht ueber das Deutsch-Lernprojekt, Inhalte in Pilotphase und technische Formate in Vorbereitung.",
   alternates: {
     canonical: "/projects",
   },
   openGraph: {
-    title: "Projekte | Deutsch Quiz Arena",
+    title: "Projektuebersicht | Deutsch Quiz Arena",
     description:
-      "Übersicht über Telegram Quiz Bot, Analytics-Dashboard und ergänzende Produktblöcke.",
+      "Uebersicht ueber sichtbare Projektbausteine ohne verbindliches kommerzielles Angebot.",
     url: "/projects",
   },
 };
@@ -20,22 +22,30 @@ export const metadata: Metadata = {
 const projects = [
   {
     name: "Telegram Quiz Bot",
-    description: "Основний продукт із режимами гри, streak, daily challenge і преміум-економікою.",
+    description:
+      "Pilotphase fuer taegliche Quizrunden, Fortschritt und kurze Lernimpulse direkt in Telegram.",
   },
   {
-    name: "Admin Dashboard",
-    description: "Операційна панель для revenue, users, promo, content quality та system health.",
+    name: "Wissensartikel",
+    description:
+      "Redaktionelle Artikel fuer Orientierung, Sprachwissen und erste Einordnung rund um Deutschlernen.",
   },
   {
-    name: "Analytics Pipeline",
-    description: "Щоденні агрегати, публічні метрики та внутрішні алерти для власника.",
+    name: "Weitere Formate in Vorbereitung",
+    description:
+      "Zusaetzliche Lern- und Tool-Ideen werden geprueft, befinden sich aber noch nicht in einem verbindlichen Angebot.",
   },
 ];
 
 export default function ProjectsPage() {
   return (
     <main className="mx-auto max-w-5xl px-6 py-14">
-      <h1 className="text-4xl">Проєкти</h1>
+      <h1 className="text-4xl">Projektuebersicht</h1>
+      <p className="mt-4 max-w-3xl text-sm leading-6 text-ember/70">
+        Diese Seite zeigt den aktuellen Stand eines Deutsch-Lernprojekts im Aufbau. Sie dient der
+        Orientierung und stellt noch keinen Online-Shop, keine Buchungsplattform und kein
+        verbindliches Leistungsangebot dar.
+      </p>
       <div className="mt-8 grid gap-5 sm:grid-cols-3">
         {projects.map((project) => (
           <article key={project.name} className="surface rounded-2xl p-5">
@@ -44,6 +54,7 @@ export default function ProjectsPage() {
           </article>
         ))}
       </div>
+      <PublicLegalFooter />
     </main>
   );
 }

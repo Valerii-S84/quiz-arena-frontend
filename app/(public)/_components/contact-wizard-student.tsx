@@ -247,8 +247,8 @@ export function StudentWizard({ onClose }: WizardProps) {
           Danke, {submittedName}!
         </h4>
         <p className="text-sm text-slate-600">
-          Wir haben deine Anfrage erhalten und suchen die beste Lernoption für dich. Wir melden uns
-          innerhalb von 24 Stunden.
+          Wir haben deine unverbindliche Anfrage erhalten und pruefen die naechsten sinnvollen
+          Schritte. Wir melden uns moeglichst zeitnah.
         </p>
         <button
           type="button"
@@ -409,7 +409,9 @@ export function StudentWizard({ onClose }: WizardProps) {
           </fieldset>
 
           <div>
-            <p className="text-sm font-medium text-slate-700">Budget pro Monat (optional)</p>
+            <p className="text-sm font-medium text-slate-700">
+              Budgetrahmen pro Monat (optional, nur zur Orientierung)
+            </p>
             <div className="mt-2">
               <ChoiceCards
                 options={STUDENT_BUDGET_OPTIONS}
@@ -440,7 +442,8 @@ export function StudentWizard({ onClose }: WizardProps) {
               aria-describedby={errorFieldId === STUDENT_CONTACT_FIELD_ID ? STUDENT_ERROR_ID : undefined}
             />
             <span className="mt-1 block text-xs text-slate-500">
-              Wir schreiben dir innerhalb von 24 Stunden.
+              Wir nutzen diese Angabe nur, um auf deine unverbindliche Anfrage antworten zu
+              koennen.
             </span>
           </div>
 

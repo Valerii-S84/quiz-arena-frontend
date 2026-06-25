@@ -205,10 +205,10 @@ describe("public home analytics event wiring", () => {
 
     try {
       const studentButton = Array.from(container.querySelectorAll("button")).find((button) =>
-        button.textContent?.includes("Deutsch-Unterricht anfragen"),
+        button.textContent?.includes("Unverbindlich anfragen"),
       );
       const partnerButton = Array.from(container.querySelectorAll("button")).find((button) =>
-        button.textContent?.includes("Kontakt aufnehmen"),
+        button.textContent?.includes("Projektidee unverbindlich senden"),
       );
 
       expect(studentButton).not.toBeNull();

@@ -30,10 +30,10 @@ describe("public home scenarios", () => {
       <PublicHomeHero trackedTelegramBotUrl={trackedUrl} />,
     );
 
-    expect(html).toContain("Quiz-Bot starten");
+    expect(html).toContain("Quiz-Bot öffnen");
     expect(html).toContain(`href="${trackedUrl}"`);
     expect(html).toContain("href=\"#projects\"");
-    expect(html).toContain("Projekte entdecken");
+    expect(html).toContain("Projektstatus ansehen");
     expect(html).toContain("start=site_public_home");
   });
 
@@ -105,8 +105,8 @@ describe("public home scenarios", () => {
       <PublicHomeContactSection onOpenStudentWizard={() => undefined} onOpenPartnerWizard={() => undefined} />,
     );
 
-    expect(html).toContain("Deutsch-Unterricht anfragen");
-    expect(html).toContain("Kontakt aufnehmen");
+    expect(html).toContain("Unverbindlich anfragen");
+    expect(html).toContain("Projektidee unverbindlich senden");
   });
 });
 

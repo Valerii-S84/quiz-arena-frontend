@@ -5,6 +5,7 @@ import { ARTICLE_EMBEDS } from "@/lib/article-definitions";
 import { ARTICLE_SERVER_RENDERED_PAYLOAD } from "@/lib/article-server-rendered-content";
 import { getSiteUrl } from "@/lib/public-site-config";
 import { ArticleInteractions } from "./article-interactions";
+import { PublicLegalFooter } from "../../_components/public-legal-footer";
 
 type ArticlePageProps = {
   params: Promise<{
@@ -368,6 +369,12 @@ function buildArticleBreadcrumbStructuredData(
   };
 }
 
+function normalizeArticleHtml(html: string): string {
+  return html
+    .replace(/rel="noreferrer"/g, 'rel="noopener noreferrer"')
+    .replace(/(<a\b[^>]*target="_blank")(?![^>]*\brel=)/g, '$1 rel="noopener noreferrer"');
+}
+
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
   const article = ARTICLE_EMBEDS[slug];
@@ -381,7 +388,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     notFound();
   }
 
-  const articleHtml = articlePayload.content;
+  const articleHtml = normalizeArticleHtml(articlePayload.content);
   const articleStyles = `${embeddedArticleTheme()}\n${articlePayload.styles}\n${embeddedArticleResponsiveOverrides()}`;
 
   return (
@@ -393,7 +400,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         <div className="mx-auto flex w-full max-w-7xl items-center justify-start">
           <Link
             href="/"
-            className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-100 transition hover:border-amber-300/30 hover:bg-white/10 hover:text-amber-100"
+            className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-100 transition hover:border-amber-300/30 hover:bg-white/10 hover:text-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
           >
             ← Zur Startseite
           </Link>
@@ -427,6 +434,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             __html: JSON.stringify(buildArticleBreadcrumbStructuredData(slug, article.title, getSiteUrl())),
           }}
         />
+        <PublicLegalFooter variant="dark" />
       </div>
     </main>
   );

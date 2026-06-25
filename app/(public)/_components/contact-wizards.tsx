@@ -15,7 +15,11 @@ export function ContactWizardModal({
 }) {
   return (
     <WizardModal
-      title={kind === "student" ? "Zum Unterricht anmelden" : "Kooperation / Partnerschaft"}
+      title={
+        kind === "student"
+          ? "Unverbindliche Anfrage zum Lernprojekt"
+          : "Unverbindliche Projektanfrage"
+      }
       open={isOpen}
       onClose={onClose}
     >

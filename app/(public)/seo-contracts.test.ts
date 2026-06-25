@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -49,7 +49,7 @@ describe("public SEO metadata contracts", () => {
         template: "%s | Deutsch Quiz Arena",
       },
       description:
-        "Deutsch lernen mit Telegram: tägliche Quizze, klare Lernpfade und Fortschrittsanalyse für Lernende und Teams.",
+        "Deutsch Quiz Arena ist ein Projekt im Aufbau mit Telegram-Quiz, Artikeln und digitalen Lernformaten in Pilotphase.",
       openGraph: {
         type: "website",
         title: "Deutsch Quiz Arena",
@@ -68,9 +68,9 @@ describe("public SEO metadata contracts", () => {
   it("exposes dedicated metadata for public landing routes", () => {
     expect(homeMetadata.title).toBe("Startseite");
     expect(homeMetadata.alternates?.canonical).toBe("/");
-    expect(projectsMetadata.title).toBe("Projekte");
+    expect(projectsMetadata.title).toBe("Projektübersicht");
     expect(contactMetadata.title).toBe("Kontakt");
-    expect(privacyMetadata.title).toBe("Datenschutz");
+    expect(privacyMetadata.title).toBe("Datenschutzerklärung");
     expect(impressumMetadata.title).toBe("Impressum");
   });
 
@@ -139,6 +139,30 @@ describe("public SEO metadata contracts", () => {
     });
 
     expect(pageMetadata.title).toBe("Artikel nicht gefunden");
+  });
+
+  it("keeps the public privacy copy limited to documented legal facts", () => {
+    const privacyFilePath = join(process.cwd(), "app", "(public)", "privacy", "page.tsx");
+    const source = readFileSync(privacyFilePath, "utf-8");
+
+    expect(source).toContain("Hetzner Online GmbH");
+    expect(source).toContain("Analytics-Ereignisse: 90 Tage.");
+    expect(source).toContain("6 Monate nach der letzten Bearbeitung");
+    expect(source).toContain("Server-, Proxy- und Sicherheitsprotokolle: 14 Tage");
+    expect(source).toContain("ist derzeit noch nicht betriebsbereit");
+
+    expect(source).not.toContain("FastAPI");
+    expect(source).not.toContain("PostgreSQL");
+    expect(source).not.toContain("Redis");
+    expect(source).not.toContain("Caddy");
+    expect(source).not.toContain("contact_requests");
+    expect(source).not.toContain("website_events");
+    expect(source).not.toContain("Sentry");
+    expect(source).not.toContain("Logtail");
+    expect(source).not.toContain("Cloudflare");
+    expect(source).not.toContain("Google Analytics");
+    expect(source).not.toContain("Matomo");
+    expect(source).not.toContain("Plausible");
   });
 });
 
@@ -213,7 +237,7 @@ describe("knowledge transport implementation", () => {
     for (const slug of ARTICLE_SLUGS) {
       const articleFilePath = join(
         process.cwd(),
-        "public",
+        "content",
         "artikel",
         ARTICLE_EMBEDS[slug].fileName,
       );
@@ -224,6 +248,17 @@ describe("knowledge transport implementation", () => {
       expect(extracted.content).toContain("<script");
       expect(extracted.content).toContain("onclick=");
       expect(extracted.content).toContain("function ");
+    }
+  });
+
+  it("keeps raw article source files out of public/ while preserving content sources", () => {
+    for (const slug of ARTICLE_SLUGS) {
+      const fileName = ARTICLE_EMBEDS[slug].fileName;
+      const publicFilePath = join(process.cwd(), "public", "artikel", fileName);
+      const contentFilePath = join(process.cwd(), "content", "artikel", fileName);
+
+      expect(existsSync(publicFilePath)).toBe(false);
+      expect(existsSync(contentFilePath)).toBe(true);
     }
   });
 
@@ -288,7 +323,7 @@ describe("knowledge transport implementation", () => {
 
     for (const articleFile of articleFiles) {
       const source = readFileSync(
-        join(process.cwd(), "public", "artikel", articleFile),
+        join(process.cwd(), "content", "artikel", articleFile),
         "utf-8",
       );
 
@@ -305,11 +340,11 @@ describe("knowledge transport implementation", () => {
     }
 
     const cefrSource = readFileSync(
-      join(process.cwd(), "public", "artikel", "sprachniveaus-a1-c1.html"),
+      join(process.cwd(), "content", "artikel", "sprachniveaus-a1-c1.html"),
       "utf-8",
     );
     const historySource = readFileSync(
-      join(process.cwd(), "public", "artikel", "deutsche-sprache-geschichte.html"),
+      join(process.cwd(), "content", "artikel", "deutsche-sprache-geschichte.html"),
       "utf-8",
     );
 
