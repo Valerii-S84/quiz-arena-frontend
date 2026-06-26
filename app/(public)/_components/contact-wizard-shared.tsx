@@ -1,6 +1,7 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
+import Link from "next/link";
 import { ReactNode } from "react";
 
 export type WizardKind = "student" | "partner";
@@ -153,7 +154,7 @@ export function HoneypotField({
 }) {
   return (
     <div className="absolute left-[-10000px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
-      <label htmlFor={fieldId}>Firma</label>
+      <label htmlFor={fieldId}>Website</label>
       <input
         id={fieldId}
         type="text"
@@ -198,6 +199,18 @@ export function WizardModal({ title, onClose, children, open }: WizardModalProps
                   </button>
                 </Dialog.Close>
               </div>
+              <p className="mt-3 text-xs leading-5 text-slate-600">
+                Hinweis: Diese Anfrage ist unverbindlich. Personenbezogene Daten aus dem Formular
+                werden nur zur Bearbeitung deiner Anfrage verarbeitet. Details findest du in{" "}
+                <Link href="/privacy" className="underline underline-offset-2">
+                  Datenschutz
+                </Link>{" "}
+                und{" "}
+                <Link href="/impressum" className="underline underline-offset-2">
+                  Impressum
+                </Link>
+                .
+              </p>
               <div className="mt-4 min-w-0">{children}</div>
             </div>
           </Dialog.Content>

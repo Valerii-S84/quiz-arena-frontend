@@ -212,7 +212,8 @@ export function PartnerWizard({ onClose }: WizardProps) {
           Danke für euren Vorschlag!
         </h4>
         <p className="text-sm text-slate-600">
-          Wir prüfen eure Anfrage und melden uns innerhalb von 2-3 Werktagen.
+          Wir pruefen eure unverbindliche Anfrage und melden uns, wenn das Thema zur aktuellen
+          Pilotphase passt.
         </p>
         <button
           type="button"

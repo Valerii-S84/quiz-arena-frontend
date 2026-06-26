@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     template: "%s | Deutsch Quiz Arena",
   },
   description:
-    "Deutsch lernen mit Telegram: tägliche Quizze, klare Lernpfade und Fortschrittsanalyse für Lernende und Teams.",
+    "Deutsch Quiz Arena ist ein Projekt im Aufbau mit Telegram-Quiz, Artikeln und digitalen Lernformaten in Pilotphase.",
   alternates: {
     canonical: "/",
   },
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     url: "/",
     title: "Deutsch Quiz Arena",
     description:
-      "Deutsch lernen mit Telegram: tägliche Quizze, klare Lernpfade und Fortschrittsanalyse für Lernende und Teams.",
+      "Deutsch Quiz Arena ist ein Projekt im Aufbau mit Telegram-Quiz, Artikeln und digitalen Lernformaten in Pilotphase.",
     images: [
       {
         url: "/logo/bot-logo.jpg",
@@ -80,7 +80,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Deutsch Quiz Arena",
     description:
-      "Deutsch lernen mit täglichen Quizzen, Telegram-Bot und persönlicher Lernsteuerung.",
+      "Projekt im Aufbau mit Telegram-Quiz, Wissensartikeln und digitalen Lernformaten in Pilotphase.",
     images: ["/logo/bot-logo.jpg"],
   },
 };
