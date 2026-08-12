@@ -50,10 +50,14 @@ export default function PrivacyPage() {
               .
             </p>
             <p className="mt-3">
-              Die öffentliche E-Mail-Adresse{" "}
-              <span className="font-medium text-slate-900">{contactEmail}</span> ist derzeit noch
-              nicht betriebsbereit. Bitte nutze bis zur Aktivierung das Kontaktformular auf dieser
-              Website.
+              Du erreichst uns per E-Mail unter{" "}
+              <a
+                className="font-medium text-slate-900 underline underline-offset-2"
+                href={`mailto:${contactEmail}`}
+              >
+                {contactEmail}
+              </a>
+              .
             </p>
           </div>
         </article>
@@ -81,19 +85,16 @@ export default function PrivacyPage() {
         <article className="rounded-xl border border-white/70 bg-white/80 p-5">
           <h2 className="text-base font-semibold text-slate-900">3. Kontaktanfragen</h2>
           <p className="mt-3">
-            Wenn du über das Kontaktformular eine Anfrage sendest, verarbeite ich die von dir
-            eingegebenen Angaben und den Inhalt deiner Nachricht, soweit dies zur Bearbeitung
-            deiner Anfrage erforderlich ist.
+            Wenn du uns per E-Mail kontaktierst, verarbeite ich deine E-Mail-Adresse, die von dir
+            angegebenen Kontaktdaten und den Inhalt deiner Nachricht, soweit dies zur Bearbeitung
+            deiner Anfrage erforderlich ist. Dasselbe gilt für Angaben, die du über eine der
+            separaten Projektanfragen für Lernende oder Kooperationspartner sendest.
           </p>
           <p className="mt-3">
             Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO, soweit es um die Anbahnung oder
             Bearbeitung einer konkreten Anfrage geht. Im Übrigen erfolgt die Verarbeitung auf
             Grundlage von Art. 6 Abs. 1 lit. f DSGVO wegen des berechtigten Interesses an einer
             geordneten Kommunikation.
-          </p>
-          <p className="mt-3">
-            Die öffentliche E-Mail-Adresse {contactEmail} ist derzeit noch nicht betriebsbereit.
-            Ein separater externer Mail-Dienst ist aktuell nicht dokumentiert.
           </p>
         </article>
 
@@ -112,9 +113,9 @@ export default function PrivacyPage() {
           </p>
           <p className="mt-3">
             Rechtsgrundlage für das technisch notwendige Cookie ist Art. 6 Abs. 1 lit. f DSGVO
-            sowie, soweit anwendbar, § 25 Abs. 2 TTDSG. Rechtsgrundlage für die Analytics ist
+            sowie, soweit anwendbar, § 25 Abs. 2 TDDDG. Rechtsgrundlage für die Analytics ist
             deine Einwilligung nach Art. 6 Abs. 1 lit. a DSGVO sowie, soweit anwendbar, § 25
-            Abs. 1 TTDSG.
+            Abs. 1 TDDDG.
           </p>
           <p className="mt-3">
             Es ist derzeit kein separater externer Tracking-Anbieter für diese öffentliche Website

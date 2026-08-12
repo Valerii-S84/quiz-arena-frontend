@@ -212,8 +212,7 @@ export function PartnerWizard({ onClose }: WizardProps) {
           Danke für euren Vorschlag!
         </h4>
         <p className="text-sm text-slate-600">
-          Wir pruefen eure unverbindliche Anfrage und melden uns, wenn das Thema zur aktuellen
-          Pilotphase passt.
+          Wir haben eure Kooperationsanfrage erhalten und melden uns mit den nächsten Schritten.
         </p>
         <button
           type="button"

@@ -39,8 +39,9 @@ describe("public home scenarios", () => {
     expect(html).toContain("Quiz-Bot öffnen");
     expect(html).toContain(`href="${trackedUrl}"`);
     expect(html).toContain("href=\"#projects\"");
-    expect(html).toContain("Projektstatus ansehen");
+    expect(html).toContain("Alle Angebote entdecken");
     expect(html).toContain("start=site_public_home");
+    expect(html).not.toMatch(/Pilotphase|Projekt im Aufbau|in Vorbereitung|unverbindlich/i);
   });
 
   it("adds analytics dataset metadata to conversion CTAs", () => {
@@ -133,8 +134,9 @@ describe("public home scenarios", () => {
       <PublicHomeContactSection onOpenStudentWizard={() => undefined} onOpenPartnerWizard={() => undefined} />,
     );
 
-    expect(html).toContain("Unverbindlich anfragen");
-    expect(html).toContain("Projektidee unverbindlich senden");
+    expect(html).toContain("Lernbegleitung anfragen");
+    expect(html).toContain("Kooperation anfragen");
+    expect(html).not.toMatch(/Pilotphase|in Vorbereitung|unverbindlich/i);
   });
 });
 

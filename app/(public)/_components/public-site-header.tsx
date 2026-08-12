@@ -17,7 +17,7 @@ type PublicSiteHeaderProps = {
 const publicNavigation = [
   { homeHref: "#projects", siteHref: "/#projects", label: "Projekte" },
   { homeHref: "#knowledge", siteHref: "/wissen", label: "Wissen & Tipps" },
-  { homeHref: "#unterricht", siteHref: "/#unterricht", label: "Pilotphase" },
+  { homeHref: "#unterricht", siteHref: "/#unterricht", label: "Lernbegleitung" },
   { homeHref: "#contact", siteHref: "/#contact", label: "Kontakt" },
 ];
 

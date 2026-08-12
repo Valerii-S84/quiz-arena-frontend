@@ -234,7 +234,13 @@ describe("public SEO metadata contracts", () => {
     expect(source).toContain("Analytics-Ereignisse: 90 Tage.");
     expect(source).toContain("6 Monate nach der letzten Bearbeitung");
     expect(source).toContain("Server-, Proxy- und Sicherheitsprotokolle: 14 Tage");
-    expect(source).toContain("ist derzeit noch nicht betriebsbereit");
+    expect(source).toContain("Du erreichst uns per E-Mail");
+    expect(source).toContain("§ 25 Abs. 2 TDDDG");
+    expect(source).toContain("Abs. 1 TDDDG");
+
+    expect(source).not.toContain("nicht betriebsbereit");
+    expect(source).not.toContain("Kontaktformular");
+    expect(source).not.toContain("TTDSG");
 
     expect(source).not.toContain("FastAPI");
     expect(source).not.toContain("PostgreSQL");
