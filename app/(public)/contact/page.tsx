@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { PublicLegalFooter } from "../_components/public-legal-footer";
 import {
+  PUBLIC_SITE_NAME,
   getPublicContactEmail,
   getTelegramBotUrl,
   getTelegramChannelUrl,
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
     canonical: "/contact",
   },
   openGraph: {
-    title: "Kontakt | Deutsch Quiz Arena",
+    title: `Kontakt | ${PUBLIC_SITE_NAME}`,
     description:
       "Kontakt zum Deutsch-Lernprojekt, zum Quiz-Bot sowie für technische, datenschutzbezogene und mögliche Kooperationsanfragen.",
     url: "/contact",
@@ -35,9 +36,9 @@ export default function ContactPage() {
       <div className="mt-8 space-y-6">
         <section className="surface rounded-2xl p-5">
           <p className="text-lg">
-            Diese Seite ist der Kontaktpunkt fuer ein Deutsch-Lernprojekt rund um den Quiz-Bot,
-            den Telegram-Kanal und technische Rueckfragen. Sie eignet sich auch fuer erste
-            unverbindliche Nachrichten zu einer moeglichen spaeteren Zusammenarbeit.
+            Diese Seite ist der Kontaktpunkt für {PUBLIC_SITE_NAME} rund um den Quiz-Bot, den
+            Telegram-Kanal und technische Rückfragen. Sie eignet sich auch für erste
+            unverbindliche Nachrichten zu einer möglichen späteren Zusammenarbeit.
           </p>
           <p className="mt-4 text-sm">
             Status: Die Website ist derzeit im Aufbau. Verbindliche kostenpflichtige Leistungen

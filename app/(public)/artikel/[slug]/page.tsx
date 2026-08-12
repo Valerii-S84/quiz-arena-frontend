@@ -3,7 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ARTICLE_EMBEDS } from "@/lib/article-definitions";
 import { ARTICLE_SERVER_RENDERED_PAYLOAD } from "@/lib/article-server-rendered-content";
-import { getSiteUrl } from "@/lib/public-site-config";
+import {
+  PUBLIC_SITE_LOGO_HEIGHT,
+  PUBLIC_SITE_LOGO_PATH,
+  PUBLIC_SITE_LOGO_WIDTH,
+  PUBLIC_SITE_NAME,
+  getSiteUrl,
+} from "@/lib/public-site-config";
 import { ArticleInteractions } from "./article-interactions";
 import { PublicLegalFooter } from "../../_components/public-legal-footer";
 
@@ -51,9 +57,9 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       description: article.description,
       images: [
         {
-          url: "/logo/bot-logo.jpg",
-          width: 1200,
-          height: 630,
+          url: PUBLIC_SITE_LOGO_PATH,
+          width: PUBLIC_SITE_LOGO_WIDTH,
+          height: PUBLIC_SITE_LOGO_HEIGHT,
           alt: article.title,
         },
       ],
@@ -333,7 +339,21 @@ function buildArticleStructuredData(slug: string, title: string, description: st
     inLanguage: "de",
     publisher: {
       "@type": "Organization",
-      name: "Deutsch Quiz Arena",
+      "@id": `${siteUrl}/#organization`,
+      name: PUBLIC_SITE_NAME,
+      url: siteUrl,
+      logo: {
+        "@type": "ImageObject",
+        url: new URL(PUBLIC_SITE_LOGO_PATH, siteUrl).toString(),
+        width: PUBLIC_SITE_LOGO_WIDTH,
+        height: PUBLIC_SITE_LOGO_HEIGHT,
+      },
+    },
+    isPartOf: {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      name: PUBLIC_SITE_NAME,
+      url: siteUrl,
     },
   };
 }

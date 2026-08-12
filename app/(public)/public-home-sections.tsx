@@ -2,6 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 
 import {
+  PUBLIC_SITE_LOGO_PATH,
+  PUBLIC_SITE_NAME,
+  QUIZ_PRODUCT_NAME,
   TELEGRAM_BOT_START_PAYLOAD,
   getDeutschTrainerBotUrl,
   getTelegramBotUrl,
@@ -115,13 +118,13 @@ function opensInNewTab(href: string, download?: string): boolean {
 function getProjectCards(trackedTelegramBotUrl: string): ProductCard[] {
   return [
     {
-      title: "Deutsch Quiz Arena Bot",
-      eyebrow: "Telegram Bot",
+      title: QUIZ_PRODUCT_NAME,
+      eyebrow: "Telegram Quiz Bot",
       description: "Tägliche Quizrunden, Duelle, Streaks und Fortschritt direkt in Telegram.",
       href: trackedTelegramBotUrl,
       actionLabel: "Bot öffnen",
       imageSrc: BOT_LOGO_PATH,
-      imageAlt: "Deutsch Quiz Arena Bot Logo",
+      imageAlt: `${QUIZ_PRODUCT_NAME} Logo`,
       accentClass: "from-[#2AABEE]/20 to-[#FFD166]/10",
       analyticsEventName: "hero_cta_click",
       analyticsSection: "product_card",
@@ -268,18 +271,18 @@ export function PublicHomeHeader({ trackedTelegramBotUrl }: PublicHomeHeaderProp
         <Link href="/" className={`flex min-w-0 items-center gap-3 rounded-2xl ${LINK_FOCUS_CLASS}`}>
           <span
             aria-hidden="true"
-            className="relative h-9 w-9 shrink-0 overflow-hidden rounded-2xl border border-white/20 shadow-[0_12px_28px_rgba(0,0,0,0.24)] sm:h-10 sm:w-10"
+            className="relative h-14 w-[4.5rem] shrink-0 overflow-hidden rounded-2xl border border-[#F6C453]/60 bg-[linear-gradient(145deg,#FFFDF7_0%,#FFF8E7_52%,#FFF1C7_100%)] shadow-[0_12px_30px_rgba(246,196,83,0.18)] sm:h-16 sm:w-20"
           >
             <Image
-              src={BOT_LOGO_PATH}
+              src={PUBLIC_SITE_LOGO_PATH}
               alt=""
               fill
-              sizes="40px"
-              className="object-cover"
+              sizes="(min-width: 640px) 80px, 72px"
+              className="object-contain p-1"
             />
           </span>
           <span className="min-w-0 text-base font-bold leading-tight text-white">
-            Deutsch Quiz Arena
+            {PUBLIC_SITE_NAME}
           </span>
         </Link>
 
@@ -331,8 +334,8 @@ export function PublicHomeHero({ trackedTelegramBotUrl }: PublicHomeHeroProps) {
           Deutsch lernen. Wissen testen. Eine Pilotphase mitverfolgen.
         </h1>
         <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
-          Deutsch Quiz Arena bündelt Quiz-Bot, Artikel, Telegram-Kanäle und digitale Formate,
-          die sich je nach Bereich in Pilotphase oder noch in Vorbereitung befinden.
+          {PUBLIC_SITE_NAME} bündelt Wissensartikel, Lernimpulse, Telegram-Angebote und digitale
+          Formate. {QUIZ_PRODUCT_NAME} ist das Quiz-Produkt der Marke.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
           <a
@@ -508,7 +511,7 @@ export function PublicHomeBotSection({ trackedTelegramBotUrl }: PublicHomeBotSec
     <section id="bot" className="scroll-mt-24 py-8 sm:py-10">
       <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-center">
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-[#4DE2C6]">Deutsch Quiz Arena Bot</p>
+          <p className="text-sm font-semibold text-[#4DE2C6]">{QUIZ_PRODUCT_NAME}</p>
           <h2 className="mt-2 max-w-2xl break-words text-2xl font-semibold leading-tight text-white sm:text-4xl">
             Dein täglicher Trainingsraum für Deutsch.
           </h2>
@@ -689,7 +692,7 @@ export function PublicHomeFooter({ trackedTelegramBotUrl }: PublicHomeFooterProp
   return (
     <footer className="mt-6 border-t border-white/10 py-7 text-sm text-slate-400 sm:mt-8 sm:py-8">
       <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <p>© 2026 Deutsch Quiz Arena</p>
+        <p>© 2026 {PUBLIC_SITE_NAME}</p>
         <nav aria-label="Footer" className="flex min-w-0 flex-wrap gap-3">
           <Link href="/impressum" className={`transition hover:text-white ${LINK_FOCUS_CLASS}`}>
             Impressum

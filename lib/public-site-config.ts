@@ -4,6 +4,14 @@ const DEFAULT_DEUTSCH_TRAINER_BOT_URL = "https://t.me/Trainer1512_bot";
 const DEFAULT_SITE_URL = "https://deutschmit.de";
 const DEFAULT_CONTACT_EMAIL = "info@deutschmit.de";
 
+export const PUBLIC_SITE_NAME = "Deutsch ist einfach!";
+export const PUBLIC_SITE_DESCRIPTION =
+  "Deutsch ist einfach! bietet Wissensartikel, Lernimpulse und digitale Formate. Deutsch Quiz Arena ist das Quiz-Produkt der Marke.";
+export const PUBLIC_SITE_LOGO_PATH = "/logo/deutsch-ist-einfach.png";
+export const PUBLIC_SITE_LOGO_WIDTH = 1082;
+export const PUBLIC_SITE_LOGO_HEIGHT = 854;
+export const QUIZ_PRODUCT_NAME = "Deutsch Quiz Arena";
+
 function normalizePublicEnv(value: string | undefined): string | undefined {
   const trimmedValue = value?.trim();
   return trimmedValue ? trimmedValue : undefined;

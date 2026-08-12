@@ -2,19 +2,17 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 import { PublicLegalFooter } from "../_components/public-legal-footer";
-import { getPublicContactEmail } from "@/lib/public-site-config";
+import { PUBLIC_SITE_NAME, getPublicContactEmail } from "@/lib/public-site-config";
 
 export const metadata: Metadata = {
   title: "Datenschutzerklärung",
-  description:
-    "Datenschutzerklärung für die öffentliche Website von Deutsch Quiz Arena mit Angaben zu Hosting, Kontaktanfragen, Cookies und optionaler Analytics.",
+  description: `Datenschutzerklärung für die öffentliche Website ${PUBLIC_SITE_NAME} mit Angaben zu Hosting, Kontaktanfragen, Cookies und optionaler Analytics.`,
   alternates: {
     canonical: "/privacy",
   },
   openGraph: {
-    title: "Datenschutzerklärung | Deutsch Quiz Arena",
-    description:
-      "Datenschutzerklärung für die öffentliche Website von Deutsch Quiz Arena mit Angaben zu Hosting, Kontaktanfragen, Cookies und optionaler Analytics.",
+    title: `Datenschutzerklärung | ${PUBLIC_SITE_NAME}`,
+    description: `Datenschutzerklärung für die öffentliche Website ${PUBLIC_SITE_NAME} mit Angaben zu Hosting, Kontaktanfragen, Cookies und optionaler Analytics.`,
     url: "/privacy",
   },
 };
@@ -26,9 +24,9 @@ export default function PrivacyPage() {
     <main className="mx-auto max-w-3xl px-6 py-14">
       <h1 className="text-3xl font-semibold text-slate-900">Datenschutzerklärung</h1>
       <p className="mt-4 text-sm leading-6 text-slate-700">
-        Stand: 25. Juni 2026. Diese Datenschutzerklärung gilt für die öffentliche Website von
-        Deutsch Quiz Arena mit ihren Informationsseiten, Artikelseiten, dem Kontaktbereich und
-        dem öffentlichen Quiz-Teaser.
+        Stand: 12. August 2026. Diese Datenschutzerklärung gilt für die öffentliche Website{" "}
+        {PUBLIC_SITE_NAME} mit ihren Informationsseiten, Artikelseiten, dem Kontaktbereich und dem
+        öffentlichen Quiz-Teaser.
       </p>
 
       <section className="mt-8 space-y-4 text-sm leading-6 text-slate-700">

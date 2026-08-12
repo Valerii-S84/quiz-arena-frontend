@@ -22,7 +22,16 @@ import { metadata as impressumMetadata } from "@/app/(public)/impressum/page";
 import { metadata as privacyMetadata } from "@/app/(public)/privacy/page";
 import { metadata as projectsMetadata } from "@/app/(public)/projects/page";
 import { metadata as rootMetadata } from "@/app/layout";
-import { getSiteUrl } from "@/lib/public-site-config";
+import {
+  PUBLIC_SITE_DESCRIPTION,
+  PUBLIC_SITE_LOGO_HEIGHT,
+  PUBLIC_SITE_LOGO_PATH,
+  PUBLIC_SITE_LOGO_WIDTH,
+  PUBLIC_SITE_NAME,
+  QUIZ_PRODUCT_NAME,
+  getSiteUrl,
+} from "@/lib/public-site-config";
+import { buildPublicSiteStructuredData } from "@/lib/public-site-structured-data";
 import { extractArticleBodyAndStyles } from "@/lib/article-content";
 import { ARTICLE_EMBEDS, ARTICLE_SLUGS } from "@/lib/article-definitions";
 import { ARTICLE_SERVER_RENDERED_PAYLOAD } from "@/lib/article-server-rendered-content";
@@ -45,30 +54,74 @@ describe("public SEO metadata contracts", () => {
     const rootOpenGraph = rootMetadata.openGraph as Record<string, unknown> | undefined;
 
     expect(rootMetadata).toMatchObject({
+      applicationName: PUBLIC_SITE_NAME,
       title: {
-        default: "Deutsch Quiz Arena",
-        template: "%s | Deutsch Quiz Arena",
+        default: PUBLIC_SITE_NAME,
+        template: `%s | ${PUBLIC_SITE_NAME}`,
       },
-      description:
-        "Deutsch Quiz Arena ist ein Projekt im Aufbau mit Telegram-Quiz, Artikeln und digitalen Lernformaten in Pilotphase.",
+      description: PUBLIC_SITE_DESCRIPTION,
+      publisher: PUBLIC_SITE_NAME,
       openGraph: {
         type: "website",
-        title: "Deutsch Quiz Arena",
+        siteName: PUBLIC_SITE_NAME,
+        title: PUBLIC_SITE_NAME,
+        images: [
+          {
+            url: PUBLIC_SITE_LOGO_PATH,
+            width: PUBLIC_SITE_LOGO_WIDTH,
+            height: PUBLIC_SITE_LOGO_HEIGHT,
+          },
+        ],
       },
       twitter: {
         card: "summary_large_image",
-        title: "Deutsch Quiz Arena",
+        title: PUBLIC_SITE_NAME,
+        images: [PUBLIC_SITE_LOGO_PATH],
       },
     });
 
     expect(rootMetadata.metadataBase?.href).toBe(new URL(getSiteUrl()).href);
     expect(rootMetadata.openGraph?.images).toHaveLength(1);
     expect(rootOpenGraph?.type).toBe("website");
+    expect(JSON.stringify(rootMetadata.icons)).toContain(PUBLIC_SITE_LOGO_PATH);
+  });
+
+  it("publishes the site brand and logo as Organization and WebSite structured data", () => {
+    const siteUrl = getSiteUrl();
+    const entries = buildPublicSiteStructuredData();
+    const organization = entries.find((entry) => entry["@type"] === "Organization");
+    const website = entries.find((entry) => entry["@type"] === "WebSite");
+
+    expect(organization).toMatchObject({
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: PUBLIC_SITE_NAME,
+      url: siteUrl,
+      logo: {
+        "@type": "ImageObject",
+        url: new URL(PUBLIC_SITE_LOGO_PATH, siteUrl).toString(),
+        width: PUBLIC_SITE_LOGO_WIDTH,
+        height: PUBLIC_SITE_LOGO_HEIGHT,
+      },
+    });
+    expect(website).toMatchObject({
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      name: PUBLIC_SITE_NAME,
+      publisher: {
+        "@id": `${siteUrl}/#organization`,
+      },
+    });
   });
 
   it("exposes dedicated metadata for public landing routes", () => {
-    expect(homeMetadata.title).toBe("Startseite");
+    expect(homeMetadata.title).toBe("Deutsch lernen mit Quiz und Artikeln");
     expect(homeMetadata.alternates?.canonical).toBe("/");
+    expect(homeMetadata.openGraph).toMatchObject({
+      siteName: PUBLIC_SITE_NAME,
+      title: `Deutsch lernen mit Quiz und Artikeln | ${PUBLIC_SITE_NAME}`,
+      images: [{ url: PUBLIC_SITE_LOGO_PATH }],
+    });
     expect(projectsMetadata.title).toBe("Projektübersicht");
     expect(contactMetadata.title).toBe("Kontakt");
     expect(privacyMetadata.title).toBe("Datenschutzerklärung");
@@ -112,6 +165,19 @@ describe("public SEO metadata contracts", () => {
       expect(articleData?.headline).toBe(article.title);
       expect(articleData?.description).toBe(article.description);
       expect(articleData?.mainEntityOfPage).toBe(`${siteUrl}/artikel/${slug}`);
+      expect(articleData?.publisher).toMatchObject({
+        "@type": "Organization",
+        "@id": `${siteUrl}/#organization`,
+        name: PUBLIC_SITE_NAME,
+        logo: {
+          url: new URL(PUBLIC_SITE_LOGO_PATH, siteUrl).toString(),
+        },
+      });
+      expect(articleData?.isPartOf).toMatchObject({
+        "@type": "WebSite",
+        "@id": `${siteUrl}/#website`,
+        name: PUBLIC_SITE_NAME,
+      });
 
       const breadcrumbItems = (breadcrumbData?.itemListElement ?? []) as Array<JsonLdPayload>;
       expect(breadcrumbData).toBeDefined();
@@ -140,6 +206,21 @@ describe("public SEO metadata contracts", () => {
     });
 
     expect(pageMetadata.title).toBe("Artikel nicht gefunden");
+  });
+
+  it("keeps Deutsch Quiz Arena scoped to the quiz product instead of the site identity", () => {
+    expect(PUBLIC_SITE_NAME).toBe("Deutsch ist einfach!");
+    expect(QUIZ_PRODUCT_NAME).toBe("Deutsch Quiz Arena");
+    expect(rootMetadata.title).toMatchObject({
+      default: PUBLIC_SITE_NAME,
+      template: `%s | ${PUBLIC_SITE_NAME}`,
+    });
+    expect(privacyMetadata.openGraph).toMatchObject({
+      title: `Datenschutzerklärung | ${PUBLIC_SITE_NAME}`,
+    });
+    expect(impressumMetadata.openGraph).toMatchObject({
+      title: `Impressum | ${PUBLIC_SITE_NAME}`,
+    });
   });
 
   it("keeps the public privacy copy limited to documented legal facts", () => {

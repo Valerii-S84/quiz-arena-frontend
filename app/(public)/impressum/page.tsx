@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
 
 import { PublicLegalFooter } from "../_components/public-legal-footer";
-import { getPublicContactEmail, getTelegramBotUrl } from "@/lib/public-site-config";
+import {
+  PUBLIC_SITE_NAME,
+  getPublicContactEmail,
+  getTelegramBotUrl,
+} from "@/lib/public-site-config";
 
 export const metadata: Metadata = {
   title: "Impressum",
-  description: "Impressumsangaben für die öffentliche Quiz Arena Website.",
+  description: `Impressumsangaben für die öffentliche Website ${PUBLIC_SITE_NAME}.`,
   alternates: {
     canonical: "/impressum",
   },
   openGraph: {
-    title: "Impressum | Deutsch Quiz Arena",
+    title: `Impressum | ${PUBLIC_SITE_NAME}`,
     description: "Impressum und rechtliche Kontaktinformationen.",
     url: "/impressum",
   },
@@ -27,7 +31,9 @@ export default function ImpressumPage() {
         <article className="rounded-xl border border-white/70 bg-white/80 p-5">
           <h2 className="text-base font-semibold text-slate-900">Angaben gemaess § 5 DDG</h2>
           <div className="mt-3">
-            <p className="font-medium text-slate-900">Verantwortlich fuer diese Website:</p>
+            <p className="font-medium text-slate-900">
+              Verantwortlich für die Website {PUBLIC_SITE_NAME}:
+            </p>
             <p>Valerii Serputko</p>
             <p className="mt-3 font-medium text-slate-900">Anschrift:</p>
             <p>Gudrunstrasse 134</p>

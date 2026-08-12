@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { PublicLegalFooter } from "../_components/public-legal-footer";
+import { PUBLIC_SITE_NAME } from "@/lib/public-site-config";
 
 export const revalidate = 3600;
 
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
     canonical: "/projects",
   },
   openGraph: {
-    title: "Projektuebersicht | Deutsch Quiz Arena",
+    title: `Projektübersicht | ${PUBLIC_SITE_NAME}`,
     description:
       "Uebersicht ueber sichtbare Projektbausteine ohne verbindliches kommerzielles Angebot.",
     url: "/projects",
@@ -42,9 +43,9 @@ export default function ProjectsPage() {
     <main className="mx-auto max-w-5xl px-6 py-14">
       <h1 className="text-4xl">Projektuebersicht</h1>
       <p className="mt-4 max-w-3xl text-sm leading-6 text-ember/70">
-        Diese Seite zeigt den aktuellen Stand eines Deutsch-Lernprojekts im Aufbau. Sie dient der
-        Orientierung und stellt noch keinen Online-Shop, keine Buchungsplattform und kein
-        verbindliches Leistungsangebot dar.
+        Diese Seite zeigt den aktuellen Stand von {PUBLIC_SITE_NAME}. Sie dient der Orientierung
+        und stellt noch keinen Online-Shop, keine Buchungsplattform und kein verbindliches
+        Leistungsangebot dar.
       </p>
       <div className="mt-8 grid gap-5 sm:grid-cols-3">
         {projects.map((project) => (

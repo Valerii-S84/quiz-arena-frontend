@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { PUBLIC_SITE_NAME } from "@/lib/public-site-config";
+
 type PublicLegalFooterProps = {
   variant?: "light" | "dark";
 };
@@ -13,7 +15,8 @@ export function PublicLegalFooter({ variant = "light" }: PublicLegalFooterProps)
 
   return (
     <footer className={`mt-10 border-t ${borderClass} pt-6 text-sm ${textClass}`}>
-      <nav aria-label="Rechtliche Links" className="flex flex-wrap gap-3">
+      <p>© 2026 {PUBLIC_SITE_NAME}</p>
+      <nav aria-label="Rechtliche Links" className="mt-3 flex flex-wrap gap-3">
         <Link
           href="/"
           className={`transition ${hoverClass} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 ${ringOffsetClass}`}

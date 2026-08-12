@@ -7,6 +7,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import {
   PublicHomeBotSection,
   PublicHomeContactSection,
+  PublicHomeFooter,
   PublicHomeHeader,
   PublicHomeHero,
   PublicHomeKnowledgeSection,
@@ -15,7 +16,12 @@ import {
 } from "./public-home-sections";
 import { WISSEN_ARTICLES } from "./public-home-content";
 import { buildTrackedTelegramBotUrl } from "./public-home-helpers";
-import { TELEGRAM_BOT_START_PAYLOAD, getTelegramBotUrl } from "@/lib/public-site-config";
+import {
+  PUBLIC_SITE_LOGO_PATH,
+  PUBLIC_SITE_NAME,
+  TELEGRAM_BOT_START_PAYLOAD,
+  getTelegramBotUrl,
+} from "@/lib/public-site-config";
 
 function readFile(filePath: string): string {
   return readFileSync(filePath, "utf-8");
@@ -54,10 +60,21 @@ describe("public home scenarios", () => {
   it("includes section-level navigation in header with in-page targets", () => {
     const html = renderToStaticMarkup(<PublicHomeHeader />);
 
+    expect(html).toContain(PUBLIC_SITE_NAME);
+    expect(html).toContain(encodeURIComponent(PUBLIC_SITE_LOGO_PATH));
+    expect(html).toContain("#FFF8E7");
+    expect(html).not.toContain(">Deutsch Quiz Arena<");
     expect(html).toContain('href="#projects"');
     expect(html).toContain('href="#knowledge"');
     expect(html).toContain('href="#unterricht"');
     expect(html).toContain('href="#contact"');
+  });
+
+  it("uses the site brand in the public footer", () => {
+    const html = renderToStaticMarkup(<PublicHomeFooter />);
+
+    expect(html).toContain(`© 2026 ${PUBLIC_SITE_NAME}`);
+    expect(html).not.toContain("© 2026 Deutsch Quiz Arena");
   });
 
   it("renders the knowledge section links for all configured article slugs", () => {
