@@ -20,11 +20,11 @@ export const ARTICLE_EMBEDS: Record<string, ArticleDefinition> = {
     fileName: "pruefungen-goethe-telc-testdaf.html",
     source: "server-rendered",
   },
-  "sprachniveaus-a1-c1": {
-    title: "Sprachniveaus A1-C1",
+  "sprachniveaus-a0-c2": {
+    title: "Sprachniveaus A0–C2",
     description:
-      "Praktische Orientierung, was du auf jedem Niveau erwarten kannst und wie du gezielt weiterkommst.",
-    fileName: "sprachniveaus-a1-c1.html",
+      "Orientierung von Pre-A1 bis C2 mit GER-Kompetenzen, Lernzielen, Zeitkorridoren und passenden Deutschprüfungen.",
+    fileName: "sprachniveaus-a0-c2.html",
     source: "server-rendered",
   },
 };

@@ -25,6 +25,7 @@ import { metadata as rootMetadata } from "@/app/layout";
 import { getSiteUrl } from "@/lib/public-site-config";
 import { extractArticleBodyAndStyles } from "@/lib/article-content";
 import { ARTICLE_EMBEDS, ARTICLE_SLUGS } from "@/lib/article-definitions";
+import { ARTICLE_SERVER_RENDERED_PAYLOAD } from "@/lib/article-server-rendered-content";
 import robots from "@/app/robots";
 import sitemap from "@/app/sitemap";
 
@@ -207,6 +208,9 @@ describe("public robots and sitemap contracts", () => {
     ];
 
     expect(urls).toEqual(expect.arrayContaining(expectedRoutes));
+    expect(urls).not.toContain(
+      "https://qa.quizarena.test/artikel/sprachniveaus-a1-c1",
+    );
     expect(uniqueUrls.size).toBe(urls.length);
     expect(entries.every((entry) => !!entry.changeFrequency && entry.lastModified instanceof Date)).toBe(
       true,
@@ -249,6 +253,60 @@ describe("knowledge transport implementation", () => {
       expect(extracted.content).toContain("onclick=");
       expect(extracted.content).toContain("function ");
     }
+  });
+
+  it("keeps generated article payloads synchronized with the editorial sources", () => {
+    for (const slug of ARTICLE_SLUGS) {
+      const articleFilePath = join(
+        process.cwd(),
+        "content",
+        "artikel",
+        ARTICLE_EMBEDS[slug].fileName,
+      );
+      const sourceArticle = readFileSync(articleFilePath, "utf-8");
+
+      expect(ARTICLE_SERVER_RENDERED_PAYLOAD[slug]).toEqual(
+        extractArticleBodyAndStyles(sourceArticle, "dq-article-document"),
+      );
+    }
+  });
+
+  it("preserves the reviewed content corrections", () => {
+    const levelsSource = readFileSync(
+      join(process.cwd(), "content", "artikel", "sprachniveaus-a0-c2.html"),
+      "utf-8",
+    );
+    const examsSource = readFileSync(
+      join(process.cwd(), "content", "artikel", "pruefungen-goethe-telc-testdaf.html"),
+      "utf-8",
+    );
+    const historySource = readFileSync(
+      join(process.cwd(), "content", "artikel", "deutsche-sprache-geschichte.html"),
+      "utf-8",
+    );
+
+    expect(levelsSource).toContain("telc Deutsch C2");
+    expect(levelsSource).toContain("A0</strong> ist keine offizielle Bezeichnung");
+    expect(levelsSource).not.toContain("Richtwerte des Europarates");
+    expect(levelsSource).not.toContain("Mindestniveau für die Zulassung zu den meisten Universitäten");
+
+    expect(examsSource).toContain(
+      "Modular sind die Goethe-Zertifikate B1, B2, C1 und C2",
+    );
+    expect(examsSource).toContain("unterschiedliche Aufgabenportfolios");
+    expect(examsSource).not.toContain("Jedes Niveau besteht aus vier klar getrennten Modulen");
+    expect(examsSource).not.toContain("A1 – C1 · Integrationsrelevant");
+
+    expect(historySource).toContain("1901/1902");
+    expect(historySource).toContain("Eine einzelne, abschließend belegte Ursache gibt es nicht");
+  });
+
+  it("defines an exact 301 redirect from the retired levels URL", () => {
+    const configSource = readFileSync(join(process.cwd(), "next.config.mjs"), "utf-8");
+
+    expect(configSource).toContain('source: "/artikel/sprachniveaus-a1-c1"');
+    expect(configSource).toContain('destination: "/artikel/sprachniveaus-a0-c2"');
+    expect(configSource).toContain("statusCode: 301");
   });
 
   it("keeps raw article source files out of public/ while preserving content sources", () => {
@@ -294,7 +352,7 @@ describe("knowledge transport implementation", () => {
   it("renders article pages inside the dark premium reader shell", async () => {
     const { default: ArticlePage } = await import("./artikel/[slug]/page");
 
-    for (const slug of ["sprachniveaus-a1-c1", "deutsche-sprache-geschichte"] as const) {
+    for (const slug of ["sprachniveaus-a0-c2", "deutsche-sprache-geschichte"] as const) {
       const html = renderToStaticMarkup(
         await ArticlePage({
           params: Promise.resolve({ slug }),
@@ -317,7 +375,7 @@ describe("knowledge transport implementation", () => {
 
   it("keeps the article source files on the dark readable palette", () => {
     const articleFiles = [
-      "sprachniveaus-a1-c1.html",
+      "sprachniveaus-a0-c2.html",
       "deutsche-sprache-geschichte.html",
     ] as const;
 
@@ -340,7 +398,7 @@ describe("knowledge transport implementation", () => {
     }
 
     const cefrSource = readFileSync(
-      join(process.cwd(), "content", "artikel", "sprachniveaus-a1-c1.html"),
+      join(process.cwd(), "content", "artikel", "sprachniveaus-a0-c2.html"),
       "utf-8",
     );
     const historySource = readFileSync(

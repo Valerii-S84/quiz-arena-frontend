@@ -25,11 +25,11 @@ export const WISSEN_ARTICLES = [
       "Wie Deutsch entstanden ist, welche Sprachstufen wichtig sind und warum Sprache sich bis heute bewegt.",
   },
   {
-    slug: "sprachniveaus-a1-c1",
+    slug: "sprachniveaus-a0-c2",
     category: "Lernniveaus",
-    title: "Sprachniveaus A1–C1: was bedeutet das?",
+    title: "Sprachniveaus A0–C2: der Lernweg",
     description:
-      "Eine klare Orientierung für Niveaus, Lernziele und den nächsten sinnvollen Schritt.",
+      "Orientierung von Pre-A1 bis C2: Kompetenzen, Lernziele, Zeitkorridore und passende Prüfungen.",
   },
   {
     slug: "pruefungen-goethe-telc-testdaf",

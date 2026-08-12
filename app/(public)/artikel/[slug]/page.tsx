@@ -17,7 +17,7 @@ const ARTICLE_DOCUMENT_CLASS = "dq-article-document";
 const ARTICLE_DEFAULT_OPEN_SECTIONS: Record<string, string> = {
   "deutsche-sprache-geschichte": "era-indg",
   "pruefungen-goethe-telc-testdaf": "prov-goethe",
-  "sprachniveaus-a1-c1": "lv-a1",
+  "sprachniveaus-a0-c2": "lv-a1",
 };
 
 export const dynamicParams = false;
