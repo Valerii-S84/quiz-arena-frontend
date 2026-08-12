@@ -8,12 +8,12 @@ import {
   PublicHomeBotSection,
   PublicHomeContactSection,
   PublicHomeFooter,
-  PublicHomeHeader,
   PublicHomeHero,
   PublicHomeKnowledgeSection,
   PublicHomeQuizTeaserSection,
   PublicHomeStatsSection,
 } from "./public-home-sections";
+import { PublicSiteHeader } from "./_components/public-site-header";
 import { WISSEN_ARTICLES } from "./public-home-content";
 import { buildTrackedTelegramBotUrl } from "./public-home-helpers";
 import {
@@ -58,7 +58,7 @@ describe("public home scenarios", () => {
   });
 
   it("includes section-level navigation in header with in-page targets", () => {
-    const html = renderToStaticMarkup(<PublicHomeHeader />);
+    const html = renderToStaticMarkup(<PublicSiteHeader />);
 
     expect(html).toContain(PUBLIC_SITE_NAME);
     expect(html).toContain(encodeURIComponent(PUBLIC_SITE_LOGO_PATH));
@@ -68,6 +68,15 @@ describe("public home scenarios", () => {
     expect(html).toContain('href="#knowledge"');
     expect(html).toContain('href="#unterricht"');
     expect(html).toContain('href="#contact"');
+  });
+
+  it("supports site-wide section links outside the homepage", () => {
+    const html = renderToStaticMarkup(<PublicSiteHeader sectionLinkPrefix="/" />);
+
+    expect(html).toContain('href="/#projects"');
+    expect(html).toContain('href="/wissen"');
+    expect(html).toContain('href="/#unterricht"');
+    expect(html).toContain('href="/#contact"');
   });
 
   it("uses the site brand in the public footer", () => {
@@ -85,6 +94,8 @@ describe("public home scenarios", () => {
       expect(html).toContain(`/artikel/${slug}`);
       expect(html).toContain(article.title);
     }
+    expect(html).toContain('href="/wissen"');
+    expect(html).toContain("Alle Artikel entdecken");
   });
 
   it("renders quiz teaser after stats and before bot section", () => {

@@ -8,9 +8,9 @@ import PublicHomeClient from "./public-home-client";
 import {
   PublicHomeChannelSection,
   PublicHomeContactSection,
-  PublicHomeHeader,
   PublicHomeHero,
 } from "./public-home-sections";
+import { PublicSiteHeader } from "./_components/public-site-header";
 import { buildTrackedTelegramBotUrl } from "./public-home-helpers";
 import { TELEGRAM_BOT_START_PAYLOAD, getTelegramBotUrl } from "@/lib/public-site-config";
 import type { PublicAnalyticsEventName } from "@/lib/analytics";
@@ -60,7 +60,7 @@ function renderHomeForAnalytics() {
   const content = (
     <PublicHomeClient>
       <main id="public-home-root" lang="de">
-        <PublicHomeHeader />
+        <PublicSiteHeader />
         <PublicHomeHero trackedTelegramBotUrl={trackedUrl} />
         <PublicHomeChannelSection />
         <PublicHomeContactSection />

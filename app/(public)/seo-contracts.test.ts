@@ -21,6 +21,7 @@ import { metadata as contactMetadata } from "@/app/(public)/contact/page";
 import { metadata as impressumMetadata } from "@/app/(public)/impressum/page";
 import { metadata as privacyMetadata } from "@/app/(public)/privacy/page";
 import { metadata as projectsMetadata } from "@/app/(public)/projects/page";
+import { metadata as knowledgeMetadata } from "@/app/(public)/wissen/page";
 import { metadata as rootMetadata } from "@/app/layout";
 import {
   PUBLIC_SITE_DESCRIPTION,
@@ -123,6 +124,8 @@ describe("public SEO metadata contracts", () => {
       images: [{ url: PUBLIC_SITE_LOGO_PATH }],
     });
     expect(projectsMetadata.title).toBe("Projektübersicht");
+    expect(knowledgeMetadata.title).toBe("Wissen & Tipps");
+    expect(knowledgeMetadata.alternates?.canonical).toBe("/wissen");
     expect(contactMetadata.title).toBe("Kontakt");
     expect(privacyMetadata.title).toBe("Datenschutzerklärung");
     expect(impressumMetadata.title).toBe("Impressum");
@@ -189,12 +192,12 @@ describe("public SEO metadata contracts", () => {
       });
       expect(breadcrumbItems?.[1]).toMatchObject({
         "@type": "ListItem",
-        name: "Wissen",
+        name: "Wissen & Tipps",
         position: 2,
       });
       expect(breadcrumbItems?.[2]).toMatchObject({
         "@type": "ListItem",
-        name: article.title,
+        name: article.breadcrumbLabel,
         position: 3,
       });
     }
@@ -281,6 +284,7 @@ describe("public robots and sitemap contracts", () => {
     const uniqueUrls = new Set(urls);
     const expectedRoutes = [
       "https://qa.quizarena.test/",
+      "https://qa.quizarena.test/wissen",
       "https://qa.quizarena.test/projects",
       "https://qa.quizarena.test/contact",
       "https://qa.quizarena.test/privacy",
@@ -308,6 +312,20 @@ describe("knowledge transport implementation", () => {
     "[slug]",
     "page.tsx",
   );
+
+  it("renders a crawlable knowledge hub for all articles", async () => {
+    const { default: KnowledgePage } = await import("./wissen/page");
+    const html = renderToStaticMarkup(KnowledgePage());
+
+    expect(html).toContain('aria-label="Breadcrumb"');
+    expect(html).toContain('"@type":"CollectionPage"');
+    expect(html).toContain('"@type":"ItemList"');
+
+    for (const slug of ARTICLE_SLUGS) {
+      expect(html).toContain(`href="/artikel/${slug}"`);
+      expect(html).toContain(ARTICLE_EMBEDS[slug].title);
+    }
+  });
 
   it("does not render knowledge article through iframe srcDoc", () => {
     const source = readFileSync(filePath, "utf-8");
@@ -425,9 +443,43 @@ describe("knowledge transport implementation", () => {
       expect(html).toContain('"@type":"Article"');
       expect(html).toContain('"@type":"BreadcrumbList"');
       expect(html).toContain(`"position":3`);
-      expect(html).toContain(`"name":"${article.title}"`);
-      expect(html).toContain(`"name":"Wissen"`);
+      expect(html).toContain(`"name":"${article.breadcrumbLabel}"`);
+      expect(html).toContain(`"name":"Wissen & Tipps"`);
     }
+  });
+
+  it("renders visible breadcrumbs and a two-way related-article network", async () => {
+    const { default: ArticlePage } = await import("./artikel/[slug]/page");
+
+    for (const slug of ARTICLE_SLUGS) {
+      const article = ARTICLE_EMBEDS[slug];
+      const html = renderToStaticMarkup(
+        await ArticlePage({
+          params: Promise.resolve({ slug }),
+        }),
+      );
+
+      expect(html).toContain('aria-label="Breadcrumb"');
+      expect(html).toContain('href="/wissen"');
+      expect(html).toContain("Wissen &amp; Tipps");
+      expect(html).toContain('aria-current="page"');
+      expect(html).toContain(`>${article.breadcrumbLabel}</li></ol>`);
+      expect(html).toContain("Das könnte dich auch interessieren");
+      expect(article.relatedSlugs).toHaveLength(2);
+      expect(article.relatedSlugs).not.toContain(slug);
+
+      for (const relatedSlug of article.relatedSlugs) {
+        expect(html).toContain(`href="/artikel/${relatedSlug}"`);
+        expect(html).toContain(ARTICLE_EMBEDS[relatedSlug].title);
+      }
+    }
+
+    expect(ARTICLE_EMBEDS["sprachniveaus-a0-c2"].relatedSlugs[0]).toBe(
+      "pruefungen-goethe-telc-testdaf",
+    );
+    expect(ARTICLE_EMBEDS["pruefungen-goethe-telc-testdaf"].relatedSlugs[0]).toBe(
+      "sprachniveaus-a0-c2",
+    );
   });
 
   it("renders article pages inside the dark premium reader shell", async () => {
@@ -440,7 +492,9 @@ describe("knowledge transport implementation", () => {
         }),
       );
 
-      expect(html).toContain("← Zur Startseite");
+      expect(html).toContain("Deutsch ist einfach!");
+      expect(html).toContain('href="/#projects"');
+      expect(html).toContain('aria-label="Breadcrumb"');
       expect(html).toContain("bg-slate-950/40");
       expect(html).toContain("border-white/10");
       expect(html).toContain("text-slate-100");
