@@ -8,16 +8,30 @@ const articles = [
   ["sprachniveaus-a0-c2", "sprachniveaus-a0-c2.html"],
 ];
 
+const ROOT_BODY_SELECTOR_PATTERN = /(^|[,{])(\s*)body(?=\s*(?:[,{>+~.#:\[]|$))/gm;
+
+function scopeRootSelectors(styles) {
+  const scopedDocumentSelector = `.${ARTICLE_DOCUMENT_CLASS}`;
+
+  return styles
+    .replace(/:root/g, scopedDocumentSelector)
+    .replace(
+      ROOT_BODY_SELECTOR_PATTERN,
+      (_match, boundary, whitespace) =>
+        `${boundary}${whitespace}${scopedDocumentSelector}`,
+    );
+}
+
 function extractArticleBodyAndStyles(html) {
   const styleTags = html.match(/<style[^>]*>([\s\S]*?)<\/style>/gi) ?? [];
   const styles = styleTags
-    .map((styleTag) =>
-      styleTag
+    .map((styleTag) => {
+      const extractedStyles = styleTag
         .replace(/^<style[^>]*>/i, "")
-        .replace(/<\/style>$/i, "")
-        .replace(/:root/g, `.${ARTICLE_DOCUMENT_CLASS}`)
-        .replace(/\bbody\b/g, `.${ARTICLE_DOCUMENT_CLASS}`),
-    )
+        .replace(/<\/style>$/i, "");
+
+      return scopeRootSelectors(extractedStyles);
+    })
     .join("\n\n");
 
   let content = html.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "");

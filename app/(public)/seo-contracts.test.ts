@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -50,6 +50,18 @@ function parseJsonLdScripts(html: string): JsonLdPayload[] {
   });
 }
 
+function readPngDimensions(filePath: string): { width: number; height: number } {
+  const image = readFileSync(filePath);
+  const pngSignature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+
+  expect(image.subarray(0, pngSignature.length)).toEqual(pngSignature);
+
+  return {
+    width: image.readUInt32BE(16),
+    height: image.readUInt32BE(20),
+  };
+}
+
 describe("public SEO metadata contracts", () => {
   it("defines a consistent root metadata template and Open Graph payload", () => {
     const rootOpenGraph = rootMetadata.openGraph as Record<string, unknown> | undefined;
@@ -84,7 +96,39 @@ describe("public SEO metadata contracts", () => {
     expect(rootMetadata.metadataBase?.href).toBe(new URL(getSiteUrl()).href);
     expect(rootMetadata.openGraph?.images).toHaveLength(1);
     expect(rootOpenGraph?.type).toBe("website");
-    expect(JSON.stringify(rootMetadata.icons)).toContain(PUBLIC_SITE_LOGO_PATH);
+    expect(JSON.stringify(rootMetadata.icons)).not.toContain(PUBLIC_SITE_LOGO_PATH);
+  });
+
+  it("uses small square brand assets for favicon metadata", () => {
+    expect(rootMetadata.icons).toMatchObject({
+      icon: [
+        { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+        { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+        { url: "/favicon-48x48.png", sizes: "48x48", type: "image/png" },
+      ],
+      apple: [
+        { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      ],
+      shortcut: "/favicon-48x48.png",
+    });
+
+    const iconSizes = [16, 32, 48, 180];
+    const iconFiles = [
+      "favicon-16x16.png",
+      "favicon-32x32.png",
+      "favicon-48x48.png",
+      "apple-touch-icon.png",
+    ];
+
+    iconFiles.forEach((fileName, index) => {
+      const filePath = join(process.cwd(), "public", fileName);
+
+      expect(readPngDimensions(filePath)).toEqual({
+        width: iconSizes[index],
+        height: iconSizes[index],
+      });
+      expect(statSync(filePath).size).toBeLessThan(50_000);
+    });
   });
 
   it("publishes the site brand and logo as Organization and WebSite structured data", () => {
@@ -373,6 +417,31 @@ describe("knowledge transport implementation", () => {
       expect(ARTICLE_SERVER_RENDERED_PAYLOAD[slug]).toEqual(
         extractArticleBodyAndStyles(sourceArticle, "dq-article-document"),
       );
+    }
+  });
+
+  it("scopes only standalone body selectors without corrupting component class names", () => {
+    const fixture = `
+      <style>
+        body, body.article-theme { color: white; }
+        .card-body, .era-body, .prov-body, .tr-body { max-height: 0; }
+        @media (max-width: 640px) { body { padding: 0; } }
+      </style>
+      <body><div class="card-body">Test</div></body>
+    `;
+    const extracted = extractArticleBodyAndStyles(fixture, "dq-article-document");
+
+    expect(extracted.styles).toContain(
+      ".dq-article-document, .dq-article-document.article-theme",
+    );
+    expect(extracted.styles).toContain(
+      ".card-body, .era-body, .prov-body, .tr-body",
+    );
+    expect(extracted.styles).toContain("{ .dq-article-document { padding: 0; }");
+    expect(extracted.styles).not.toMatch(/\.(?:card|era|prov|tr)-\.dq-article-document/);
+
+    for (const payload of Object.values(ARTICLE_SERVER_RENDERED_PAYLOAD)) {
+      expect(payload.styles).not.toMatch(/\.(?:card|era|prov|tr)-\.dq-article-document/);
     }
   });
 

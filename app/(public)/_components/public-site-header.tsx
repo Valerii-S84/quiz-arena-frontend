@@ -1,6 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 
+import { usePublicAnalytics } from "@/app/analytics-provider";
 import {
   PUBLIC_SITE_LOGO_PATH,
   PUBLIC_SITE_NAME,
@@ -33,6 +36,7 @@ export function PublicSiteHeader({
   trackedTelegramBotUrl,
 }: PublicSiteHeaderProps = {}) {
   const headerCtaUrl = trackedTelegramBotUrl ?? getTrackedTelegramBotFallback();
+  const { trackEvent } = usePublicAnalytics();
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[#07111f]/88 backdrop-blur-xl">
@@ -75,9 +79,13 @@ export function PublicSiteHeader({
             target="_blank"
             rel="noreferrer"
             className={`inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#2AABEE] px-4 py-2 text-center text-sm font-semibold leading-snug text-white shadow-[0_12px_26px_rgba(42,171,238,0.28)] transition hover:bg-[#169bdc] ${LINK_FOCUS_CLASS} sm:w-auto`}
-            data-analytics-event="hero_cta_click"
-            data-analytics-section="header"
-            data-analytics-cta="telegram_bot"
+            onClick={() =>
+              trackEvent("hero_cta_click", {
+                section: "header",
+                cta: "telegram_bot",
+                destination: headerCtaUrl,
+              })
+            }
           >
             Quiz-Bot öffnen
           </a>

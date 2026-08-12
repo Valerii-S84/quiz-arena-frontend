@@ -79,6 +79,34 @@ afterEach(() => {
 });
 
 describe("public home analytics event wiring", () => {
+  it("tracks the shared-header CTA without the home-page delegation wrapper", () => {
+    const { container, cleanup } = renderInContainer(<PublicSiteHeader sectionLinkPrefix="/" />);
+
+    try {
+      const headerCta = Array.from(container.querySelectorAll("a")).find((link) =>
+        link.textContent?.includes("Quiz-Bot"),
+      );
+
+      expect(headerCta).not.toBeNull();
+
+      act(() => {
+        headerCta?.click();
+      });
+
+      expect(trackEventSpy).toHaveBeenCalledTimes(1);
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        "hero_cta_click",
+        expect.objectContaining({
+          section: "header",
+          cta: "telegram_bot",
+          destination: headerCta?.getAttribute("href"),
+        }),
+      );
+    } finally {
+      cleanup();
+    }
+  });
+
   it("ignores clicks on elements without analytics markers", () => {
     const { container, cleanup } = renderHomeForAnalytics();
 
