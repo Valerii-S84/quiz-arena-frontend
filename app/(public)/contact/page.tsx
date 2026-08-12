@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { PublicLegalFooter } from "../_components/public-legal-footer";
 import {
+  PUBLIC_SITE_NAME,
   getPublicContactEmail,
   getTelegramBotUrl,
   getTelegramChannelUrl,
@@ -17,9 +18,9 @@ export const metadata: Metadata = {
     canonical: "/contact",
   },
   openGraph: {
-    title: "Kontakt | Deutsch Quiz Arena",
+    title: `Kontakt | ${PUBLIC_SITE_NAME}`,
     description:
-      "Kontakt zum Deutsch-Lernprojekt, zum Quiz-Bot sowie für technische, datenschutzbezogene und mögliche Kooperationsanfragen.",
+      "Kontakt zu Deutsch-Lernangeboten, Quiz-Bots sowie für technische, datenschutzbezogene und Kooperationsanfragen.",
     url: "/contact",
   },
 };
@@ -35,23 +36,22 @@ export default function ContactPage() {
       <div className="mt-8 space-y-6">
         <section className="surface rounded-2xl p-5">
           <p className="text-lg">
-            Diese Seite ist der Kontaktpunkt fuer ein Deutsch-Lernprojekt rund um den Quiz-Bot,
-            den Telegram-Kanal und technische Rueckfragen. Sie eignet sich auch fuer erste
-            unverbindliche Nachrichten zu einer moeglichen spaeteren Zusammenarbeit.
+            Diese Seite ist dein direkter Kontaktpunkt für {PUBLIC_SITE_NAME}. Schreib uns zu den
+            Quiz-Bots, zum Telegram-Kanal, zu Lernangeboten, Kooperationen oder technischen Fragen.
           </p>
           <p className="mt-4 text-sm">
-            Status: Die Website ist derzeit im Aufbau. Verbindliche kostenpflichtige Leistungen
-            werden aktuell nicht ueber diese Website verkauft oder gebucht.
+            Am schnellsten erreichst du uns per E-Mail. Für Lernbegleitung und Kooperationen
+            findest du auf der Startseite jeweils eine eigene Anfrage.
           </p>
         </section>
 
         <section className="surface rounded-2xl p-5">
-          <h2 className="text-2xl">Wofuer Sie uns kontaktieren koennen</h2>
+          <h2 className="text-2xl">Wofür du uns kontaktieren kannst</h2>
           <ul className="mt-4 space-y-2">
             <li>Quiz-Bot</li>
             <li>Telegram-Kanal</li>
             <li>Technische Anfrage</li>
-            <li>Moegliche Kooperation</li>
+            <li>Kooperation</li>
             <li>Datenschutz-Anfrage</li>
           </ul>
         </section>

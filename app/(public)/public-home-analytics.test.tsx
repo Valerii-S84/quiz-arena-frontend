@@ -8,9 +8,9 @@ import PublicHomeClient from "./public-home-client";
 import {
   PublicHomeChannelSection,
   PublicHomeContactSection,
-  PublicHomeHeader,
   PublicHomeHero,
 } from "./public-home-sections";
+import { PublicSiteHeader } from "./_components/public-site-header";
 import { buildTrackedTelegramBotUrl } from "./public-home-helpers";
 import { TELEGRAM_BOT_START_PAYLOAD, getTelegramBotUrl } from "@/lib/public-site-config";
 import type { PublicAnalyticsEventName } from "@/lib/analytics";
@@ -60,7 +60,7 @@ function renderHomeForAnalytics() {
   const content = (
     <PublicHomeClient>
       <main id="public-home-root" lang="de">
-        <PublicHomeHeader />
+        <PublicSiteHeader />
         <PublicHomeHero trackedTelegramBotUrl={trackedUrl} />
         <PublicHomeChannelSection />
         <PublicHomeContactSection />
@@ -79,6 +79,34 @@ afterEach(() => {
 });
 
 describe("public home analytics event wiring", () => {
+  it("tracks the shared-header CTA without the home-page delegation wrapper", () => {
+    const { container, cleanup } = renderInContainer(<PublicSiteHeader sectionLinkPrefix="/" />);
+
+    try {
+      const headerCta = Array.from(container.querySelectorAll("a")).find((link) =>
+        link.textContent?.includes("Quiz-Bot"),
+      );
+
+      expect(headerCta).not.toBeNull();
+
+      act(() => {
+        headerCta?.click();
+      });
+
+      expect(trackEventSpy).toHaveBeenCalledTimes(1);
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        "hero_cta_click",
+        expect.objectContaining({
+          section: "header",
+          cta: "telegram_bot",
+          destination: headerCta?.getAttribute("href"),
+        }),
+      );
+    } finally {
+      cleanup();
+    }
+  });
+
   it("ignores clicks on elements without analytics markers", () => {
     const { container, cleanup } = renderHomeForAnalytics();
 
@@ -205,10 +233,10 @@ describe("public home analytics event wiring", () => {
 
     try {
       const studentButton = Array.from(container.querySelectorAll("button")).find((button) =>
-        button.textContent?.includes("Unverbindlich anfragen"),
+        button.textContent?.includes("Lernbegleitung anfragen"),
       );
       const partnerButton = Array.from(container.querySelectorAll("button")).find((button) =>
-        button.textContent?.includes("Projektidee unverbindlich senden"),
+        button.textContent?.includes("Kooperation anfragen"),
       );
 
       expect(studentButton).not.toBeNull();

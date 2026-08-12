@@ -3,9 +3,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ARTICLE_EMBEDS } from "@/lib/article-definitions";
 import { ARTICLE_SERVER_RENDERED_PAYLOAD } from "@/lib/article-server-rendered-content";
-import { getSiteUrl } from "@/lib/public-site-config";
+import {
+  PUBLIC_SITE_LOGO_HEIGHT,
+  PUBLIC_SITE_LOGO_PATH,
+  PUBLIC_SITE_LOGO_WIDTH,
+  PUBLIC_SITE_NAME,
+  getSiteUrl,
+} from "@/lib/public-site-config";
 import { ArticleInteractions } from "./article-interactions";
 import { PublicLegalFooter } from "../../_components/public-legal-footer";
+import { PublicSiteHeader } from "../../_components/public-site-header";
 
 type ArticlePageProps = {
   params: Promise<{
@@ -17,7 +24,7 @@ const ARTICLE_DOCUMENT_CLASS = "dq-article-document";
 const ARTICLE_DEFAULT_OPEN_SECTIONS: Record<string, string> = {
   "deutsche-sprache-geschichte": "era-indg",
   "pruefungen-goethe-telc-testdaf": "prov-goethe",
-  "sprachniveaus-a1-c1": "lv-a1",
+  "sprachniveaus-a0-c2": "lv-a1",
 };
 
 export const dynamicParams = false;
@@ -51,9 +58,9 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       description: article.description,
       images: [
         {
-          url: "/logo/bot-logo.jpg",
-          width: 1200,
-          height: 630,
+          url: PUBLIC_SITE_LOGO_PATH,
+          width: PUBLIC_SITE_LOGO_WIDTH,
+          height: PUBLIC_SITE_LOGO_HEIGHT,
           alt: article.title,
         },
       ],
@@ -333,14 +340,28 @@ function buildArticleStructuredData(slug: string, title: string, description: st
     inLanguage: "de",
     publisher: {
       "@type": "Organization",
-      name: "Deutsch Quiz Arena",
+      "@id": `${siteUrl}/#organization`,
+      name: PUBLIC_SITE_NAME,
+      url: siteUrl,
+      logo: {
+        "@type": "ImageObject",
+        url: new URL(PUBLIC_SITE_LOGO_PATH, siteUrl).toString(),
+        width: PUBLIC_SITE_LOGO_WIDTH,
+        height: PUBLIC_SITE_LOGO_HEIGHT,
+      },
+    },
+    isPartOf: {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      name: PUBLIC_SITE_NAME,
+      url: siteUrl,
     },
   };
 }
 
 function buildArticleBreadcrumbStructuredData(
   slug: string,
-  title: string,
+  breadcrumbLabel: string,
   siteUrl: string,
 ) {
   return {
@@ -356,17 +377,97 @@ function buildArticleBreadcrumbStructuredData(
       {
         "@type": "ListItem",
         position: 2,
-        name: "Wissen",
-        item: `${siteUrl}/#knowledge`,
+        name: "Wissen & Tipps",
+        item: `${siteUrl}/wissen`,
       },
       {
         "@type": "ListItem",
         position: 3,
-        name: title,
+        name: breadcrumbLabel,
         item: `${siteUrl}/artikel/${slug}`,
       },
     ],
   };
+}
+
+function ArticleBreadcrumbs({ label }: { label: string }) {
+  return (
+    <nav aria-label="Breadcrumb" className="mb-5 text-sm text-slate-400">
+      <ol className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+        <li>
+          <Link
+            href="/"
+            className="rounded-sm transition hover:text-amber-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+          >
+            Startseite
+          </Link>
+        </li>
+        <li aria-hidden="true" className="text-slate-600">
+          ›
+        </li>
+        <li>
+          <Link
+            href="/wissen"
+            className="rounded-sm transition hover:text-amber-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+          >
+            Wissen &amp; Tipps
+          </Link>
+        </li>
+        <li aria-hidden="true" className="text-slate-600">
+          ›
+        </li>
+        <li aria-current="page" className="min-w-0 font-medium text-slate-200">
+          {label}
+        </li>
+      </ol>
+    </nav>
+  );
+}
+
+function RelatedArticles({ currentSlug }: { currentSlug: string }) {
+  const currentArticle = ARTICLE_EMBEDS[currentSlug];
+  const relatedArticles = currentArticle.relatedSlugs.flatMap((relatedSlug) => {
+    const relatedArticle = ARTICLE_EMBEDS[relatedSlug];
+
+    return relatedArticle ? [{ slug: relatedSlug, ...relatedArticle }] : [];
+  });
+
+  return (
+    <section
+      aria-labelledby="related-articles-heading"
+      className="mt-8 rounded-[28px] border border-white/10 bg-white/[0.05] p-5 shadow-[0_24px_70px_rgba(2,6,23,0.3)] sm:p-7"
+    >
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">
+        Weiterlernen
+      </p>
+      <h2
+        id="related-articles-heading"
+        className="mt-2 text-2xl font-semibold text-white sm:text-3xl"
+      >
+        Das könnte dich auch interessieren
+      </h2>
+      <div className="mt-5 grid gap-4 md:grid-cols-2">
+        {relatedArticles.map((relatedArticle) => (
+          <Link
+            key={relatedArticle.slug}
+            href={`/artikel/${relatedArticle.slug}`}
+            className="group flex min-w-0 flex-col rounded-2xl border border-white/10 bg-slate-950/45 p-5 transition hover:-translate-y-0.5 hover:border-amber-300/35 hover:bg-slate-950/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+          >
+            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-300">
+              {relatedArticle.category}
+            </span>
+            <h3 className="mt-2 text-lg font-semibold text-white transition group-hover:text-amber-100">
+              {relatedArticle.title}
+            </h3>
+            <p className="mt-3 flex-1 text-sm leading-6 text-slate-300">
+              {relatedArticle.description}
+            </p>
+            <span className="mt-4 text-sm font-semibold text-[#4DE2C6]">Artikel lesen →</span>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function normalizeArticleHtml(html: string): string {
@@ -392,50 +493,52 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const articleStyles = `${embeddedArticleTheme()}\n${articlePayload.styles}\n${embeddedArticleResponsiveOverrides()}`;
 
   return (
-    <main
-      lang="de"
-      className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(250,204,21,0.12),transparent_26%),linear-gradient(180deg,#020617_0%,#07111f_42%,#0b1220_100%)] text-slate-100"
-    >
-      <div className="sticky top-0 z-20 border-b border-white/10 bg-slate-950/72 px-4 py-3 backdrop-blur-xl sm:px-6">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-start">
-          <Link
-            href="/"
-            className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-100 transition hover:border-amber-300/30 hover:bg-white/10 hover:text-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
-          >
-            ← Zur Startseite
-          </Link>
+    <>
+      <PublicSiteHeader sectionLinkPrefix="/" />
+      <main
+        lang="de"
+        className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(250,204,21,0.12),transparent_26%),linear-gradient(180deg,#020617_0%,#07111f_42%,#0b1220_100%)] text-slate-100"
+      >
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+          <ArticleBreadcrumbs label={article.breadcrumbLabel} />
+          <article className="min-w-0 rounded-[28px] border border-white/10 bg-slate-950/40 shadow-[0_28px_90px_rgba(2,6,23,0.45)] backdrop-blur-xl">
+            <style
+              dangerouslySetInnerHTML={{
+                __html: articleStyles,
+              }}
+            />
+            <div
+              className={`${ARTICLE_DOCUMENT_CLASS} min-w-0 rounded-[28px]`}
+              dangerouslySetInnerHTML={{
+                __html: articleHtml,
+              }}
+            />
+            <ArticleInteractions defaultOpenSectionId={ARTICLE_DEFAULT_OPEN_SECTIONS[slug]} />
+          </article>
+          <RelatedArticles currentSlug={slug} />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(
+                buildArticleStructuredData(slug, article.title, article.description, getSiteUrl()),
+              ),
+            }}
+          />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(
+                buildArticleBreadcrumbStructuredData(
+                  slug,
+                  article.breadcrumbLabel,
+                  getSiteUrl(),
+                ),
+              ),
+            }}
+          />
+          <PublicLegalFooter variant="dark" />
         </div>
-      </div>
-
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        <article className="min-w-0 rounded-[28px] border border-white/10 bg-slate-950/40 shadow-[0_28px_90px_rgba(2,6,23,0.45)] backdrop-blur-xl">
-          <style
-            dangerouslySetInnerHTML={{
-              __html: articleStyles,
-            }}
-          />
-          <div
-            className={`${ARTICLE_DOCUMENT_CLASS} min-w-0 rounded-[28px]`}
-            dangerouslySetInnerHTML={{
-              __html: articleHtml,
-            }}
-          />
-          <ArticleInteractions defaultOpenSectionId={ARTICLE_DEFAULT_OPEN_SECTIONS[slug]} />
-        </article>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(buildArticleStructuredData(slug, article.title, article.description, getSiteUrl())),
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(buildArticleBreadcrumbStructuredData(slug, article.title, getSiteUrl())),
-          }}
-        />
-        <PublicLegalFooter variant="dark" />
-      </div>
-    </main>
+      </main>
+    </>
   );
 }

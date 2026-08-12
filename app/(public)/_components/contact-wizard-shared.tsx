@@ -200,8 +200,8 @@ export function WizardModal({ title, onClose, children, open }: WizardModalProps
                 </Dialog.Close>
               </div>
               <p className="mt-3 text-xs leading-5 text-slate-600">
-                Hinweis: Diese Anfrage ist unverbindlich. Personenbezogene Daten aus dem Formular
-                werden nur zur Bearbeitung deiner Anfrage verarbeitet. Details findest du in{" "}
+                Personenbezogene Daten aus dem Formular werden nur zur Bearbeitung deiner Anfrage
+                verarbeitet. Details findest du in{" "}
                 <Link href="/privacy" className="underline underline-offset-2">
                   Datenschutz
                 </Link>{" "}

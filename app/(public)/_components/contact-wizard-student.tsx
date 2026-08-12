@@ -247,8 +247,8 @@ export function StudentWizard({ onClose }: WizardProps) {
           Danke, {submittedName}!
         </h4>
         <p className="text-sm text-slate-600">
-          Wir haben deine unverbindliche Anfrage erhalten und pruefen die naechsten sinnvollen
-          Schritte. Wir melden uns moeglichst zeitnah.
+          Wir haben deine Anfrage erhalten und prüfen die nächsten sinnvollen Schritte. Wir melden
+          uns möglichst zeitnah.
         </p>
         <button
           type="button"
@@ -442,8 +442,7 @@ export function StudentWizard({ onClose }: WizardProps) {
               aria-describedby={errorFieldId === STUDENT_CONTACT_FIELD_ID ? STUDENT_ERROR_ID : undefined}
             />
             <span className="mt-1 block text-xs text-slate-500">
-              Wir nutzen diese Angabe nur, um auf deine unverbindliche Anfrage antworten zu
-              koennen.
+              Wir nutzen diese Angabe nur, um auf deine Anfrage antworten zu können.
             </span>
           </div>
 

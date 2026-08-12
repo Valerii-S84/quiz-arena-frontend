@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -21,10 +21,21 @@ import { metadata as contactMetadata } from "@/app/(public)/contact/page";
 import { metadata as impressumMetadata } from "@/app/(public)/impressum/page";
 import { metadata as privacyMetadata } from "@/app/(public)/privacy/page";
 import { metadata as projectsMetadata } from "@/app/(public)/projects/page";
+import { metadata as knowledgeMetadata } from "@/app/(public)/wissen/page";
 import { metadata as rootMetadata } from "@/app/layout";
-import { getSiteUrl } from "@/lib/public-site-config";
+import {
+  PUBLIC_SITE_DESCRIPTION,
+  PUBLIC_SITE_LOGO_HEIGHT,
+  PUBLIC_SITE_LOGO_PATH,
+  PUBLIC_SITE_LOGO_WIDTH,
+  PUBLIC_SITE_NAME,
+  QUIZ_PRODUCT_NAME,
+  getSiteUrl,
+} from "@/lib/public-site-config";
+import { buildPublicSiteStructuredData } from "@/lib/public-site-structured-data";
 import { extractArticleBodyAndStyles } from "@/lib/article-content";
 import { ARTICLE_EMBEDS, ARTICLE_SLUGS } from "@/lib/article-definitions";
+import { ARTICLE_SERVER_RENDERED_PAYLOAD } from "@/lib/article-server-rendered-content";
 import robots from "@/app/robots";
 import sitemap from "@/app/sitemap";
 
@@ -39,36 +50,126 @@ function parseJsonLdScripts(html: string): JsonLdPayload[] {
   });
 }
 
+function readPngDimensions(filePath: string): { width: number; height: number } {
+  const image = readFileSync(filePath);
+  const pngSignature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+
+  expect(image.subarray(0, pngSignature.length)).toEqual(pngSignature);
+
+  return {
+    width: image.readUInt32BE(16),
+    height: image.readUInt32BE(20),
+  };
+}
+
 describe("public SEO metadata contracts", () => {
   it("defines a consistent root metadata template and Open Graph payload", () => {
     const rootOpenGraph = rootMetadata.openGraph as Record<string, unknown> | undefined;
 
     expect(rootMetadata).toMatchObject({
+      applicationName: PUBLIC_SITE_NAME,
       title: {
-        default: "Deutsch Quiz Arena",
-        template: "%s | Deutsch Quiz Arena",
+        default: PUBLIC_SITE_NAME,
+        template: `%s | ${PUBLIC_SITE_NAME}`,
       },
-      description:
-        "Deutsch Quiz Arena ist ein Projekt im Aufbau mit Telegram-Quiz, Artikeln und digitalen Lernformaten in Pilotphase.",
+      description: PUBLIC_SITE_DESCRIPTION,
+      publisher: PUBLIC_SITE_NAME,
       openGraph: {
         type: "website",
-        title: "Deutsch Quiz Arena",
+        siteName: PUBLIC_SITE_NAME,
+        title: PUBLIC_SITE_NAME,
+        images: [
+          {
+            url: PUBLIC_SITE_LOGO_PATH,
+            width: PUBLIC_SITE_LOGO_WIDTH,
+            height: PUBLIC_SITE_LOGO_HEIGHT,
+          },
+        ],
       },
       twitter: {
         card: "summary_large_image",
-        title: "Deutsch Quiz Arena",
+        title: PUBLIC_SITE_NAME,
+        images: [PUBLIC_SITE_LOGO_PATH],
       },
     });
 
     expect(rootMetadata.metadataBase?.href).toBe(new URL(getSiteUrl()).href);
     expect(rootMetadata.openGraph?.images).toHaveLength(1);
     expect(rootOpenGraph?.type).toBe("website");
+    expect(JSON.stringify(rootMetadata.icons)).not.toContain(PUBLIC_SITE_LOGO_PATH);
+  });
+
+  it("uses small square brand assets for favicon metadata", () => {
+    expect(rootMetadata.icons).toMatchObject({
+      icon: [
+        { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+        { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+        { url: "/favicon-48x48.png", sizes: "48x48", type: "image/png" },
+      ],
+      apple: [
+        { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      ],
+      shortcut: "/favicon-48x48.png",
+    });
+
+    const iconSizes = [16, 32, 48, 180];
+    const iconFiles = [
+      "favicon-16x16.png",
+      "favicon-32x32.png",
+      "favicon-48x48.png",
+      "apple-touch-icon.png",
+    ];
+
+    iconFiles.forEach((fileName, index) => {
+      const filePath = join(process.cwd(), "public", fileName);
+
+      expect(readPngDimensions(filePath)).toEqual({
+        width: iconSizes[index],
+        height: iconSizes[index],
+      });
+      expect(statSync(filePath).size).toBeLessThan(50_000);
+    });
+  });
+
+  it("publishes the site brand and logo as Organization and WebSite structured data", () => {
+    const siteUrl = getSiteUrl();
+    const entries = buildPublicSiteStructuredData();
+    const organization = entries.find((entry) => entry["@type"] === "Organization");
+    const website = entries.find((entry) => entry["@type"] === "WebSite");
+
+    expect(organization).toMatchObject({
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: PUBLIC_SITE_NAME,
+      url: siteUrl,
+      logo: {
+        "@type": "ImageObject",
+        url: new URL(PUBLIC_SITE_LOGO_PATH, siteUrl).toString(),
+        width: PUBLIC_SITE_LOGO_WIDTH,
+        height: PUBLIC_SITE_LOGO_HEIGHT,
+      },
+    });
+    expect(website).toMatchObject({
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      name: PUBLIC_SITE_NAME,
+      publisher: {
+        "@id": `${siteUrl}/#organization`,
+      },
+    });
   });
 
   it("exposes dedicated metadata for public landing routes", () => {
-    expect(homeMetadata.title).toBe("Startseite");
+    expect(homeMetadata.title).toBe("Deutsch lernen mit Quiz und Artikeln");
     expect(homeMetadata.alternates?.canonical).toBe("/");
+    expect(homeMetadata.openGraph).toMatchObject({
+      siteName: PUBLIC_SITE_NAME,
+      title: `Deutsch lernen mit Quiz und Artikeln | ${PUBLIC_SITE_NAME}`,
+      images: [{ url: PUBLIC_SITE_LOGO_PATH }],
+    });
     expect(projectsMetadata.title).toBe("Projektübersicht");
+    expect(knowledgeMetadata.title).toBe("Wissen & Tipps");
+    expect(knowledgeMetadata.alternates?.canonical).toBe("/wissen");
     expect(contactMetadata.title).toBe("Kontakt");
     expect(privacyMetadata.title).toBe("Datenschutzerklärung");
     expect(impressumMetadata.title).toBe("Impressum");
@@ -111,6 +212,19 @@ describe("public SEO metadata contracts", () => {
       expect(articleData?.headline).toBe(article.title);
       expect(articleData?.description).toBe(article.description);
       expect(articleData?.mainEntityOfPage).toBe(`${siteUrl}/artikel/${slug}`);
+      expect(articleData?.publisher).toMatchObject({
+        "@type": "Organization",
+        "@id": `${siteUrl}/#organization`,
+        name: PUBLIC_SITE_NAME,
+        logo: {
+          url: new URL(PUBLIC_SITE_LOGO_PATH, siteUrl).toString(),
+        },
+      });
+      expect(articleData?.isPartOf).toMatchObject({
+        "@type": "WebSite",
+        "@id": `${siteUrl}/#website`,
+        name: PUBLIC_SITE_NAME,
+      });
 
       const breadcrumbItems = (breadcrumbData?.itemListElement ?? []) as Array<JsonLdPayload>;
       expect(breadcrumbData).toBeDefined();
@@ -122,12 +236,12 @@ describe("public SEO metadata contracts", () => {
       });
       expect(breadcrumbItems?.[1]).toMatchObject({
         "@type": "ListItem",
-        name: "Wissen",
+        name: "Wissen & Tipps",
         position: 2,
       });
       expect(breadcrumbItems?.[2]).toMatchObject({
         "@type": "ListItem",
-        name: article.title,
+        name: article.breadcrumbLabel,
         position: 3,
       });
     }
@@ -141,6 +255,21 @@ describe("public SEO metadata contracts", () => {
     expect(pageMetadata.title).toBe("Artikel nicht gefunden");
   });
 
+  it("keeps Deutsch Quiz Arena scoped to the quiz product instead of the site identity", () => {
+    expect(PUBLIC_SITE_NAME).toBe("Deutsch ist einfach!");
+    expect(QUIZ_PRODUCT_NAME).toBe("Deutsch Quiz Arena");
+    expect(rootMetadata.title).toMatchObject({
+      default: PUBLIC_SITE_NAME,
+      template: `%s | ${PUBLIC_SITE_NAME}`,
+    });
+    expect(privacyMetadata.openGraph).toMatchObject({
+      title: `Datenschutzerklärung | ${PUBLIC_SITE_NAME}`,
+    });
+    expect(impressumMetadata.openGraph).toMatchObject({
+      title: `Impressum | ${PUBLIC_SITE_NAME}`,
+    });
+  });
+
   it("keeps the public privacy copy limited to documented legal facts", () => {
     const privacyFilePath = join(process.cwd(), "app", "(public)", "privacy", "page.tsx");
     const source = readFileSync(privacyFilePath, "utf-8");
@@ -149,7 +278,13 @@ describe("public SEO metadata contracts", () => {
     expect(source).toContain("Analytics-Ereignisse: 90 Tage.");
     expect(source).toContain("6 Monate nach der letzten Bearbeitung");
     expect(source).toContain("Server-, Proxy- und Sicherheitsprotokolle: 14 Tage");
-    expect(source).toContain("ist derzeit noch nicht betriebsbereit");
+    expect(source).toContain("Du erreichst uns per E-Mail");
+    expect(source).toContain("§ 25 Abs. 2 TDDDG");
+    expect(source).toContain("Abs. 1 TDDDG");
+
+    expect(source).not.toContain("nicht betriebsbereit");
+    expect(source).not.toContain("Kontaktformular");
+    expect(source).not.toContain("TTDSG");
 
     expect(source).not.toContain("FastAPI");
     expect(source).not.toContain("PostgreSQL");
@@ -199,6 +334,7 @@ describe("public robots and sitemap contracts", () => {
     const uniqueUrls = new Set(urls);
     const expectedRoutes = [
       "https://qa.quizarena.test/",
+      "https://qa.quizarena.test/wissen",
       "https://qa.quizarena.test/projects",
       "https://qa.quizarena.test/contact",
       "https://qa.quizarena.test/privacy",
@@ -207,6 +343,9 @@ describe("public robots and sitemap contracts", () => {
     ];
 
     expect(urls).toEqual(expect.arrayContaining(expectedRoutes));
+    expect(urls).not.toContain(
+      "https://qa.quizarena.test/artikel/sprachniveaus-a1-c1",
+    );
     expect(uniqueUrls.size).toBe(urls.length);
     expect(entries.every((entry) => !!entry.changeFrequency && entry.lastModified instanceof Date)).toBe(
       true,
@@ -223,6 +362,20 @@ describe("knowledge transport implementation", () => {
     "[slug]",
     "page.tsx",
   );
+
+  it("renders a crawlable knowledge hub for all articles", async () => {
+    const { default: KnowledgePage } = await import("./wissen/page");
+    const html = renderToStaticMarkup(KnowledgePage());
+
+    expect(html).toContain('aria-label="Breadcrumb"');
+    expect(html).toContain('"@type":"CollectionPage"');
+    expect(html).toContain('"@type":"ItemList"');
+
+    for (const slug of ARTICLE_SLUGS) {
+      expect(html).toContain(`href="/artikel/${slug}"`);
+      expect(html).toContain(ARTICLE_EMBEDS[slug].title);
+    }
+  });
 
   it("does not render knowledge article through iframe srcDoc", () => {
     const source = readFileSync(filePath, "utf-8");
@@ -249,6 +402,85 @@ describe("knowledge transport implementation", () => {
       expect(extracted.content).toContain("onclick=");
       expect(extracted.content).toContain("function ");
     }
+  });
+
+  it("keeps generated article payloads synchronized with the editorial sources", () => {
+    for (const slug of ARTICLE_SLUGS) {
+      const articleFilePath = join(
+        process.cwd(),
+        "content",
+        "artikel",
+        ARTICLE_EMBEDS[slug].fileName,
+      );
+      const sourceArticle = readFileSync(articleFilePath, "utf-8");
+
+      expect(ARTICLE_SERVER_RENDERED_PAYLOAD[slug]).toEqual(
+        extractArticleBodyAndStyles(sourceArticle, "dq-article-document"),
+      );
+    }
+  });
+
+  it("scopes only standalone body selectors without corrupting component class names", () => {
+    const fixture = `
+      <style>
+        body, body.article-theme { color: white; }
+        .card-body, .era-body, .prov-body, .tr-body { max-height: 0; }
+        @media (max-width: 640px) { body { padding: 0; } }
+      </style>
+      <body><div class="card-body">Test</div></body>
+    `;
+    const extracted = extractArticleBodyAndStyles(fixture, "dq-article-document");
+
+    expect(extracted.styles).toContain(
+      ".dq-article-document, .dq-article-document.article-theme",
+    );
+    expect(extracted.styles).toContain(
+      ".card-body, .era-body, .prov-body, .tr-body",
+    );
+    expect(extracted.styles).toContain("{ .dq-article-document { padding: 0; }");
+    expect(extracted.styles).not.toMatch(/\.(?:card|era|prov|tr)-\.dq-article-document/);
+
+    for (const payload of Object.values(ARTICLE_SERVER_RENDERED_PAYLOAD)) {
+      expect(payload.styles).not.toMatch(/\.(?:card|era|prov|tr)-\.dq-article-document/);
+    }
+  });
+
+  it("preserves the reviewed content corrections", () => {
+    const levelsSource = readFileSync(
+      join(process.cwd(), "content", "artikel", "sprachniveaus-a0-c2.html"),
+      "utf-8",
+    );
+    const examsSource = readFileSync(
+      join(process.cwd(), "content", "artikel", "pruefungen-goethe-telc-testdaf.html"),
+      "utf-8",
+    );
+    const historySource = readFileSync(
+      join(process.cwd(), "content", "artikel", "deutsche-sprache-geschichte.html"),
+      "utf-8",
+    );
+
+    expect(levelsSource).toContain("telc Deutsch C2");
+    expect(levelsSource).toContain("A0</strong> ist keine offizielle Bezeichnung");
+    expect(levelsSource).not.toContain("Richtwerte des Europarates");
+    expect(levelsSource).not.toContain("Mindestniveau für die Zulassung zu den meisten Universitäten");
+
+    expect(examsSource).toContain(
+      "Modular sind die Goethe-Zertifikate B1, B2, C1 und C2",
+    );
+    expect(examsSource).toContain("unterschiedliche Aufgabenportfolios");
+    expect(examsSource).not.toContain("Jedes Niveau besteht aus vier klar getrennten Modulen");
+    expect(examsSource).not.toContain("A1 – C1 · Integrationsrelevant");
+
+    expect(historySource).toContain("1901/1902");
+    expect(historySource).toContain("Eine einzelne, abschließend belegte Ursache gibt es nicht");
+  });
+
+  it("defines an exact 301 redirect from the retired levels URL", () => {
+    const configSource = readFileSync(join(process.cwd(), "next.config.mjs"), "utf-8");
+
+    expect(configSource).toContain('source: "/artikel/sprachniveaus-a1-c1"');
+    expect(configSource).toContain('destination: "/artikel/sprachniveaus-a0-c2"');
+    expect(configSource).toContain("statusCode: 301");
   });
 
   it("keeps raw article source files out of public/ while preserving content sources", () => {
@@ -286,22 +518,58 @@ describe("knowledge transport implementation", () => {
       expect(html).toContain('"@type":"Article"');
       expect(html).toContain('"@type":"BreadcrumbList"');
       expect(html).toContain(`"position":3`);
-      expect(html).toContain(`"name":"${article.title}"`);
-      expect(html).toContain(`"name":"Wissen"`);
+      expect(html).toContain(`"name":"${article.breadcrumbLabel}"`);
+      expect(html).toContain(`"name":"Wissen & Tipps"`);
     }
   });
 
-  it("renders article pages inside the dark premium reader shell", async () => {
+  it("renders visible breadcrumbs and a two-way related-article network", async () => {
     const { default: ArticlePage } = await import("./artikel/[slug]/page");
 
-    for (const slug of ["sprachniveaus-a1-c1", "deutsche-sprache-geschichte"] as const) {
+    for (const slug of ARTICLE_SLUGS) {
+      const article = ARTICLE_EMBEDS[slug];
       const html = renderToStaticMarkup(
         await ArticlePage({
           params: Promise.resolve({ slug }),
         }),
       );
 
-      expect(html).toContain("← Zur Startseite");
+      expect(html).toContain('aria-label="Breadcrumb"');
+      expect(html).toContain('href="/wissen"');
+      expect(html).toContain("Wissen &amp; Tipps");
+      expect(html).toContain('aria-current="page"');
+      expect(html).toContain(`>${article.breadcrumbLabel}</li></ol>`);
+      expect(html).toContain("Das könnte dich auch interessieren");
+      expect(article.relatedSlugs).toHaveLength(2);
+      expect(article.relatedSlugs).not.toContain(slug);
+
+      for (const relatedSlug of article.relatedSlugs) {
+        expect(html).toContain(`href="/artikel/${relatedSlug}"`);
+        expect(html).toContain(ARTICLE_EMBEDS[relatedSlug].title);
+      }
+    }
+
+    expect(ARTICLE_EMBEDS["sprachniveaus-a0-c2"].relatedSlugs[0]).toBe(
+      "pruefungen-goethe-telc-testdaf",
+    );
+    expect(ARTICLE_EMBEDS["pruefungen-goethe-telc-testdaf"].relatedSlugs[0]).toBe(
+      "sprachniveaus-a0-c2",
+    );
+  });
+
+  it("renders article pages inside the dark premium reader shell", async () => {
+    const { default: ArticlePage } = await import("./artikel/[slug]/page");
+
+    for (const slug of ["sprachniveaus-a0-c2", "deutsche-sprache-geschichte"] as const) {
+      const html = renderToStaticMarkup(
+        await ArticlePage({
+          params: Promise.resolve({ slug }),
+        }),
+      );
+
+      expect(html).toContain("Deutsch ist einfach!");
+      expect(html).toContain('href="/#projects"');
+      expect(html).toContain('aria-label="Breadcrumb"');
       expect(html).toContain("bg-slate-950/40");
       expect(html).toContain("border-white/10");
       expect(html).toContain("text-slate-100");
@@ -317,7 +585,7 @@ describe("knowledge transport implementation", () => {
 
   it("keeps the article source files on the dark readable palette", () => {
     const articleFiles = [
-      "sprachniveaus-a1-c1.html",
+      "sprachniveaus-a0-c2.html",
       "deutsche-sprache-geschichte.html",
     ] as const;
 
@@ -340,7 +608,7 @@ describe("knowledge transport implementation", () => {
     }
 
     const cefrSource = readFileSync(
-      join(process.cwd(), "content", "artikel", "sprachniveaus-a1-c1.html"),
+      join(process.cwd(), "content", "artikel", "sprachniveaus-a0-c2.html"),
       "utf-8",
     );
     const historySource = readFileSync(

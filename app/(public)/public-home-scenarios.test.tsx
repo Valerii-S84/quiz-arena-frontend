@@ -7,15 +7,21 @@ import { renderToStaticMarkup } from "react-dom/server";
 import {
   PublicHomeBotSection,
   PublicHomeContactSection,
-  PublicHomeHeader,
+  PublicHomeFooter,
   PublicHomeHero,
   PublicHomeKnowledgeSection,
   PublicHomeQuizTeaserSection,
   PublicHomeStatsSection,
 } from "./public-home-sections";
+import { PublicSiteHeader } from "./_components/public-site-header";
 import { WISSEN_ARTICLES } from "./public-home-content";
 import { buildTrackedTelegramBotUrl } from "./public-home-helpers";
-import { TELEGRAM_BOT_START_PAYLOAD, getTelegramBotUrl } from "@/lib/public-site-config";
+import {
+  PUBLIC_SITE_LOGO_PATH,
+  PUBLIC_SITE_NAME,
+  TELEGRAM_BOT_START_PAYLOAD,
+  getTelegramBotUrl,
+} from "@/lib/public-site-config";
 
 function readFile(filePath: string): string {
   return readFileSync(filePath, "utf-8");
@@ -33,8 +39,9 @@ describe("public home scenarios", () => {
     expect(html).toContain("Quiz-Bot öffnen");
     expect(html).toContain(`href="${trackedUrl}"`);
     expect(html).toContain("href=\"#projects\"");
-    expect(html).toContain("Projektstatus ansehen");
+    expect(html).toContain("Alle Angebote entdecken");
     expect(html).toContain("start=site_public_home");
+    expect(html).not.toMatch(/Pilotphase|Projekt im Aufbau|in Vorbereitung|unverbindlich/i);
   });
 
   it("adds analytics dataset metadata to conversion CTAs", () => {
@@ -52,12 +59,32 @@ describe("public home scenarios", () => {
   });
 
   it("includes section-level navigation in header with in-page targets", () => {
-    const html = renderToStaticMarkup(<PublicHomeHeader />);
+    const html = renderToStaticMarkup(<PublicSiteHeader />);
 
+    expect(html).toContain(PUBLIC_SITE_NAME);
+    expect(html).toContain(encodeURIComponent(PUBLIC_SITE_LOGO_PATH));
+    expect(html).toContain("#FFF8E7");
+    expect(html).not.toContain(">Deutsch Quiz Arena<");
     expect(html).toContain('href="#projects"');
     expect(html).toContain('href="#knowledge"');
     expect(html).toContain('href="#unterricht"');
     expect(html).toContain('href="#contact"');
+  });
+
+  it("supports site-wide section links outside the homepage", () => {
+    const html = renderToStaticMarkup(<PublicSiteHeader sectionLinkPrefix="/" />);
+
+    expect(html).toContain('href="/#projects"');
+    expect(html).toContain('href="/wissen"');
+    expect(html).toContain('href="/#unterricht"');
+    expect(html).toContain('href="/#contact"');
+  });
+
+  it("uses the site brand in the public footer", () => {
+    const html = renderToStaticMarkup(<PublicHomeFooter />);
+
+    expect(html).toContain(`© 2026 ${PUBLIC_SITE_NAME}`);
+    expect(html).not.toContain("© 2026 Deutsch Quiz Arena");
   });
 
   it("renders the knowledge section links for all configured article slugs", () => {
@@ -68,6 +95,8 @@ describe("public home scenarios", () => {
       expect(html).toContain(`/artikel/${slug}`);
       expect(html).toContain(article.title);
     }
+    expect(html).toContain('href="/wissen"');
+    expect(html).toContain("Alle Artikel entdecken");
   });
 
   it("renders quiz teaser after stats and before bot section", () => {
@@ -105,8 +134,9 @@ describe("public home scenarios", () => {
       <PublicHomeContactSection onOpenStudentWizard={() => undefined} onOpenPartnerWizard={() => undefined} />,
     );
 
-    expect(html).toContain("Unverbindlich anfragen");
-    expect(html).toContain("Projektidee unverbindlich senden");
+    expect(html).toContain("Lernbegleitung anfragen");
+    expect(html).toContain("Kooperation anfragen");
+    expect(html).not.toMatch(/Pilotphase|in Vorbereitung|unverbindlich/i);
   });
 });
 

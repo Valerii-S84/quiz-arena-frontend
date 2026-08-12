@@ -2,7 +2,14 @@ import type { Metadata } from "next";
 import { Fraunces, Space_Grotesk } from "next/font/google";
 
 import "./globals.css";
-import { getSiteUrl } from "@/lib/public-site-config";
+import {
+  PUBLIC_SITE_DESCRIPTION,
+  PUBLIC_SITE_LOGO_HEIGHT,
+  PUBLIC_SITE_LOGO_PATH,
+  PUBLIC_SITE_LOGO_WIDTH,
+  PUBLIC_SITE_NAME,
+  getSiteUrl,
+} from "@/lib/public-site-config";
 import { Providers } from "./providers";
 
 const fraunces = Fraunces({
@@ -21,36 +28,34 @@ const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  applicationName: PUBLIC_SITE_NAME,
   title: {
-    default: "Deutsch Quiz Arena",
-    template: "%s | Deutsch Quiz Arena",
+    default: PUBLIC_SITE_NAME,
+    template: `%s | ${PUBLIC_SITE_NAME}`,
   },
-  description:
-    "Deutsch Quiz Arena ist ein Projekt im Aufbau mit Telegram-Quiz, Artikeln und digitalen Lernformaten in Pilotphase.",
+  description: PUBLIC_SITE_DESCRIPTION,
+  creator: PUBLIC_SITE_NAME,
+  publisher: PUBLIC_SITE_NAME,
   alternates: {
     canonical: "/",
   },
   openGraph: {
     type: "website",
     url: "/",
-    title: "Deutsch Quiz Arena",
-    description:
-      "Deutsch Quiz Arena ist ein Projekt im Aufbau mit Telegram-Quiz, Artikeln und digitalen Lernformaten in Pilotphase.",
+    siteName: PUBLIC_SITE_NAME,
+    title: PUBLIC_SITE_NAME,
+    description: PUBLIC_SITE_DESCRIPTION,
     images: [
       {
-        url: "/logo/bot-logo.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Deutsch Quiz Arena",
+        url: PUBLIC_SITE_LOGO_PATH,
+        width: PUBLIC_SITE_LOGO_WIDTH,
+        height: PUBLIC_SITE_LOGO_HEIGHT,
+        alt: `Logo von ${PUBLIC_SITE_NAME}`,
       },
     ],
   },
   icons: {
     icon: [
-      {
-        url: "/favicon.ico",
-        type: "image/x-icon",
-      },
       {
         url: "/favicon-16x16.png",
         sizes: "16x16",
@@ -74,14 +79,13 @@ export const metadata: Metadata = {
         type: "image/png",
       },
     ],
-    shortcut: "/favicon.ico",
+    shortcut: "/favicon-48x48.png",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Deutsch Quiz Arena",
-    description:
-      "Projekt im Aufbau mit Telegram-Quiz, Wissensartikeln und digitalen Lernformaten in Pilotphase.",
-    images: ["/logo/bot-logo.jpg"],
+    title: PUBLIC_SITE_NAME,
+    description: PUBLIC_SITE_DESCRIPTION,
+    images: [PUBLIC_SITE_LOGO_PATH],
   },
 };
 
