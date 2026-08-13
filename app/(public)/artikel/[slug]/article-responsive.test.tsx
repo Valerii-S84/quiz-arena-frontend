@@ -7,10 +7,10 @@ import ArticlePage from "./page";
 const TARGET_SLUG = "pruefungen-goethe-telc-testdaf";
 const ARTICLE_DOCUMENT_CLASS = "dq-article-document";
 
-async function renderTargetArticle() {
+async function renderTargetArticle(slug = TARGET_SLUG) {
   const markup = renderToStaticMarkup(
     await ArticlePage({
-      params: Promise.resolve({ slug: TARGET_SLUG }),
+      params: Promise.resolve({ slug }),
     }),
   );
 
@@ -127,5 +127,21 @@ describe("Prüfungen article responsive layout", () => {
       "C1",
       "C2",
     ]);
+  });
+
+  it("renders the language-history comparison table as labeled mobile cards", async () => {
+    await renderTargetArticle("deutsche-sprache-geschichte");
+
+    const comparisonTable = document.querySelector(".compare-table");
+    const renderedStyles = Array.from(document.querySelectorAll("style"))
+      .map((style) => style.textContent ?? "")
+      .join("\n");
+
+    expect(comparisonTable).not.toBeNull();
+    expect(renderedStyles).toContain(`.${ARTICLE_DOCUMENT_CLASS} .compare-table tr`);
+    expect(renderedStyles).toContain(`.${ARTICLE_DOCUMENT_CLASS} .compare-table td`);
+    expect(renderedStyles).toContain('content: "Sprachstufe";');
+    expect(renderedStyles).toContain('content: "machen";');
+    expect(renderedStyles).toContain('content: "Haus";');
   });
 });
