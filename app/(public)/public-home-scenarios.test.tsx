@@ -180,8 +180,9 @@ describe("public home scenarios", () => {
 
     expect(html).toContain("Interaktiver Test");
     expect(html).toContain("Teste dein Deutsch in 5 Fragen.");
-    expect(html).toContain("Quiz starten");
-    expect(html).toContain("Im Telegram-Bot weitermachen");
+    expect(html).toContain("Heutige Runde starten");
+    expect(html).toContain("A1 bis B2");
+    expect(html).toContain("5 neue Fragen pro Tag");
   });
 
   it("provides distinct student and partner contact entry points", () => {
