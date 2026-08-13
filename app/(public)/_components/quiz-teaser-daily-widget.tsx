@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { usePublicAnalytics } from "@/app/analytics-provider";
 import { getTelegramChannelUrl } from "@/lib/public-site-config";
@@ -63,6 +63,25 @@ function withShuffledAnswers(question: QuizTeaserQuestion): QuizTeaserQuestion {
   return { ...question, answers: shuffleQuizAnswers(question.answers) };
 }
 
+function isCurrentApiQuestionRequest(
+  progress: QuizTeaserProgress,
+  requestedRound: ActiveQuizTeaserRound,
+): boolean {
+  const currentRound = progress.activeRound;
+  return Boolean(
+    currentRound &&
+      currentRound.source === "api" &&
+      currentRound.dayIndex === requestedRound.dayIndex &&
+      currentRound.questionIndex === requestedRound.questionIndex &&
+      currentRound.score === requestedRound.score &&
+      currentRound.apiQuestion === undefined &&
+      currentRound.answeredQuestionIds.length === requestedRound.answeredQuestionIds.length &&
+      currentRound.answeredQuestionIds.every(
+        (id, index) => id === requestedRound.answeredQuestionIds[index],
+      ),
+  );
+}
+
 export function PublicHomeQuizTeaserDailyWidget({ trackedTelegramBotUrl }: Props) {
   const { trackEvent } = usePublicAnalytics();
   const [stage, setStage] = useState<Stage>("start");
@@ -76,12 +95,14 @@ export function PublicHomeQuizTeaserDailyWidget({ trackedTelegramBotUrl }: Props
   const [finalWasCorrect, setFinalWasCorrect] = useState(false);
   const [hasFinalAnswerFeedback, setHasFinalAnswerFeedback] = useState(false);
   const [errorMessage, setErrorMessage] = useState(UNAVAILABLE_MESSAGE);
+  const progressRef = useRef(progress);
 
   useEffect(() => {
     let rolloverTimer: ReturnType<typeof setTimeout>;
 
     const reconcileSavedProgress = (saved: QuizTeaserProgress) => {
       const completedToday = isQuizCompletedToday(saved);
+      progressRef.current = saved;
       setProgress(saved);
       setSelectedId(null);
       setFinalExplanation(null);
@@ -125,12 +146,16 @@ export function PublicHomeQuizTeaserDailyWidget({ trackedTelegramBotUrl }: Props
 
     const syncProgressForCurrentDate = (isInitialLoad = false) => {
       const saved = loadQuizTeaserProgress();
+      if (!saved) {
+        return;
+      }
       if (!isInitialLoad) {
         reconcileSavedProgress(saved);
         return;
       }
 
       const completedToday = isQuizCompletedToday(saved);
+      progressRef.current = saved;
       setProgress(saved);
       setScore(saved.activeRound?.score ?? (completedToday ? saved.lastResult?.score ?? 0 : 0));
       setStage(completedToday ? "result" : "start");
@@ -176,6 +201,7 @@ export function PublicHomeQuizTeaserDailyWidget({ trackedTelegramBotUrl }: Props
   }, []);
 
   const commit = (next: QuizTeaserProgress) => {
+    progressRef.current = next;
     setProgress(next);
     saveQuizTeaserProgress(next);
   };
@@ -190,21 +216,28 @@ export function PublicHomeQuizTeaserDailyWidget({ trackedTelegramBotUrl }: Props
     trackEvent("quiz_teaser_error", { section: SECTION_NAME, question_index: questionIndex });
   };
 
-  const loadApiQuestion = async (round: ActiveQuizTeaserRound, base: QuizTeaserProgress) => {
+  const loadApiQuestion = async (round: ActiveQuizTeaserRound) => {
     setStage("loading");
     try {
       const loaded = await fetchQuizTeaserQuestion(round.answeredQuestionIds);
+      const currentProgress = progressRef.current;
+      if (!isCurrentApiQuestionRequest(currentProgress, round)) {
+        return;
+      }
       const activeRound = { ...round, apiQuestion: loaded };
-      commit({ ...base, activeRound });
+      commit({ ...currentProgress, activeRound });
       setQuestion(withShuffledAnswers(loaded));
       setShownIndex(round.questionIndex + 1);
       setStage("question");
     } catch (error) {
+      if (!isCurrentApiQuestionRequest(progressRef.current, round)) {
+        return;
+      }
       fail(error, round.questionIndex + 1);
     }
   };
 
-  const showQuestion = (round: ActiveQuizTeaserRound, base: QuizTeaserProgress) => {
+  const showQuestion = (round: ActiveQuizTeaserRound) => {
     setSelectedId(null);
     setFinalExplanation(null);
     setHasFinalAnswerFeedback(false);
@@ -226,7 +259,7 @@ export function PublicHomeQuizTeaserDailyWidget({ trackedTelegramBotUrl }: Props
       setStage("question");
       return;
     }
-    void loadApiQuestion(round, base);
+    void loadApiQuestion(round);
   };
 
   const start = () => {
@@ -259,7 +292,7 @@ export function PublicHomeQuizTeaserDailyWidget({ trackedTelegramBotUrl }: Props
       day_number: round.dayIndex + 1,
       quiz_source: round.source,
     });
-    showQuestion(round, next);
+    showQuestion(round);
   };
 
   const select = (answer: QuizTeaserAnswer) => {
@@ -361,7 +394,9 @@ export function PublicHomeQuizTeaserDailyWidget({ trackedTelegramBotUrl }: Props
             {currentDay?.description ?? "Fünf neue Fragen mit direktem Feedback und einem klaren Lernimpuls."}
           </p>
           <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
-            <span className="rounded-full bg-[#4DE2C6]/10 px-3 py-1.5 text-[#B9FFF2]">A1 → B2</span>
+            <span className="rounded-full bg-[#4DE2C6]/10 px-3 py-1.5 text-[#B9FFF2]">
+              {progress.completedCuratedDays < CURATED_QUIZ_DAY_COUNT ? "A1 → B2" : "A2"}
+            </span>
             <span className="rounded-full bg-[#2AABEE]/10 px-3 py-1.5 text-[#9DDFFF]">ca. 3 Minuten</span>
             <span className="rounded-full bg-[#FFD166]/10 px-3 py-1.5 text-[#FFE3A0]">sofort erklärt</span>
           </div>
@@ -402,7 +437,7 @@ export function PublicHomeQuizTeaserDailyWidget({ trackedTelegramBotUrl }: Props
                 {selectedId === question.correctAnswerId ? "Richtig – stark erkannt." : "Noch nicht. Die richtige Antwort ist grün markiert."}
               </p>
               {question.explanation && <p className="mt-2 text-sm leading-6 text-slate-300">{question.explanation}</p>}
-              <button type="button" onClick={() => progress.activeRound && showQuestion(progress.activeRound, progress)} className={`mt-4 w-full ${SECONDARY_BUTTON_CLASS}`}>Nächste Frage</button>
+              <button type="button" onClick={() => progress.activeRound && showQuestion(progress.activeRound)} className={`mt-4 w-full ${SECONDARY_BUTTON_CLASS}`}>Nächste Frage</button>
             </div>
           )}
         </div>

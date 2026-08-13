@@ -254,6 +254,36 @@ describe("public quiz teaser widget", () => {
     }
   });
 
+  it("keeps in-memory progress when browser storage is unavailable", async () => {
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new Error("Storage access blocked");
+    });
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("Storage access blocked");
+    });
+
+    const { container, cleanup } = await renderWidget();
+    try {
+      act(() => findButton(container, "Heutige Runde starten").click());
+      const [firstQuestion, secondQuestion] = CURATED_QUIZ_DAYS[0].questions;
+      const correctAnswer = firstQuestion.answers.find(
+        (answer) => answer.id === firstQuestion.correctAnswerId,
+      );
+
+      act(() => findButton(container, correctAnswer?.label ?? "").click());
+      expect(container.textContent).toContain(firstQuestion.explanation);
+
+      act(() => window.dispatchEvent(new Event("focus")));
+
+      expect(container.textContent).toContain(firstQuestion.explanation);
+      act(() => findButton(container, "Nächste Frage").click());
+      expect(container.textContent).toContain(secondQuestion.prompt);
+      expect(container.textContent).toContain("Frage 2 von 5");
+    } finally {
+      cleanup();
+    }
+  });
+
   it("resumes an unfinished curated round at the next unanswered question", async () => {
     const firstRender = await renderWidget();
     act(() => findButton(firstRender.container, "Heutige Runde starten").click());
@@ -298,6 +328,8 @@ describe("public quiz teaser widget", () => {
 
     try {
       expect(container.textContent).toContain("Neue Tagesrunde");
+      expect(container.textContent).toContain("A2");
+      expect(container.textContent).not.toContain("A1 → B2");
       await act(async () => {
         findButton(container, "Heutige Runde starten").click();
         await Promise.resolve();
@@ -326,6 +358,54 @@ describe("public quiz teaser widget", () => {
       );
       expect(stored.completedBonusRounds).toBe(1);
       expect(stored.lastResult?.dayNumber).toBe(6);
+    } finally {
+      cleanup();
+    }
+  });
+
+  it("ignores an API response after another tab completes the round", async () => {
+    saveProgress(oldResultProgress(5));
+    let resolveFetch!: (value: Response | PromiseLike<Response>) => void;
+    vi.spyOn(globalThis, "fetch").mockImplementation(
+      () =>
+        new Promise<Response>((resolve) => {
+          resolveFetch = resolve;
+        }),
+    );
+    const { container, cleanup } = await renderWidget();
+
+    try {
+      act(() => findButton(container, "Heutige Runde starten").click());
+      expect(container.textContent).toContain("Deine Tagesfrage wird geladen");
+
+      saveProgress({
+        ...createEmptyQuizTeaserProgress(),
+        completedCuratedDays: 5,
+        completedBonusRounds: 1,
+        lastResult: {
+          date: getLocalDateKey(),
+          score: 5,
+          source: "api",
+          dayNumber: 6,
+        },
+      });
+      act(() => window.dispatchEvent(new Event("focus")));
+      expect(container.textContent).toContain("Heute geschafft");
+      expect(container.textContent).toContain("5/5");
+
+      await act(async () => {
+        resolveFetch(new Response(JSON.stringify(mockApiQuestion(1)), { status: 200 }));
+        await new Promise<void>((resolve) => window.setTimeout(resolve, 0));
+      });
+
+      expect(container.textContent).toContain("Heute geschafft");
+      expect(container.textContent).not.toContain("Was passt in API-Satz 1?");
+      const stored = parseQuizTeaserProgress(
+        window.localStorage.getItem(QUIZ_TEASER_PROGRESS_STORAGE_KEY),
+      );
+      expect(stored.activeRound).toBeNull();
+      expect(stored.completedBonusRounds).toBe(1);
+      expect(stored.lastResult?.score).toBe(5);
     } finally {
       cleanup();
     }

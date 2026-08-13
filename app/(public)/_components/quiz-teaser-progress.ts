@@ -194,15 +194,15 @@ export function parseQuizTeaserProgress(rawValue: string | null): QuizTeaserProg
   }
 }
 
-export function loadQuizTeaserProgress(): QuizTeaserProgress {
+export function loadQuizTeaserProgress(): QuizTeaserProgress | null {
   if (typeof window === "undefined") {
-    return createEmptyQuizTeaserProgress();
+    return null;
   }
 
   try {
     return parseQuizTeaserProgress(window.localStorage.getItem(QUIZ_TEASER_PROGRESS_STORAGE_KEY));
   } catch {
-    return createEmptyQuizTeaserProgress();
+    return null;
   }
 }
 
