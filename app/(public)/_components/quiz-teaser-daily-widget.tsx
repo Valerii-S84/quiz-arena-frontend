@@ -73,6 +73,7 @@ export function PublicHomeQuizTeaserDailyWidget({ trackedTelegramBotUrl }: Props
   const [finalExplanation, setFinalExplanation] = useState<string | null>(null);
   const [finalCorrectAnswer, setFinalCorrectAnswer] = useState<string | null>(null);
   const [finalWasCorrect, setFinalWasCorrect] = useState(false);
+  const [hasFinalAnswerFeedback, setHasFinalAnswerFeedback] = useState(false);
   const [errorMessage, setErrorMessage] = useState(UNAVAILABLE_MESSAGE);
 
   useEffect(() => {
@@ -114,6 +115,7 @@ export function PublicHomeQuizTeaserDailyWidget({ trackedTelegramBotUrl }: Props
   const showQuestion = (round: ActiveQuizTeaserRound, base: QuizTeaserProgress) => {
     setSelectedId(null);
     setFinalExplanation(null);
+    setHasFinalAnswerFeedback(false);
     setScore(round.score);
     setShownIndex(round.questionIndex + 1);
 
@@ -201,6 +203,7 @@ export function PublicHomeQuizTeaserDailyWidget({ trackedTelegramBotUrl }: Props
       };
       commit(next);
       setFinalWasCorrect(correct);
+      setHasFinalAnswerFeedback(true);
       setFinalExplanation(question.explanation ?? null);
       setFinalCorrectAnswer(
         question.answers.find((candidate) => candidate.id === question.correctAnswerId)?.label ?? null,
@@ -305,13 +308,15 @@ export function PublicHomeQuizTeaserDailyWidget({ trackedTelegramBotUrl }: Props
 
       {stage === "result" && (
         <div className="mt-6" aria-live="polite">
-          {finalExplanation && (
+          {hasFinalAnswerFeedback && (
             <div className={`mb-4 rounded-2xl border p-4 ${finalWasCorrect ? "border-[#4DE2C6]/30 bg-[#4DE2C6]/10" : "border-[#FFD166]/30 bg-[#FFD166]/10"}`}>
               <p className={`text-sm font-semibold ${finalWasCorrect ? "text-[#B9FFF2]" : "text-[#FFE3A0]"}`}>{finalWasCorrect ? "Richtig – die Runde ist geschafft." : "Geschafft. Die richtige Antwort war grün markiert."}</p>
               {!finalWasCorrect && finalCorrectAnswer && (
                 <p className="mt-2 text-sm font-semibold text-white">Richtige Antwort: {finalCorrectAnswer}</p>
               )}
-              <p className="mt-2 text-sm leading-6 text-slate-300">{finalExplanation}</p>
+              {finalExplanation && (
+                <p className="mt-2 text-sm leading-6 text-slate-300">{finalExplanation}</p>
+              )}
             </div>
           )}
           <div className="rounded-3xl border border-[#4DE2C6]/25 bg-[#4DE2C6]/10 p-5 text-center">

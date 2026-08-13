@@ -78,7 +78,7 @@ function mockApiQuestion(index: number) {
         { id: `api-b-${index}`, label: "Antwort B" },
       ],
       correctAnswerId: `api-a-${index}`,
-      explanation: "Kurze Erklärung.",
+      ...(index < 5 ? { explanation: "Kurze Erklärung." } : {}),
     },
   };
 }
@@ -217,7 +217,7 @@ describe("public quiz teaser widget", () => {
 
       for (let index = 1; index <= 5; index += 1) {
         expect(container.textContent).toContain(`Was passt in API-Satz ${index}?`);
-        act(() => findButton(container, "Antwort A").click());
+        act(() => findButton(container, index === 5 ? "Antwort B" : "Antwort A").click());
         if (index < 5) {
           await act(async () => {
             findButton(container, "Nächste Frage").click();
@@ -228,7 +228,11 @@ describe("public quiz teaser widget", () => {
 
       expect(fetchSpy).toHaveBeenCalledTimes(5);
       expect(container.textContent).toContain("Tagesrunde geschafft");
-      expect(container.textContent).toContain("5/5");
+      expect(container.textContent).toContain("4/5");
+      expect(container.textContent).toContain(
+        "Geschafft. Die richtige Antwort war grün markiert.",
+      );
+      expect(container.textContent).toContain("Richtige Antwort: Antwort A");
     } finally {
       cleanup();
     }

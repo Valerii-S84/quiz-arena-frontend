@@ -410,7 +410,7 @@ export const CURATED_QUIZ_DAYS: readonly CuratedQuizTeaserDay[] = [
           { id: "curated-d5-q1-a", label: "bin" },
           { id: "curated-d5-q1-b", label: "habe" },
           { id: "curated-d5-q1-c", label: "werde" },
-          { id: "curated-d5-q1-d", label: "hatte" },
+          { id: "curated-d5-q1-d", label: "haben" },
         ],
         correctAnswerId: "curated-d5-q1-b",
         explanation:
