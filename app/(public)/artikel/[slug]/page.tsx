@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import {
+  prepareArticleContentForNavigation,
+  type ArticleTableOfContentsItem,
+} from "@/lib/article-content";
 import { ARTICLE_EMBEDS } from "@/lib/article-definitions";
 import { ARTICLE_SERVER_RENDERED_PAYLOAD } from "@/lib/article-server-rendered-content";
 import {
@@ -107,6 +111,19 @@ function embeddedArticleTheme(): string {
 }
 .${ARTICLE_DOCUMENT_CLASS} .container {
   max-width: min(100%, 58rem);
+}
+.${ARTICLE_DOCUMENT_CLASS} [data-article-toc-heading="true"] {
+  scroll-margin-top: 16rem;
+}
+@media (min-width: 640px) {
+  .${ARTICLE_DOCUMENT_CLASS} [data-article-toc-heading="true"] {
+    scroll-margin-top: 12rem;
+  }
+}
+@media (min-width: 1024px) {
+  .${ARTICLE_DOCUMENT_CLASS} [data-article-toc-heading="true"] {
+    scroll-margin-top: 7rem;
+  }
 }
 .${ARTICLE_DOCUMENT_CLASS} .card-block,
 .${ARTICLE_DOCUMENT_CLASS} .tip-card,
@@ -473,6 +490,108 @@ function RelatedArticles({ currentSlug }: { currentSlug: string }) {
   );
 }
 
+type TableOfContentsSection = {
+  heading: ArticleTableOfContentsItem;
+  children: ArticleTableOfContentsItem[];
+};
+
+function groupTableOfContents(
+  items: ArticleTableOfContentsItem[],
+): TableOfContentsSection[] {
+  const sections: TableOfContentsSection[] = [];
+
+  for (const item of items) {
+    if (item.level === 2 || sections.length === 0) {
+      sections.push({ heading: item, children: [] });
+      continue;
+    }
+
+    sections[sections.length - 1].children.push(item);
+  }
+
+  return sections;
+}
+
+function TableOfContentsLinks({ items }: { items: ArticleTableOfContentsItem[] }) {
+  const sections = groupTableOfContents(items);
+  const linkClassName =
+    "block rounded-md py-1.5 leading-5 text-slate-300 transition hover:text-amber-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950";
+
+  return (
+    <ol className="mt-3 space-y-2 text-sm">
+      {sections.map((section) => (
+        <li key={section.heading.id}>
+          <a
+            href={`#${section.heading.id}`}
+            data-article-toc-link
+            className={`${linkClassName} font-medium`}
+          >
+            {section.heading.label}
+          </a>
+          {section.children.length > 0 ? (
+            <ol className="ml-2 mt-1 space-y-1 border-l border-white/10 pl-3">
+              {section.children.map((item) => (
+                <li key={item.id}>
+                  <a
+                    href={`#${item.id}`}
+                    data-article-toc-link
+                    className={linkClassName}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          ) : null}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function ArticleTableOfContents({
+  items,
+  slug,
+}: {
+  items: ArticleTableOfContentsItem[];
+  slug: string;
+}) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  const desktopHeadingId = `article-toc-${slug}`;
+
+  return (
+    <aside
+      aria-label="Artikelnavigation"
+      className="mb-5 lg:order-2 lg:sticky lg:top-24 lg:mb-0"
+    >
+      <details className="rounded-2xl border border-white/10 bg-slate-950/70 p-4 shadow-[0_18px_50px_rgba(2,6,23,0.28)] lg:hidden">
+        <summary className="cursor-pointer rounded-md font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300">
+          Inhaltsverzeichnis
+        </summary>
+        <nav aria-label="Inhaltsverzeichnis">
+          <TableOfContentsLinks items={items} />
+        </nav>
+      </details>
+
+      <nav
+        aria-labelledby={desktopHeadingId}
+        className="hidden max-h-[calc(100vh-7rem)] overflow-y-auto rounded-2xl border border-white/10 bg-slate-950/70 p-5 shadow-[0_18px_50px_rgba(2,6,23,0.28)] lg:block"
+      >
+        <h2
+          id={desktopHeadingId}
+          className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-300"
+        >
+          Inhaltsverzeichnis
+        </h2>
+        <TableOfContentsLinks items={items} />
+      </nav>
+    </aside>
+  );
+}
+
 function escapeHtmlAttribute(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -505,7 +624,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     getTelegramBotUrl(),
     article.telegramStartPayload,
   );
-  const articleHtml = normalizeArticleHtml(articlePayload.content, trackedQuizBotUrl);
+  const navigableArticle = prepareArticleContentForNavigation(
+    normalizeArticleHtml(articlePayload.content, trackedQuizBotUrl),
+  );
   const articleStyles = `${embeddedArticleTheme()}\n${articlePayload.styles}\n${embeddedArticleResponsiveOverrides()}`;
 
   return (
@@ -517,23 +638,26 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       >
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
           <ArticleBreadcrumbs label={article.breadcrumbLabel} />
-          <article className="min-w-0 rounded-[28px] border border-white/10 bg-slate-950/40 shadow-[0_28px_90px_rgba(2,6,23,0.45)] backdrop-blur-xl">
-            <style
-              dangerouslySetInnerHTML={{
-                __html: articleStyles,
-              }}
-            />
-            <div
-              className={`${ARTICLE_DOCUMENT_CLASS} min-w-0 rounded-[28px]`}
-              dangerouslySetInnerHTML={{
-                __html: articleHtml,
-              }}
-            />
-            <ArticleInteractions
-              articleSlug={slug}
-              defaultOpenSectionId={ARTICLE_DEFAULT_OPEN_SECTIONS[slug]}
-            />
-          </article>
+          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-start lg:gap-6">
+            <ArticleTableOfContents items={navigableArticle.tableOfContents} slug={slug} />
+            <article className="min-w-0 rounded-[28px] border border-white/10 bg-slate-950/40 shadow-[0_28px_90px_rgba(2,6,23,0.45)] backdrop-blur-xl lg:order-1">
+              <style
+                dangerouslySetInnerHTML={{
+                  __html: articleStyles,
+                }}
+              />
+              <div
+                className={`${ARTICLE_DOCUMENT_CLASS} min-w-0 rounded-[28px]`}
+                dangerouslySetInnerHTML={{
+                  __html: navigableArticle.content,
+                }}
+              />
+              <ArticleInteractions
+                articleSlug={slug}
+                defaultOpenSectionId={ARTICLE_DEFAULT_OPEN_SECTIONS[slug]}
+              />
+            </article>
+          </div>
           <RelatedArticles currentSlug={slug} />
           <script
             type="application/ld+json"

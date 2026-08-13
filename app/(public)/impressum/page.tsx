@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { PublicLegalFooter } from "../_components/public-legal-footer";
+import { PublicSiteHeader } from "../_components/public-site-header";
 import {
   PUBLIC_SITE_NAME,
   getPublicContactEmail,
@@ -25,7 +26,9 @@ export default function ImpressumPage() {
   const telegramBotUrl = getTelegramBotUrl();
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-14">
+    <>
+      <PublicSiteHeader sectionLinkPrefix="/" />
+      <main className="mx-auto min-h-screen max-w-3xl px-6 py-14">
       <h1 className="text-3xl font-semibold text-slate-900">Impressum</h1>
       <section className="mt-6 space-y-4 text-sm leading-6 text-slate-700">
         <article className="rounded-xl border border-white/70 bg-white/80 p-5">
@@ -76,7 +79,8 @@ export default function ImpressumPage() {
           </p>
         </article>
       </section>
-      <PublicLegalFooter />
-    </main>
+        <PublicLegalFooter />
+      </main>
+    </>
   );
 }

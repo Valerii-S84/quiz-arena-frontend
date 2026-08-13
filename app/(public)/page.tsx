@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 import {
-  PublicHomeBotSection,
   PublicHomeContactSection,
   PublicHomeFooter,
+  PublicHomeFurtherProjectsSection,
   PublicHomeHero,
   PublicHomeKnowledgeSection,
   PublicHomeProductsSection,
@@ -74,12 +74,12 @@ export default async function PublicHomePage() {
 
         <div className="mx-auto w-full max-w-6xl px-3 pb-12 sm:px-6 sm:pb-16">
           <PublicHomeHero trackedTelegramBotUrl={trackedTelegramBotUrl} />
-          <PublicHomeStatsSection stats={statsState} />
           <PublicHomeQuizTeaserSection trackedTelegramBotUrl={trackedTelegramBotUrl} />
-          <PublicHomeBotSection trackedTelegramBotUrl={trackedTelegramBotUrl} />
+          <PublicHomeStatsSection stats={statsState} />
           <PublicHomeProductsSection trackedTelegramBotUrl={trackedTelegramBotUrl} />
           <PublicHomeKnowledgeSection />
           <PublicHomeContactSection />
+          <PublicHomeFurtherProjectsSection />
           <PublicHomeFooter trackedTelegramBotUrl={trackedTelegramBotUrl} />
         </div>
       </main>

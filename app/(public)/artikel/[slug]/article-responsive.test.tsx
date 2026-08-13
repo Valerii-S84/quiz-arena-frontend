@@ -18,6 +18,53 @@ async function renderTargetArticle() {
 }
 
 describe("Prüfungen article responsive layout", () => {
+  it("renders a responsive table of contents from stable article heading anchors", async () => {
+    await renderTargetArticle();
+
+    const tocLinks = Array.from(
+      document.querySelectorAll<HTMLAnchorElement>("[data-article-toc-link]"),
+    );
+    const headingIds = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-article-toc-heading='true']"),
+      (heading) => heading.id,
+    );
+    const tocLabels = tocLinks.map((link) => link.textContent?.trim());
+    const renderedStyles = Array.from(document.querySelectorAll("style"))
+      .map((style) => style.textContent ?? "")
+      .join("\n");
+
+    expect(document.querySelector("details.lg\\:hidden summary")?.textContent).toContain(
+      "Inhaltsverzeichnis",
+    );
+    expect(document.querySelector("nav.lg\\:block")?.textContent).toContain(
+      "Inhaltsverzeichnis",
+    );
+    expect(tocLabels).toContain("Goethe-Institut — Goethe-Zertifikat");
+    expect(tocLabels).toContain("telc — The European Language Certificates");
+    expect(headingIds).toContain("artikel-goethe-institut-goethe-zertifikat");
+    expect(headingIds).toContain("artikel-telc-the-european-language-certificates");
+    expect(renderedStyles).toMatch(
+      new RegExp(
+        `\\.${ARTICLE_DOCUMENT_CLASS} \\[data-article-toc-heading="true"\\] \\{\\s*scroll-margin-top: 16rem;\\s*\\}`,
+      ),
+    );
+    expect(renderedStyles).toMatch(
+      new RegExp(
+        `@media \\(min-width: 640px\\) \\{\\s*\\.${ARTICLE_DOCUMENT_CLASS} \\[data-article-toc-heading="true"\\] \\{\\s*scroll-margin-top: 12rem;`,
+      ),
+    );
+    expect(renderedStyles).toMatch(
+      new RegExp(
+        `@media \\(min-width: 1024px\\) \\{\\s*\\.${ARTICLE_DOCUMENT_CLASS} \\[data-article-toc-heading="true"\\] \\{\\s*scroll-margin-top: 7rem;`,
+      ),
+    );
+
+    for (const link of tocLinks) {
+      const targetId = decodeURIComponent(link.hash.slice(1));
+      expect(document.getElementById(targetId)).not.toBeNull();
+    }
+  });
+
   it("keeps the exams table readable as mobile cards instead of clipping columns", async () => {
     Object.defineProperty(window, "innerWidth", {
       configurable: true,

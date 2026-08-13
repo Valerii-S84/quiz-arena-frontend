@@ -5,11 +5,12 @@ import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import {
-  PublicHomeBotSection,
   PublicHomeContactSection,
   PublicHomeFooter,
+  PublicHomeFurtherProjectsSection,
   PublicHomeHero,
   PublicHomeKnowledgeSection,
+  PublicHomeProductsSection,
   PublicHomeQuizTeaserSection,
   PublicHomeStatsSection,
 } from "./public-home-sections";
@@ -36,11 +37,13 @@ describe("public home scenarios", () => {
       <PublicHomeHero trackedTelegramBotUrl={trackedUrl} />,
     );
 
-    expect(html).toContain("Quiz-Bot öffnen");
+    expect(html).toContain("Deutsch in 5 Fragen testen");
+    expect(html).toContain('href="#quiz-teaser"');
+    expect(html).toContain("Quiz-Bot auf Telegram öffnen");
     expect(html).toContain(`href="${trackedUrl}"`);
-    expect(html).toContain("href=\"#projects\"");
-    expect(html).toContain("Alle Angebote entdecken");
     expect(html).toContain("start=site_public_home");
+    expect(html).toContain("Du bekommst sofort ein Ergebnis");
+    expect(html).not.toContain("Wähle dein Lernformat.");
     expect(html).not.toMatch(/Pilotphase|Projekt im Aufbau|in Vorbereitung|unverbindlich/i);
   });
 
@@ -55,7 +58,7 @@ describe("public home scenarios", () => {
     expect(html).toContain("data-analytics-event=\"hero_cta_click\"");
     expect(html).toContain("data-analytics-section=\"hero\"");
     expect(html).toContain("data-analytics-cta=\"telegram_bot\"");
-    expect(html).toContain("data-analytics-cta=\"projects_anchor\"");
+    expect(html).toContain("data-analytics-cta=\"quiz_teaser_anchor\"");
   });
 
   it("includes section-level navigation in header with in-page targets", () => {
@@ -65,19 +68,20 @@ describe("public home scenarios", () => {
     expect(html).toContain(encodeURIComponent(PUBLIC_SITE_LOGO_PATH));
     expect(html).toContain("#FFF8E7");
     expect(html).not.toContain(">Deutsch Quiz Arena<");
+    expect(html).toContain("Lernangebote");
     expect(html).toContain('href="#projects"');
     expect(html).toContain('href="#knowledge"');
     expect(html).toContain('href="#unterricht"');
-    expect(html).toContain('href="#contact"');
+    expect(html).toContain('href="/contact"');
   });
 
   it("supports site-wide section links outside the homepage", () => {
     const html = renderToStaticMarkup(<PublicSiteHeader sectionLinkPrefix="/" />);
 
-    expect(html).toContain('href="/#projects"');
+    expect(html).toContain('href="/projects"');
     expect(html).toContain('href="/wissen"');
-    expect(html).toContain('href="/#unterricht"');
-    expect(html).toContain('href="/#contact"');
+    expect(html).toContain('href="/contact#lernbegleitung"');
+    expect(html).toContain('href="/contact"');
   });
 
   it("uses the site brand in the public footer", () => {
@@ -99,20 +103,71 @@ describe("public home scenarios", () => {
     expect(html).toContain("Alle Artikel entdecken");
   });
 
-  it("renders quiz teaser after stats and before bot section", () => {
+  it("orders the conversion journey as hero, quiz, social proof, then one product block", () => {
     const botUrl = getTelegramBotUrl();
     const trackedUrl = buildTrackedTelegramBotUrl(botUrl, TELEGRAM_BOT_START_PAYLOAD);
 
     const html = renderToStaticMarkup(
       <>
-        <PublicHomeStatsSection stats={{ users: 12, quizzes: 34, isUnavailable: false }} />
+        <PublicHomeHero trackedTelegramBotUrl={trackedUrl} />
         <PublicHomeQuizTeaserSection trackedTelegramBotUrl={trackedUrl} />
-        <PublicHomeBotSection trackedTelegramBotUrl={trackedUrl} />
+        <PublicHomeStatsSection stats={{ users: 12, quizzes: 34, isUnavailable: false }} />
+        <PublicHomeProductsSection trackedTelegramBotUrl={trackedUrl} />
       </>,
     );
 
-    expect(html.indexOf('id="stats"')).toBeLessThan(html.indexOf('id="quiz-teaser"'));
-    expect(html.indexOf('id="quiz-teaser"')).toBeLessThan(html.indexOf('id="bot"'));
+    expect(html.indexOf('id="hero"')).toBeLessThan(html.indexOf('id="quiz-teaser"'));
+    expect(html.indexOf('id="quiz-teaser"')).toBeLessThan(html.indexOf('id="stats"'));
+    expect(html.indexOf('id="stats"')).toBeLessThan(html.indexOf('id="projects"'));
+    expect(html.match(/id="projects"/g)).toHaveLength(1);
+  });
+
+  it("keeps three German-learning offers in one consistent product grid", () => {
+    const trackedUrl = buildTrackedTelegramBotUrl(
+      getTelegramBotUrl(),
+      TELEGRAM_BOT_START_PAYLOAD,
+    );
+    const html = renderToStaticMarkup(
+      <PublicHomeProductsSection trackedTelegramBotUrl={trackedUrl} />,
+    );
+
+    expect(html).toContain("Deutsch Quiz Arena");
+    expect(html).toContain("Deutsch ist einfach!");
+    expect(html).toContain("Deutsch Trainer Bot");
+    expect(html).not.toContain("Worklog");
+    expect(html.match(/<article/g)).toHaveLength(3);
+    expect(html).toContain('sizes="(min-width: 1024px) 352px');
+    expect(html.match(/alt=""/g)).toHaveLength(3);
+  });
+
+  it("shows non-learning projects separately with honest link behavior", () => {
+    const html = renderToStaticMarkup(<PublicHomeFurtherProjectsSection />);
+
+    expect(html).toContain("Weitere Projekte");
+    expect(html).toContain("Worklog");
+    expect(html).toContain('href="/downloads/worklog/direct-hoofdrapport.apk"');
+    expect(html).toContain('download="worklog.apk"');
+    expect(html).toContain("Android-App herunterladen");
+    expect(html).not.toContain('href="/contact"');
+    expect(html).toContain("Bücher");
+    expect(html).toContain('href="/books"');
+    expect(html).toContain("Deutsch für Elektriker als Printausgabe und Kindle-eBook");
+    expect(html).toContain("Shorts Blocker Kids");
+    expect(html).toContain('href="https://www.shortsblockerkids.de/"');
+    expect(html).toContain('target="_blank"');
+    expect(html).toContain('rel="noreferrer"');
+  });
+
+  it("labels fresh and unavailable statistics without inventing a timestamp", () => {
+    const freshHtml = renderToStaticMarkup(
+      <PublicHomeStatsSection stats={{ users: 12, quizzes: 34, isUnavailable: false }} />,
+    );
+    const unavailableHtml = renderToStaticMarkup(
+      <PublicHomeStatsSection stats={{ users: null, quizzes: null, isUnavailable: true }} />,
+    );
+
+    expect(freshHtml).toContain("Bei jedem Seitenaufruf neu geladen");
+    expect(unavailableHtml).toContain("Datenabruf derzeit nicht verfügbar");
   });
 
   it("renders public German quiz teaser copy and CTA labels", () => {
@@ -190,9 +245,13 @@ describe("public content isolation", () => {
 
   it("adds privacy/contact legal paths and avoids placeholder local email on contact page", () => {
     const source = readFile(join(process.cwd(), "app", "(public)", "contact", "page.tsx"));
+    const footerSource = readFile(
+      join(process.cwd(), "app", "(public)", "_components", "public-legal-footer.tsx"),
+    );
 
-    expect(source).toContain('/privacy"');
-    expect(source).toContain('/impressum"');
+    expect(source).toContain("PublicLegalFooter");
+    expect(footerSource).toContain('/privacy"');
+    expect(footerSource).toContain('/impressum"');
     expect(source).not.toContain("ops@quizarena.local");
   });
 });
