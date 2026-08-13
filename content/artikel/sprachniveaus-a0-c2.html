@@ -559,6 +559,60 @@
   }
   .notice strong { color: var(--accent); }
 
+  /* ── QUICK ANSWER ── */
+  .quick-answer {
+    max-width: 880px;
+    margin: 0 auto 52px;
+    padding: 30px;
+    border: 1px solid rgba(77,184,168,0.3);
+    border-radius: 18px;
+    background: linear-gradient(145deg, rgba(77,184,168,0.12), rgba(15,15,19,0.96));
+    box-shadow: 0 22px 55px rgba(0,0,0,0.22);
+  }
+  .quick-answer-label {
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .quick-answer h2 {
+    margin-bottom: 12px;
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.65rem, 4vw, 2.35rem);
+    line-height: 1.2;
+  }
+  .quick-answer-lead { color: var(--text); font-size: 1rem; line-height: 1.75; }
+  .quick-answer-table-wrap { margin-top: 22px; overflow-x: auto; }
+  .quick-answer-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  .quick-answer-table th,
+  .quick-answer-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+  .quick-answer-table th { color: var(--accent); font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase; }
+  .quick-answer-table td { color: var(--muted); line-height: 1.55; }
+  .quick-answer-question { margin-top: 20px; }
+  .quick-answer-question h3 { margin-bottom: 6px; font-size: 1.05rem; }
+  .quick-answer-question p { color: var(--muted); font-size: 0.92rem; line-height: 1.65; }
+  .quick-answer-cta {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 22px;
+    padding: 11px 20px;
+    border-radius: 999px;
+    background: #2aabee;
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .quick-answer-cta:hover { background: #169bdc; }
+  .quick-answer-note { margin-top: 10px; color: var(--muted); font-size: 0.78rem; }
+  @media (max-width: 640px) {
+    .quick-answer { margin-inline: 16px; padding: 22px 18px; }
+  }
+
   /* ── FOOTER ── */
   footer {
     border-top: 1px solid var(--border);
@@ -597,6 +651,32 @@
   </div>
   <p class="group-label">Elementar · Selbstständig · Kompetent</p>
 </header>
+
+<!-- ════════════════════ KURZANTWORT ════════════════════ -->
+<section class="quick-answer" aria-labelledby="b2-kurzantwort">
+  <p class="quick-answer-label">Kurzantwort</p>
+  <h2 id="b2-kurzantwort">Wie lange dauert es, Deutsch B2 zu erreichen?</h2>
+  <p class="quick-answer-lead">
+    Als grobe Orientierung kannst du von null bis B2 mit insgesamt etwa 600–800 Unterrichtseinheiten à 45 Minuten rechnen. Das ist keine feste Dauer: Vorkenntnisse, Lernintensität, Unterrichtsqualität, Selbststudium und die vier Fertigkeiten verändern den Weg deutlich. Bei zehn Unterrichtseinheiten pro Woche entsprechen 600–800 Einheiten rechnerisch etwa 60–80 Kurswochen; Ferien, Pausen und zusätzliche Übungszeit kommen dazu.
+  </p>
+  <div class="quick-answer-table-wrap">
+    <table class="quick-answer-table">
+      <thead><tr><th>Startpunkt</th><th>Sinnvolle Orientierung</th><th>Nächster Schritt</th></tr></thead>
+      <tbody>
+        <tr><td>Neu / Pre-A1</td><td>600–800 UE bis B2 als grober Gesamtkorridor</td><td>Lernplan in Etappen A1, A2, B1 und B2 aufteilen</td></tr>
+        <tr><td>A2</td><td>Nicht einfach Stunden vom Gesamtkorridor abziehen</td><td>Hören, Lesen, Schreiben und Sprechen getrennt einstufen</td></tr>
+        <tr><td>B1</td><td>Dauer hängt besonders von aktiven Lücken und Prüfungsziel ab</td><td>B2-Diagnosetest und Probeaufgaben des Zielanbieters nutzen</td></tr>
+        <tr><td>Niveau unbekannt</td><td>Eine Zeitprognose wäre ohne Einstufung unzuverlässig</td><td>Zuerst Einstufungstest, danach Wochenplan festlegen</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="quick-answer-question">
+    <h3>Was bedeuten A1, A2, B1, B2, C1 und C2?</h3>
+    <p>A-Stufen beschreiben elementare, B-Stufen selbstständige und C-Stufen kompetente Sprachverwendung. Entscheidend sind konkrete Fähigkeiten in Hören, Lesen, Schreiben und Sprechen — nicht nur die Zahl absolvierter Kursstunden.</p>
+  </div>
+  <a class="quick-answer-cta" data-article-quiz-cta href="__ARTICLE_QUIZ_BOT_URL__" target="_blank" rel="noopener noreferrer">Deutsch-Niveau im Quiz-Bot testen →</a>
+  <p class="quick-answer-note">Das Quiz liefert Lernorientierung und ersetzt keine offizielle Sprachprüfung oder verbindliche Einstufung.</p>
+</section>
 
 <!-- ════════════════════ CEFR OVERVIEW ════════════════════ -->
 <div class="container" style="max-width:860px; padding-bottom:0;">
@@ -1258,7 +1338,7 @@
 <!-- ════════════════════ FOOTER ════════════════════ -->
 <footer>
   <p>Quellen: <a href="https://www.coe.int/en/web/common-european-framework-reference-languages" target="_blank" rel="noopener noreferrer">Europarat – GER/CEFR</a> · <a href="https://www.goethe.de/de/spr/prf.html" target="_blank" rel="noopener noreferrer">Goethe-Institut – Prüfungen A1–C2</a> · <a href="https://www.osd.at/die-pruefungen/osd-prufungen/" target="_blank" rel="noopener noreferrer">ÖSD-Prüfungen</a> · <a href="https://www.telc.net/sprachpruefungen/zertifikatspruefung/deutsch/" target="_blank" rel="noopener noreferrer">telc Deutsch-Prüfungen</a></p>
-  <p style="margin-top:6px;">Inhalt redaktionell geprüft: 12. August 2026 · Anerkennungsregeln können sich ändern</p>
+  <p style="margin-top:6px;">Inhalt redaktionell geprüft: 13. August 2026 · Anerkennungsregeln können sich ändern</p>
   <p style="margin-top:6px;"><a href="/impressum">Impressum</a> · <a href="/privacy">Datenschutz</a> · <a href="/contact">Kontakt</a></p>
 </footer>
 

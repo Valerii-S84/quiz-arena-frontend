@@ -34,6 +34,7 @@ const ALLOWED_METADATA_KEYS = new Set([
   "destination",
   "question_index",
   "score",
+  "article_slug",
 ]);
 
 function randomFallbackId(): string {

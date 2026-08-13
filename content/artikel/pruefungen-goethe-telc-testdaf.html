@@ -631,6 +631,69 @@
   }
   .rd-phrase:last-child { border-bottom: none; }
 
+  /* ── QUICK ANSWER ── */
+  .quick-answer {
+    max-width: 900px;
+    margin: 0 auto 52px;
+    padding: 30px;
+    border: 1px solid rgba(94,184,160,0.28);
+    border-radius: 18px;
+    background: linear-gradient(145deg, rgba(94,184,160,0.11), rgba(23,23,30,0.96));
+    box-shadow: 0 22px 55px rgba(0,0,0,0.22);
+  }
+  .quick-answer-label {
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .quick-answer h2 {
+    margin-bottom: 12px;
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.65rem, 4vw, 2.35rem);
+    line-height: 1.2;
+  }
+  .quick-answer-lead { color: var(--text); font-size: 1rem; line-height: 1.75; }
+  .decision-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 22px;
+  }
+  .decision-card {
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(15,15,19,0.62);
+  }
+  .decision-card h3 { margin-bottom: 6px; color: var(--accent); font-size: 0.96rem; }
+  .decision-card p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+  .quick-answer-question { margin-top: 20px; }
+  .quick-answer-question h3 { margin-bottom: 6px; font-size: 1.05rem; }
+  .quick-answer-question p { color: var(--muted); font-size: 0.92rem; line-height: 1.65; }
+  .quick-answer-cta {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 22px;
+    padding: 11px 20px;
+    border-radius: 999px;
+    background: #2aabee;
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .quick-answer-cta:hover { background: #169bdc; }
+  .quick-answer-note { margin-top: 10px; color: var(--muted); font-size: 0.78rem; }
+  @media (max-width: 640px) {
+    .quick-answer { margin-inline: 16px; padding: 22px 18px; }
+    .decision-grid { grid-template-columns: 1fr; }
+  }
+
   /* ── FOOTER ── */
   footer {
     border-top: 1px solid var(--border);
@@ -704,6 +767,39 @@
   </div>
   <p class="hero-sub2" style="margin-top:10px;">Niveau A1 · A2 · B1 · B2 · C1 · C2 nach GER/CEFR</p>
 </header>
+
+<!-- ════════════════════ KURZANTWORT ════════════════════ -->
+<section class="quick-answer" aria-labelledby="pruefung-kurzantwort">
+  <p class="quick-answer-label">Kurzantwort</p>
+  <h2 id="pruefung-kurzantwort">Welche Deutschprüfung brauche ich?</h2>
+  <p class="quick-answer-lead">
+    Die richtige Prüfung hängt zuerst vom Zweck ab — nicht davon, welcher Anbieter bekannter ist. Für Familiennachzug oder Aufenthalt zählt die Liste der zuständigen Behörde, im Integrationskurs meist der DTZ, für ein deutschsprachiges Studium häufig TestDaF, DSH oder ein ausdrücklich akzeptiertes C1-Zertifikat. Für Ausbildung und Beruf gelten Arbeitgeber-, Kammer- oder Anerkennungsvorgaben. Prüfe deshalb immer Niveau, genaue Produktbezeichnung und akzeptierende Stelle, bevor du dich anmeldest.
+  </p>
+  <div class="decision-grid" aria-label="Entscheidungshilfe nach Prüfungszweck">
+    <article class="decision-card">
+      <h3>Visum oder Aufenthalt</h3>
+      <p>Zuerst die Vorgabe der Auslandsvertretung oder Behörde prüfen; ein beliebiges Zertifikat desselben Niveaus ist nicht automatisch austauschbar.</p>
+    </article>
+    <article class="decision-card">
+      <h3>Integrationskurs</h3>
+      <p>Am Kursende ist der Deutsch-Test für Zuwanderer (DTZ) das typische Format mit einem Ergebnis auf A2 oder B1.</p>
+    </article>
+    <article class="decision-card">
+      <h3>Universität</h3>
+      <p>Häufig relevant sind TestDaF, eine registrierte DSH oder ein von der konkreten Hochschule akzeptierter C1-Nachweis.</p>
+    </article>
+    <article class="decision-card">
+      <h3>Beruf oder Ausbildung</h3>
+      <p>Anforderung bei Arbeitgeber, Berufsschule, Kammer oder Anerkennungsstelle klären; reglementierte Berufe können Fachsprache verlangen.</p>
+    </article>
+  </div>
+  <div class="quick-answer-question" id="goethe-oder-telc">
+    <h3>Goethe oder telc – welche Prüfung passt besser?</h3>
+    <p>Wenn beide Zertifikate akzeptiert werden, vergleiche das exakte Prüfungsformat, verfügbare Termine, Wiederholungsregeln und die Aufgaben, mit denen du besser zurechtkommst. Die Anerkennung hat Vorrang vor persönlicher Präferenz.</p>
+  </div>
+  <a class="quick-answer-cta" data-article-quiz-cta href="__ARTICLE_QUIZ_BOT_URL__" target="_blank" rel="noopener noreferrer">Prüfungsvorbereitung im Quiz-Bot testen →</a>
+  <p class="quick-answer-note">Der Quiz-Bot ersetzt keine verbindliche Auskunft der zuständigen Behörde, Hochschule oder Kammer.</p>
+</section>
 
 <!-- ════════════════════ 4 SKILLS BAR ════════════════════ -->
 <div class="container" style="max-width:880px; padding-bottom:0;">
@@ -1466,7 +1562,7 @@
     <a href="https://www.bamf.de/DE/Themen/Integration/ZugewanderteTeilnehmende/Integrationskurse/Abschlusspruefung/abschlusspruefung-node.html" target="_blank" rel="noopener noreferrer">BAMF (DTZ)</a> ·
     <a href="https://www.hrk.de/mitglieder/arbeitsmaterialien/registrierung-von-dsh-pruefungsordnungen/" target="_blank" rel="noopener noreferrer">HRK (DSH)</a>
   </p>
-  <p style="margin-top:6px;">Inhalt redaktionell geprüft: 12. August 2026 · Formate und Anerkennungsregeln können sich ändern</p>
+  <p style="margin-top:6px;">Inhalt redaktionell geprüft: 13. August 2026 · Formate und Anerkennungsregeln können sich ändern</p>
   <p style="margin-top:6px;"><a href="/impressum">Impressum</a> · <a href="/privacy">Datenschutz</a> · <a href="/contact">Kontakt</a></p>
 </footer>
 

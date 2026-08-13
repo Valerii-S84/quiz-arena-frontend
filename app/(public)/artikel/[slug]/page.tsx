@@ -9,7 +9,9 @@ import {
   PUBLIC_SITE_LOGO_WIDTH,
   PUBLIC_SITE_NAME,
   getSiteUrl,
+  getTelegramBotUrl,
 } from "@/lib/public-site-config";
+import { buildTrackedTelegramBotUrl } from "../../public-home-helpers";
 import { ArticleInteractions } from "./article-interactions";
 import { PublicLegalFooter } from "../../_components/public-legal-footer";
 import { PublicSiteHeader } from "../../_components/public-site-header";
@@ -21,6 +23,7 @@ type ArticlePageProps = {
 };
 
 const ARTICLE_DOCUMENT_CLASS = "dq-article-document";
+const ARTICLE_QUIZ_BOT_URL_TOKEN = "__ARTICLE_QUIZ_BOT_URL__";
 const ARTICLE_DEFAULT_OPEN_SECTIONS: Record<string, string> = {
   "deutsche-sprache-geschichte": "era-indg",
   "pruefungen-goethe-telc-testdaf": "prov-goethe",
@@ -470,8 +473,17 @@ function RelatedArticles({ currentSlug }: { currentSlug: string }) {
   );
 }
 
-function normalizeArticleHtml(html: string): string {
+function escapeHtmlAttribute(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function normalizeArticleHtml(html: string, quizBotUrl: string): string {
   return html
+    .replaceAll(ARTICLE_QUIZ_BOT_URL_TOKEN, escapeHtmlAttribute(quizBotUrl))
     .replace(/rel="noreferrer"/g, 'rel="noopener noreferrer"')
     .replace(/(<a\b[^>]*target="_blank")(?![^>]*\brel=)/g, '$1 rel="noopener noreferrer"');
 }
@@ -489,12 +501,16 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     notFound();
   }
 
-  const articleHtml = normalizeArticleHtml(articlePayload.content);
+  const trackedQuizBotUrl = buildTrackedTelegramBotUrl(
+    getTelegramBotUrl(),
+    article.telegramStartPayload,
+  );
+  const articleHtml = normalizeArticleHtml(articlePayload.content, trackedQuizBotUrl);
   const articleStyles = `${embeddedArticleTheme()}\n${articlePayload.styles}\n${embeddedArticleResponsiveOverrides()}`;
 
   return (
     <>
-      <PublicSiteHeader sectionLinkPrefix="/" />
+      <PublicSiteHeader sectionLinkPrefix="/" trackedTelegramBotUrl={trackedQuizBotUrl} />
       <main
         lang="de"
         className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(250,204,21,0.12),transparent_26%),linear-gradient(180deg,#020617_0%,#07111f_42%,#0b1220_100%)] text-slate-100"
@@ -513,7 +529,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                 __html: articleHtml,
               }}
             />
-            <ArticleInteractions defaultOpenSectionId={ARTICLE_DEFAULT_OPEN_SECTIONS[slug]} />
+            <ArticleInteractions
+              articleSlug={slug}
+              defaultOpenSectionId={ARTICLE_DEFAULT_OPEN_SECTIONS[slug]}
+            />
           </article>
           <RelatedArticles currentSlug={slug} />
           <script

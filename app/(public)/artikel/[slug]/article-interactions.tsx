@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 
+import { usePublicAnalytics } from "@/app/analytics-provider";
+
 declare global {
   interface Window {
     toggleCard?: (id: string) => void;
@@ -10,6 +12,7 @@ declare global {
 }
 
 type ArticleInteractionsProps = {
+  articleSlug?: string;
   defaultOpenSectionId?: string;
 };
 
@@ -17,10 +20,25 @@ function toggleArticleSection(id: string) {
   document.getElementById(id)?.classList.toggle("open");
 }
 
-export function ArticleInteractions({ defaultOpenSectionId }: ArticleInteractionsProps) {
+export function ArticleInteractions({ articleSlug, defaultOpenSectionId }: ArticleInteractionsProps) {
+  const { trackEvent } = usePublicAnalytics();
+
   useEffect(() => {
     const previousToggleCard = window.toggleCard;
     const previousToggleEra = window.toggleEra;
+    const quizCtas = Array.from(
+      document.querySelectorAll<HTMLAnchorElement>("[data-article-quiz-cta]"),
+    );
+
+    const trackQuizCta = (event: Event) => {
+      const cta = event.currentTarget as HTMLAnchorElement;
+      trackEvent("hero_cta_click", {
+        article_slug: articleSlug,
+        section: "article_kurzantwort",
+        cta: "telegram_bot",
+        destination: cta.href,
+      });
+    };
 
     window.toggleCard = toggleArticleSection;
     window.toggleEra = toggleArticleSection;
@@ -29,7 +47,11 @@ export function ArticleInteractions({ defaultOpenSectionId }: ArticleInteraction
       document.getElementById(defaultOpenSectionId)?.classList.add("open");
     }
 
+    quizCtas.forEach((cta) => cta.addEventListener("click", trackQuizCta));
+
     return () => {
+      quizCtas.forEach((cta) => cta.removeEventListener("click", trackQuizCta));
+
       if (previousToggleCard) {
         window.toggleCard = previousToggleCard;
       } else {
@@ -42,7 +64,7 @@ export function ArticleInteractions({ defaultOpenSectionId }: ArticleInteraction
         delete window.toggleEra;
       }
     };
-  }, [defaultOpenSectionId]);
+  }, [articleSlug, defaultOpenSectionId, trackEvent]);
 
   return null;
 }
