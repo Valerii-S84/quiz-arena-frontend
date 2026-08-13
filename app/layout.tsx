@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Fraunces, Space_Grotesk } from "next/font/google";
+import "@fontsource-variable/fraunces";
+import "@fontsource-variable/space-grotesk";
 
 import "./globals.css";
 import {
@@ -11,18 +12,6 @@ import {
   getSiteUrl,
 } from "@/lib/public-site-config";
 import { Providers } from "./providers";
-
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-fraunces",
-  weight: ["400", "600", "700"],
-});
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-space-grotesk",
-  weight: ["400", "500", "700"],
-});
 
 const siteUrl = getSiteUrl();
 
@@ -91,7 +80,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="de" className={`${fraunces.variable} ${spaceGrotesk.variable}`}>
+    <html lang="de">
       <body>
         <Providers>{children}</Providers>
       </body>

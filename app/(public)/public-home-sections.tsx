@@ -326,11 +326,12 @@ export function PublicHomeQuizTeaserSection({
             Teste dein Deutsch in 5 Fragen.
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300 sm:leading-8">
-            Beantworte fünf kurze Quizfragen und sieh sofort, wie gut du abschneidest. Danach
-            kannst du im Telegram-Bot mit Daily Challenge, Duellen und Fortschritt weitermachen.
+            Jeden Tag warten fünf kurze Lernfragen auf dich – von A1 bis B2, mit direkter
+            Auswertung und einer verständlichen Erklärung. Entdecke danach noch mehr Übungen im
+            Bot und tägliche Lernimpulse in unserem Telegram-Kanal.
           </p>
           <div className="mt-6 grid gap-2 sm:grid-cols-3 sm:gap-3">
-            {["Sofortiges Feedback", "Nur 5 Fragen", "Weiter im Bot"].map((item) => (
+            {["Sofortige Auswertung", "A1 bis B2", "5 neue Fragen pro Tag"].map((item) => (
               <div
                 key={item}
                 className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold leading-snug text-slate-200"

@@ -9,6 +9,8 @@ export type QuizTeaserQuestion = {
   answers: QuizTeaserAnswer[];
   correctAnswerId: string;
   explanation?: string;
+  level?: string;
+  topic?: string;
 };
 
 type QuizTeaserApiResponse = {

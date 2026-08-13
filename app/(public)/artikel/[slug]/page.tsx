@@ -113,11 +113,11 @@ function embeddedArticleTheme(): string {
   max-width: min(100%, 58rem);
 }
 .${ARTICLE_DOCUMENT_CLASS} [data-article-toc-heading="true"] {
-  scroll-margin-top: 16rem;
+  scroll-margin-top: 5.5rem;
 }
 @media (min-width: 640px) {
   .${ARTICLE_DOCUMENT_CLASS} [data-article-toc-heading="true"] {
-    scroll-margin-top: 12rem;
+    scroll-margin-top: 5.5rem;
   }
 }
 @media (min-width: 1024px) {
@@ -194,7 +194,8 @@ function embeddedArticleResponsiveOverrides(): string {
 }
 .${ARTICLE_DOCUMENT_CLASS} .exams-table,
 .${ARTICLE_DOCUMENT_CLASS} .level-table,
-.${ARTICLE_DOCUMENT_CLASS} .big-table {
+.${ARTICLE_DOCUMENT_CLASS} .big-table,
+.${ARTICLE_DOCUMENT_CLASS} .compare-table {
   max-width: 100%;
 }
 .${ARTICLE_DOCUMENT_CLASS} .exams-table th,
@@ -202,14 +203,17 @@ function embeddedArticleResponsiveOverrides(): string {
 .${ARTICLE_DOCUMENT_CLASS} .level-table th,
 .${ARTICLE_DOCUMENT_CLASS} .level-table td,
 .${ARTICLE_DOCUMENT_CLASS} .big-table th,
-.${ARTICLE_DOCUMENT_CLASS} .big-table td {
+.${ARTICLE_DOCUMENT_CLASS} .big-table td,
+.${ARTICLE_DOCUMENT_CLASS} .compare-table th,
+.${ARTICLE_DOCUMENT_CLASS} .compare-table td {
   min-width: 0;
   overflow-wrap: anywhere;
 }
 @media (max-width: 640px) {
   .${ARTICLE_DOCUMENT_CLASS} .exams-table,
   .${ARTICLE_DOCUMENT_CLASS} .level-table,
-  .${ARTICLE_DOCUMENT_CLASS} .big-table {
+  .${ARTICLE_DOCUMENT_CLASS} .big-table,
+  .${ARTICLE_DOCUMENT_CLASS} .compare-table {
     display: block;
     width: 100%;
     border: 0;
@@ -219,19 +223,22 @@ function embeddedArticleResponsiveOverrides(): string {
   }
   .${ARTICLE_DOCUMENT_CLASS} .exams-table thead,
   .${ARTICLE_DOCUMENT_CLASS} .level-table thead,
-  .${ARTICLE_DOCUMENT_CLASS} .big-table thead {
+  .${ARTICLE_DOCUMENT_CLASS} .big-table thead,
+  .${ARTICLE_DOCUMENT_CLASS} .compare-table thead {
     display: none;
   }
   .${ARTICLE_DOCUMENT_CLASS} .exams-table tbody,
   .${ARTICLE_DOCUMENT_CLASS} .level-table tbody,
-  .${ARTICLE_DOCUMENT_CLASS} .big-table tbody {
+  .${ARTICLE_DOCUMENT_CLASS} .big-table tbody,
+  .${ARTICLE_DOCUMENT_CLASS} .compare-table tbody {
     display: grid;
     gap: 14px;
     width: 100%;
   }
   .${ARTICLE_DOCUMENT_CLASS} .exams-table tr,
   .${ARTICLE_DOCUMENT_CLASS} .level-table tr,
-  .${ARTICLE_DOCUMENT_CLASS} .big-table tr {
+  .${ARTICLE_DOCUMENT_CLASS} .big-table tr,
+  .${ARTICLE_DOCUMENT_CLASS} .compare-table tr {
     display: grid;
     width: 100%;
     min-width: 0;
@@ -243,7 +250,8 @@ function embeddedArticleResponsiveOverrides(): string {
   }
   .${ARTICLE_DOCUMENT_CLASS} .exams-table td,
   .${ARTICLE_DOCUMENT_CLASS} .level-table td,
-  .${ARTICLE_DOCUMENT_CLASS} .big-table td {
+  .${ARTICLE_DOCUMENT_CLASS} .big-table td,
+  .${ARTICLE_DOCUMENT_CLASS} .compare-table td {
     display: grid;
     grid-template-columns: minmax(6.75rem, 38%) minmax(0, 1fr);
     gap: 12px;
@@ -256,12 +264,14 @@ function embeddedArticleResponsiveOverrides(): string {
   }
   .${ARTICLE_DOCUMENT_CLASS} .exams-table td:last-child,
   .${ARTICLE_DOCUMENT_CLASS} .level-table td:last-child,
-  .${ARTICLE_DOCUMENT_CLASS} .big-table td:last-child {
+  .${ARTICLE_DOCUMENT_CLASS} .big-table td:last-child,
+  .${ARTICLE_DOCUMENT_CLASS} .compare-table td:last-child {
     border-bottom: 0;
   }
   .${ARTICLE_DOCUMENT_CLASS} .exams-table td::before,
   .${ARTICLE_DOCUMENT_CLASS} .level-table td::before,
-  .${ARTICLE_DOCUMENT_CLASS} .big-table td::before {
+  .${ARTICLE_DOCUMENT_CLASS} .big-table td::before,
+  .${ARTICLE_DOCUMENT_CLASS} .compare-table td::before {
     content: "";
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
@@ -318,6 +328,24 @@ function embeddedArticleResponsiveOverrides(): string {
   .${ARTICLE_DOCUMENT_CLASS} .big-table td:nth-child(5)::before {
     content: "Anerkannt";
   }
+  .${ARTICLE_DOCUMENT_CLASS} .compare-table td:nth-child(1)::before {
+    content: "Sprachstufe";
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .compare-table td:nth-child(2)::before {
+    content: "machen";
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .compare-table td:nth-child(3)::before {
+    content: "ich";
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .compare-table td:nth-child(4)::before {
+    content: "Tag";
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .compare-table td:nth-child(5)::before {
+    content: "gut";
+  }
+  .${ARTICLE_DOCUMENT_CLASS} .compare-table td:nth-child(6)::before {
+    content: "Haus";
+  }
 }
 @media (max-width: 430px) {
   .${ARTICLE_DOCUMENT_CLASS} .hero {
@@ -328,7 +356,8 @@ function embeddedArticleResponsiveOverrides(): string {
   }
   .${ARTICLE_DOCUMENT_CLASS} .exams-table td,
   .${ARTICLE_DOCUMENT_CLASS} .level-table td,
-  .${ARTICLE_DOCUMENT_CLASS} .big-table td {
+  .${ARTICLE_DOCUMENT_CLASS} .big-table td,
+  .${ARTICLE_DOCUMENT_CLASS} .compare-table td {
     grid-template-columns: 1fr;
     gap: 4px;
   }
@@ -569,7 +598,7 @@ function ArticleTableOfContents({
     >
       <details className="rounded-2xl border border-white/10 bg-slate-950/70 p-4 shadow-[0_18px_50px_rgba(2,6,23,0.28)] lg:hidden">
         <summary className="cursor-pointer rounded-md font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300">
-          Inhaltsverzeichnis
+          Auf dieser Seite
         </summary>
         <nav aria-label="Inhaltsverzeichnis">
           <TableOfContentsLinks items={items} />
@@ -584,7 +613,7 @@ function ArticleTableOfContents({
           id={desktopHeadingId}
           className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-300"
         >
-          Inhaltsverzeichnis
+          Auf dieser Seite
         </h2>
         <TableOfContentsLinks items={items} />
       </nav>

@@ -502,6 +502,16 @@ describe("knowledge transport implementation", () => {
 
     expect(historySource).toContain("1901/1902");
     expect(historySource).toContain("Eine einzelne, abschließend belegte Ursache gibt es nicht");
+    expect(historySource).toContain("durch die vergleichende Methode");
+    expect(historySource).toContain("der Stauferzeit");
+    expect(historySource).toContain("Klimawandel (Neuprägung)");
+    expect(historySource).not.toContain("durch das Vergleichende Methode");
+    expect(historySource).not.toContain("Stauferzeitzeitalters");
+    expect(historySource).not.toContain("Neuprägun)");
+
+    for (const source of [levelsSource, examsSource, historySource]) {
+      expect(source).not.toMatch(/„[^<]*"/);
+    }
   });
 
   it("defines an exact 301 redirect from the retired levels URL", () => {
