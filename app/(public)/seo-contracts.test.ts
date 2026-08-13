@@ -347,9 +347,17 @@ describe("public robots and sitemap contracts", () => {
       "https://qa.quizarena.test/artikel/sprachniveaus-a1-c1",
     );
     expect(uniqueUrls.size).toBe(urls.length);
-    expect(entries.every((entry) => !!entry.changeFrequency && entry.lastModified instanceof Date)).toBe(
-      true,
-    );
+
+    for (const slug of ARTICLE_SLUGS) {
+      const articleEntry = entries.find(
+        (entry) => entry.url === `https://qa.quizarena.test/artikel/${slug}`,
+      );
+      expect(articleEntry?.lastModified).toBe(ARTICLE_EMBEDS[slug].lastModified);
+      expect(articleEntry?.changeFrequency).toBeUndefined();
+      expect(articleEntry?.priority).toBeUndefined();
+    }
+
+    expect(entries.find((entry) => entry.url === "https://qa.quizarena.test/")?.lastModified).toBeUndefined();
   });
 });
 
@@ -417,6 +425,26 @@ describe("knowledge transport implementation", () => {
       expect(ARTICLE_SERVER_RENDERED_PAYLOAD[slug]).toEqual(
         extractArticleBodyAndStyles(sourceArticle, "dq-article-document"),
       );
+    }
+  });
+
+  it("renders answer-first content and article-specific quiz attribution", async () => {
+    const { default: ArticlePage } = await import("./artikel/[slug]/page");
+    const answerFirstArticles = [
+      ["pruefungen-goethe-telc-testdaf", "Welche Deutschprüfung brauche ich?"],
+      ["sprachniveaus-a0-c2", "Wie lange dauert es, Deutsch B2 zu erreichen?"],
+    ] as const;
+
+    for (const [slug, question] of answerFirstArticles) {
+      const html = renderToStaticMarkup(
+        await ArticlePage({ params: Promise.resolve({ slug }) }),
+      );
+
+      expect(html).toContain("Kurzantwort");
+      expect(html).toContain(question);
+      expect(html).toContain(`start=${ARTICLE_EMBEDS[slug].telegramStartPayload}`);
+      expect(html).toContain("data-article-quiz-cta");
+      expect(html).not.toContain("__ARTICLE_QUIZ_BOT_URL__");
     }
   });
 

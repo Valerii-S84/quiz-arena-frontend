@@ -21,7 +21,8 @@ export function extractArticleBodyAndStyles(
   html: string,
   articleDocumentClass: string,
 ): ExtractedArticleContent {
-  const styleTags = html.match(/<style[^>]*>([\s\S]*?)<\/style>/gi) ?? [];
+  const normalizedHtml = html.replace(/\r\n?/g, "\n");
+  const styleTags = normalizedHtml.match(/<style[^>]*>([\s\S]*?)<\/style>/gi) ?? [];
   const extractedStyles = styleTags
     .map((styleTag) => {
       const styles = styleTag
@@ -32,7 +33,7 @@ export function extractArticleBodyAndStyles(
     })
     .join("\n\n");
 
-  let content = html.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "");
+  let content = normalizedHtml.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "");
 
   const bodyMatch = content.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
   if (bodyMatch) {
