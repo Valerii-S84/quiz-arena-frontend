@@ -24,6 +24,7 @@ export type QuizTeaserResult = {
 export type QuizTeaserProgress = {
   version: 1;
   completedCuratedDays: number;
+  completedBonusRounds: number;
   activeRound: ActiveQuizTeaserRound | null;
   lastResult: QuizTeaserResult | null;
 };
@@ -32,6 +33,7 @@ export function createEmptyQuizTeaserProgress(): QuizTeaserProgress {
   return {
     version: 1,
     completedCuratedDays: 0,
+    completedBonusRounds: 0,
     activeRound: null,
     lastResult: null,
   };
@@ -69,6 +71,7 @@ function isQuizQuestion(value: unknown): value is QuizTeaserQuestion {
 function normalizeActiveRound(
   value: unknown,
   completedCuratedDays: number,
+  completedBonusRounds: number,
 ): ActiveQuizTeaserRound | null {
   if (!value || typeof value !== "object") {
     return null;
@@ -109,7 +112,7 @@ function normalizeActiveRound(
     dayIndex:
       source === "curated"
         ? completedCuratedDays
-        : Math.max(CURATED_QUIZ_DAY_COUNT, storedDayIndex),
+        : Math.max(CURATED_QUIZ_DAY_COUNT + completedBonusRounds, storedDayIndex),
     questionIndex,
     score,
     answeredQuestionIds,
@@ -163,11 +166,28 @@ export function parseQuizTeaserProgress(rawValue: string | null): QuizTeaserProg
       ),
     );
 
+    const lastResult = normalizeLastResult(parsed.lastResult);
+    const legacyCompletedBonusRounds =
+      lastResult?.source === "api"
+        ? Math.max(0, lastResult.dayNumber - CURATED_QUIZ_DAY_COUNT)
+        : 0;
+    const completedBonusRounds = Math.max(
+      legacyCompletedBonusRounds,
+      Number.isInteger(parsed.completedBonusRounds)
+        ? Math.max(0, Number(parsed.completedBonusRounds))
+        : 0,
+    );
+
     return {
       version: 1,
       completedCuratedDays,
-      activeRound: normalizeActiveRound(parsed.activeRound, completedCuratedDays),
-      lastResult: normalizeLastResult(parsed.lastResult),
+      completedBonusRounds,
+      activeRound: normalizeActiveRound(
+        parsed.activeRound,
+        completedCuratedDays,
+        completedBonusRounds,
+      ),
+      lastResult,
     };
   } catch {
     return createEmptyQuizTeaserProgress();

@@ -15,6 +15,9 @@ describe("curated five-day quiz table", () => {
     expect(questions).toHaveLength(25);
     expect(new Set(questions.map((question) => question.id)).size).toBe(25);
     expect(new Set(questions.map((question) => question.prompt)).size).toBe(25);
+    expect(CURATED_QUIZ_DAYS[0].questions[0].answers[2].label).toBe(
+      "Ich würde gern einen Tee zu haben, bitte.",
+    );
 
     for (const day of CURATED_QUIZ_DAYS) {
       expect(day.questions).toHaveLength(QUESTIONS_PER_QUIZ_DAY);

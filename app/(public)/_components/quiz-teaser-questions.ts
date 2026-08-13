@@ -32,7 +32,7 @@ export const CURATED_QUIZ_DAYS: readonly CuratedQuizTeaserDay[] = [
         answers: [
           { id: "curated-d1-q1-a", label: "Ich hätte gern einen Tee, bitte." },
           { id: "curated-d1-q1-b", label: "Ich habe gern einen Tee." },
-          { id: "curated-d1-q1-c", label: "Ich würde gern einen Tee, bitte." },
+          { id: "curated-d1-q1-c", label: "Ich würde gern einen Tee zu haben, bitte." },
           { id: "curated-d1-q1-d", label: "Ich möchte einen Tee gehabt." },
         ],
         correctAnswerId: "curated-d1-q1-a",

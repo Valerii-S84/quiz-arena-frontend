@@ -77,10 +77,49 @@ export function PublicHomeQuizTeaserDailyWidget({ trackedTelegramBotUrl }: Props
   const [errorMessage, setErrorMessage] = useState(UNAVAILABLE_MESSAGE);
 
   useEffect(() => {
-    const saved = loadQuizTeaserProgress();
-    setProgress(saved);
-    setScore(saved.activeRound?.score ?? saved.lastResult?.score ?? 0);
-    setStage(isQuizCompletedToday(saved) ? "result" : "start");
+    let rolloverTimer: ReturnType<typeof setTimeout>;
+
+    const syncProgressForCurrentDate = (isInitialLoad = false) => {
+      const saved = loadQuizTeaserProgress();
+      const completedToday = isQuizCompletedToday(saved);
+      setProgress(saved);
+      setScore(saved.activeRound?.score ?? (completedToday ? saved.lastResult?.score ?? 0 : 0));
+      setStage((currentStage) => {
+        if (isInitialLoad) {
+          return completedToday ? "result" : "start";
+        }
+
+        return currentStage === "result" && !completedToday ? "start" : currentStage;
+      });
+    };
+
+    const scheduleNextDateCheck = () => {
+      const now = new Date();
+      const nextLocalDay = new Date(now);
+      nextLocalDay.setHours(24, 0, 0, 50);
+      rolloverTimer = setTimeout(() => {
+        syncProgressForCurrentDate();
+        scheduleNextDateCheck();
+      }, nextLocalDay.getTime() - now.getTime());
+    };
+
+    const syncWhenVisible = () => {
+      if (document.visibilityState === "visible") {
+        syncProgressForCurrentDate();
+      }
+    };
+    const syncOnFocus = () => syncProgressForCurrentDate();
+
+    syncProgressForCurrentDate(true);
+    scheduleNextDateCheck();
+    window.addEventListener("focus", syncOnFocus);
+    document.addEventListener("visibilitychange", syncWhenVisible);
+
+    return () => {
+      clearTimeout(rolloverTimer);
+      window.removeEventListener("focus", syncOnFocus);
+      document.removeEventListener("visibilitychange", syncWhenVisible);
+    };
   }, []);
 
   const commit = (next: QuizTeaserProgress) => {
@@ -145,9 +184,14 @@ export function PublicHomeQuizTeaserDailyWidget({ trackedTelegramBotUrl }: Props
     let round = progress.activeRound;
     let next = progress;
     if (!round) {
+      const source =
+        progress.completedCuratedDays < CURATED_QUIZ_DAY_COUNT ? "curated" : "api";
       round = {
-        source: progress.completedCuratedDays < CURATED_QUIZ_DAY_COUNT ? "curated" : "api",
-        dayIndex: progress.completedCuratedDays,
+        source,
+        dayIndex:
+          source === "curated"
+            ? progress.completedCuratedDays
+            : CURATED_QUIZ_DAY_COUNT + progress.completedBonusRounds,
         questionIndex: 0,
         score: 0,
         answeredQuestionIds: [],
@@ -190,9 +234,14 @@ export function PublicHomeQuizTeaserDailyWidget({ trackedTelegramBotUrl }: Props
         round.source === "curated"
           ? Math.min(CURATED_QUIZ_DAY_COUNT, progress.completedCuratedDays + 1)
           : progress.completedCuratedDays;
+      const completedBonusRounds =
+        round.source === "api"
+          ? progress.completedBonusRounds + 1
+          : progress.completedBonusRounds;
       const next: QuizTeaserProgress = {
         version: 1,
         completedCuratedDays,
+        completedBonusRounds,
         activeRound: null,
         lastResult: {
           date: getLocalDateKey(),
