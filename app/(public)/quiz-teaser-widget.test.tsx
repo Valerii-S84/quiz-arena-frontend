@@ -125,6 +125,9 @@ describe("public quiz teaser widget", () => {
         expect(container.textContent).toContain(question.explanation);
         expect(container.textContent).not.toContain("Ergebnis anzeigen");
 
+        act(() => window.dispatchEvent(new Event("focus")));
+        expect(container.textContent).toContain(question.explanation);
+
         if (index < 4) {
           act(() => findButton(container, "Nächste Frage").click());
         }
@@ -339,10 +342,21 @@ describe("public quiz teaser widget", () => {
         expect(container.textContent).toContain(`Was passt in API-Satz ${index}?`);
         act(() => findButton(container, index === 5 ? "Antwort B" : "Antwort A").click());
         if (index < 5) {
+          expect(container.textContent).toContain("Kurze Erklärung.");
+          act(() => window.dispatchEvent(new Event("focus")));
+          expect(container.textContent).toContain("Kurze Erklärung.");
           await act(async () => {
             findButton(container, "Nächste Frage").click();
             await Promise.resolve();
           });
+        } else {
+          expect(container.textContent).toContain(
+            "Geschafft. Die richtige Antwort war grün markiert.",
+          );
+          act(() => window.dispatchEvent(new Event("focus")));
+          expect(container.textContent).toContain(
+            "Geschafft. Die richtige Antwort war grün markiert.",
+          );
         }
       }
 

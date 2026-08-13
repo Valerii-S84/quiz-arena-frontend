@@ -28,8 +28,36 @@ function renderInContainer(ui: ReactElement) {
   };
 }
 
+function installDesktopMediaQuery() {
+  const listeners = new Set<(event: MediaQueryListEvent) => void>();
+  const mediaQueryList = {
+    matches: false,
+    media: "(min-width: 1024px)",
+    addEventListener: (_type: string, listener: (event: MediaQueryListEvent) => void) => {
+      listeners.add(listener);
+    },
+    removeEventListener: (_type: string, listener: (event: MediaQueryListEvent) => void) => {
+      listeners.delete(listener);
+    },
+  };
+
+  vi.stubGlobal(
+    "matchMedia",
+    vi.fn(() => mediaQueryList as unknown as MediaQueryList),
+  );
+
+  return {
+    setMatches(matches: boolean) {
+      mediaQueryList.matches = matches;
+      const event = { matches, media: mediaQueryList.media } as MediaQueryListEvent;
+      listeners.forEach((listener) => listener(event));
+    },
+  };
+}
+
 afterEach(() => {
   document.body.innerHTML = "";
+  vi.unstubAllGlobals();
   vi.clearAllMocks();
 });
 
@@ -58,6 +86,25 @@ describe("PublicSiteHeader mobile navigation", () => {
 
       expect(menuButton?.getAttribute("aria-expanded")).toBe("false");
       expect(document.activeElement).toBe(menuButton);
+    } finally {
+      cleanup();
+    }
+  });
+
+  it("resets an open mobile menu when the desktop breakpoint becomes active", () => {
+    const desktopMediaQuery = installDesktopMediaQuery();
+    const { container, cleanup } = renderInContainer(<PublicSiteHeader />);
+
+    try {
+      const menuButton = container.querySelector<HTMLButtonElement>("button[aria-controls]");
+      act(() => menuButton?.click());
+      expect(menuButton?.getAttribute("aria-expanded")).toBe("true");
+
+      act(() => desktopMediaQuery.setMatches(true));
+      expect(menuButton?.getAttribute("aria-expanded")).toBe("false");
+
+      act(() => desktopMediaQuery.setMatches(false));
+      expect(menuButton?.getAttribute("aria-expanded")).toBe("false");
     } finally {
       cleanup();
     }

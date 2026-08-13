@@ -27,6 +27,7 @@ const publicNavigation = [
 
 const LINK_FOCUS_CLASS =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD166] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111f]";
+const DESKTOP_MEDIA_QUERY = "(min-width: 1024px)";
 
 function getTrackedTelegramBotFallback(): string {
   return buildTrackedTelegramBotUrl(getTelegramBotUrl(), TELEGRAM_BOT_START_PAYLOAD);
@@ -42,6 +43,24 @@ export function PublicSiteHeader({
   const mobileNavigationId = useId();
   const headerRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") {
+      return;
+    }
+
+    const desktopMediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
+    const closeAtDesktopBreakpoint = (event: MediaQueryListEvent) => {
+      if (event.matches) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    desktopMediaQuery.addEventListener("change", closeAtDesktopBreakpoint);
+    return () => {
+      desktopMediaQuery.removeEventListener("change", closeAtDesktopBreakpoint);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isMobileMenuOpen) {

@@ -63,6 +63,10 @@ function withShuffledAnswers(question: QuizTeaserQuestion): QuizTeaserQuestion {
   return { ...question, answers: shuffleQuizAnswers(question.answers) };
 }
 
+function isSameProgress(left: QuizTeaserProgress, right: QuizTeaserProgress): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
 function isCurrentApiQuestionRequest(
   progress: QuizTeaserProgress,
   requestedRound: ActiveQuizTeaserRound,
@@ -96,6 +100,7 @@ export function PublicHomeQuizTeaserDailyWidget({ trackedTelegramBotUrl }: Props
   const [hasFinalAnswerFeedback, setHasFinalAnswerFeedback] = useState(false);
   const [errorMessage, setErrorMessage] = useState(UNAVAILABLE_MESSAGE);
   const progressRef = useRef(progress);
+  const lastSyncedDateRef = useRef(getLocalDateKey());
 
   useEffect(() => {
     let rolloverTimer: ReturnType<typeof setTimeout>;
@@ -149,7 +154,13 @@ export function PublicHomeQuizTeaserDailyWidget({ trackedTelegramBotUrl }: Props
       if (!saved) {
         return;
       }
+      const currentDate = getLocalDateKey();
+      const dateChanged = currentDate !== lastSyncedDateRef.current;
+      lastSyncedDateRef.current = currentDate;
       if (!isInitialLoad) {
+        if (!dateChanged && isSameProgress(saved, progressRef.current)) {
+          return;
+        }
         reconcileSavedProgress(saved);
         return;
       }
