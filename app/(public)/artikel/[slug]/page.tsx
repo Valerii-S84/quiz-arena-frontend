@@ -113,7 +113,17 @@ function embeddedArticleTheme(): string {
   max-width: min(100%, 58rem);
 }
 .${ARTICLE_DOCUMENT_CLASS} [data-article-toc-heading="true"] {
-  scroll-margin-top: 7rem;
+  scroll-margin-top: 16rem;
+}
+@media (min-width: 640px) {
+  .${ARTICLE_DOCUMENT_CLASS} [data-article-toc-heading="true"] {
+    scroll-margin-top: 12rem;
+  }
+}
+@media (min-width: 1024px) {
+  .${ARTICLE_DOCUMENT_CLASS} [data-article-toc-heading="true"] {
+    scroll-margin-top: 7rem;
+  }
 }
 .${ARTICLE_DOCUMENT_CLASS} .card-block,
 .${ARTICLE_DOCUMENT_CLASS} .tip-card,

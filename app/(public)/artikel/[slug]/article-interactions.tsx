@@ -19,10 +19,33 @@ type ArticleInteractionsProps = {
 const ARTICLE_DISCLOSURE_SELECTOR = ".level-card, .prov-card, .era-card";
 const ARTICLE_DISCLOSURE_HEADER_SELECTOR = ".card-header, .prov-header, .era-card-header";
 const ARTICLE_DISCLOSURE_BODY_SELECTOR = ".card-body, .prov-body, .era-body";
+const ARTICLE_DISCLOSURE_TOGGLE_SELECTOR = ".card-toggle, .prov-toggle, .era-toggle";
+const ARTICLE_DISCLOSURE_TITLE_SELECTOR =
+  '[data-article-toc-heading="true"], .card-title, .prov-title, .era-title';
 
 function syncArticleDisclosureState(section: HTMLElement) {
-  const header = section.querySelector<HTMLElement>(ARTICLE_DISCLOSURE_HEADER_SELECTOR);
-  header?.setAttribute("aria-expanded", String(section.classList.contains("open")));
+  const toggle = section.querySelector<HTMLElement>(ARTICLE_DISCLOSURE_TOGGLE_SELECTOR);
+  const body = section.querySelector<HTMLElement>(ARTICLE_DISCLOSURE_BODY_SELECTOR);
+  const title = section.querySelector<HTMLElement>(ARTICLE_DISCLOSURE_TITLE_SELECTOR);
+  const isOpen = section.classList.contains("open");
+  const titleText = title?.textContent?.trim() || "Abschnitt";
+
+  toggle?.setAttribute("aria-expanded", String(isOpen));
+  if (toggle && title?.id) {
+    toggle.setAttribute("aria-labelledby", title.id);
+    toggle.removeAttribute("aria-label");
+  } else {
+    toggle?.removeAttribute("aria-labelledby");
+    toggle?.setAttribute(
+      "aria-label",
+      `${titleText} ${isOpen ? "einklappen" : "ausklappen"}`,
+    );
+  }
+
+  if (body) {
+    body.setAttribute("aria-hidden", String(!isOpen));
+    body.toggleAttribute("inert", !isOpen);
+  }
 }
 
 function setArticleSectionOpen(section: HTMLElement, open: boolean) {
@@ -35,6 +58,20 @@ function toggleArticleSection(id: string) {
 
   if (section) {
     setArticleSectionOpen(section, !section.classList.contains("open"));
+  }
+}
+
+function decodeArticleHash(hash: string): string | null {
+  const encodedId = hash.startsWith("#") ? hash.slice(1) : hash;
+
+  if (!encodedId) {
+    return null;
+  }
+
+  try {
+    return decodeURIComponent(encodedId);
+  } catch {
+    return null;
   }
 }
 
@@ -71,39 +108,38 @@ export function ArticleInteractions({ articleSlug, defaultOpenSectionId }: Artic
 
     disclosureSections.forEach((section) => {
       const header = section.querySelector<HTMLElement>(ARTICLE_DISCLOSURE_HEADER_SELECTOR);
+      const toggle = section.querySelector<HTMLElement>(ARTICLE_DISCLOSURE_TOGGLE_SELECTOR);
       const body = section.querySelector<HTMLElement>(ARTICLE_DISCLOSURE_BODY_SELECTOR);
 
-      if (!header) {
+      if (!header || !toggle) {
         return;
       }
 
-      header.setAttribute("role", "button");
-      header.tabIndex = 0;
+      toggle.setAttribute("role", "button");
+      toggle.tabIndex = 0;
 
       if (body && section.id) {
         body.id ||= `${section.id}-content`;
-        header.setAttribute("aria-controls", body.id);
+        toggle.setAttribute("aria-controls", body.id);
       }
 
       syncArticleDisclosureState(section);
 
-      const syncOnClick = () => syncArticleDisclosureState(section);
       const toggleOnKeyDown = (event: KeyboardEvent) => {
         if (event.key !== "Enter" && event.key !== " ") {
           return;
         }
 
         event.preventDefault();
+        event.stopPropagation();
         if (section.id) {
           toggleArticleSection(section.id);
         }
       };
 
-      header.addEventListener("click", syncOnClick);
-      header.addEventListener("keydown", toggleOnKeyDown);
+      toggle.addEventListener("keydown", toggleOnKeyDown);
       disclosureCleanups.push(() => {
-        header.removeEventListener("click", syncOnClick);
-        header.removeEventListener("keydown", toggleOnKeyDown);
+        toggle.removeEventListener("keydown", toggleOnKeyDown);
       });
     });
 
@@ -124,7 +160,7 @@ export function ArticleInteractions({ articleSlug, defaultOpenSectionId }: Artic
     };
 
     const revealLocationHash = () => {
-      const id = decodeURIComponent(window.location.hash.slice(1));
+      const id = decodeArticleHash(window.location.hash);
       if (id) {
         revealArticleAnchor(id);
       }
@@ -132,7 +168,7 @@ export function ArticleInteractions({ articleSlug, defaultOpenSectionId }: Artic
 
     const revealTocTarget = (event: Event) => {
       const link = event.currentTarget as HTMLAnchorElement;
-      const id = decodeURIComponent(new URL(link.href, window.location.href).hash.slice(1));
+      const id = decodeArticleHash(new URL(link.href, window.location.href).hash);
       if (id) {
         revealArticleAnchor(id);
       }

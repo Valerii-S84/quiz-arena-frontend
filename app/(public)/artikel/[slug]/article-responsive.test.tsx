@@ -29,6 +29,9 @@ describe("Prüfungen article responsive layout", () => {
       (heading) => heading.id,
     );
     const tocLabels = tocLinks.map((link) => link.textContent?.trim());
+    const renderedStyles = Array.from(document.querySelectorAll("style"))
+      .map((style) => style.textContent ?? "")
+      .join("\n");
 
     expect(document.querySelector("details.lg\\:hidden summary")?.textContent).toContain(
       "Inhaltsverzeichnis",
@@ -40,6 +43,21 @@ describe("Prüfungen article responsive layout", () => {
     expect(tocLabels).toContain("telc — The European Language Certificates");
     expect(headingIds).toContain("artikel-goethe-institut-goethe-zertifikat");
     expect(headingIds).toContain("artikel-telc-the-european-language-certificates");
+    expect(renderedStyles).toMatch(
+      new RegExp(
+        `\\.${ARTICLE_DOCUMENT_CLASS} \\[data-article-toc-heading="true"\\] \\{\\s*scroll-margin-top: 16rem;\\s*\\}`,
+      ),
+    );
+    expect(renderedStyles).toMatch(
+      new RegExp(
+        `@media \\(min-width: 640px\\) \\{\\s*\\.${ARTICLE_DOCUMENT_CLASS} \\[data-article-toc-heading="true"\\] \\{\\s*scroll-margin-top: 12rem;`,
+      ),
+    );
+    expect(renderedStyles).toMatch(
+      new RegExp(
+        `@media \\(min-width: 1024px\\) \\{\\s*\\.${ARTICLE_DOCUMENT_CLASS} \\[data-article-toc-heading="true"\\] \\{\\s*scroll-margin-top: 7rem;`,
+      ),
+    );
 
     for (const link of tocLinks) {
       const targetId = decodeURIComponent(link.hash.slice(1));
