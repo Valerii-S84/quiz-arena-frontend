@@ -3,6 +3,8 @@
 @tailwind utilities;
 
 :root {
+  --font-fraunces: "Fraunces Variable";
+  --font-space-grotesk: "Space Grotesk Variable";
   --bg-1: #f3efe4;
   --bg-2: #d7e6e6;
   --ink: #20160f;

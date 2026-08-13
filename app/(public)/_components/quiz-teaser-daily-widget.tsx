@@ -23,6 +23,7 @@ import {
   getLocalDateKey,
   isQuizCompletedToday,
   loadQuizTeaserProgress,
+  QUIZ_TEASER_PROGRESS_STORAGE_KEY,
   saveQuizTeaserProgress,
   type ActiveQuizTeaserRound,
   type QuizTeaserProgress,
@@ -79,18 +80,60 @@ export function PublicHomeQuizTeaserDailyWidget({ trackedTelegramBotUrl }: Props
   useEffect(() => {
     let rolloverTimer: ReturnType<typeof setTimeout>;
 
+    const reconcileSavedProgress = (saved: QuizTeaserProgress) => {
+      const completedToday = isQuizCompletedToday(saved);
+      setProgress(saved);
+      setSelectedId(null);
+      setFinalExplanation(null);
+      setFinalCorrectAnswer(null);
+      setFinalWasCorrect(false);
+      setHasFinalAnswerFeedback(false);
+      setErrorMessage(UNAVAILABLE_MESSAGE);
+
+      if (completedToday) {
+        setQuestion(null);
+        setScore(saved.lastResult?.score ?? 0);
+        setStage("result");
+        return;
+      }
+
+      const round = saved.activeRound;
+      if (!round) {
+        setQuestion(null);
+        setShownIndex(1);
+        setScore(0);
+        setStage("start");
+        return;
+      }
+
+      const savedQuestion =
+        round.source === "curated"
+          ? getCuratedQuizQuestion(round.dayIndex, round.questionIndex)
+          : round.apiQuestion;
+      setScore(round.score);
+      setShownIndex(round.questionIndex + 1);
+
+      if (!savedQuestion) {
+        setQuestion(null);
+        setStage("start");
+        return;
+      }
+
+      setQuestion(withShuffledAnswers(savedQuestion));
+      setStage("question");
+    };
+
     const syncProgressForCurrentDate = (isInitialLoad = false) => {
       const saved = loadQuizTeaserProgress();
+      if (!isInitialLoad) {
+        reconcileSavedProgress(saved);
+        return;
+      }
+
       const completedToday = isQuizCompletedToday(saved);
       setProgress(saved);
       setScore(saved.activeRound?.score ?? (completedToday ? saved.lastResult?.score ?? 0 : 0));
-      setStage((currentStage) => {
-        if (isInitialLoad) {
-          return completedToday ? "result" : "start";
-        }
-
-        return currentStage === "result" && !completedToday ? "start" : currentStage;
-      });
+      setStage(completedToday ? "result" : "start");
     };
 
     const scheduleNextDateCheck = () => {
@@ -109,15 +152,25 @@ export function PublicHomeQuizTeaserDailyWidget({ trackedTelegramBotUrl }: Props
       }
     };
     const syncOnFocus = () => syncProgressForCurrentDate();
+    const syncOnStorage = (event: StorageEvent) => {
+      if (
+        event.storageArea === window.localStorage &&
+        (event.key === QUIZ_TEASER_PROGRESS_STORAGE_KEY || event.key === null)
+      ) {
+        syncProgressForCurrentDate();
+      }
+    };
 
     syncProgressForCurrentDate(true);
     scheduleNextDateCheck();
     window.addEventListener("focus", syncOnFocus);
+    window.addEventListener("storage", syncOnStorage);
     document.addEventListener("visibilitychange", syncWhenVisible);
 
     return () => {
       clearTimeout(rolloverTimer);
       window.removeEventListener("focus", syncOnFocus);
+      window.removeEventListener("storage", syncOnStorage);
       document.removeEventListener("visibilitychange", syncWhenVisible);
     };
   }, []);

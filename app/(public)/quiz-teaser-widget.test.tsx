@@ -191,6 +191,69 @@ describe("public quiz teaser widget", () => {
     }
   });
 
+  it("reconciles an advanced question after another tab updates the round", async () => {
+    const { container, cleanup } = await renderWidget();
+    act(() => findButton(container, "Heutige Runde starten").click());
+
+    const [firstQuestion, secondQuestion, thirdQuestion] = CURATED_QUIZ_DAYS[0].questions;
+    saveProgress({
+      ...createEmptyQuizTeaserProgress(),
+      activeRound: {
+        source: "curated",
+        dayIndex: 0,
+        questionIndex: 2,
+        score: 1,
+        answeredQuestionIds: [firstQuestion.id, secondQuestion.id],
+      },
+    });
+
+    try {
+      act(() => window.dispatchEvent(new Event("focus")));
+
+      expect(container.textContent).toContain("Frage 3 von 5");
+      expect(container.textContent).toContain(thirdQuestion.prompt);
+      expect(container.textContent).not.toContain(firstQuestion.prompt);
+
+      const correctAnswer = thirdQuestion.answers.find(
+        (answer) => answer.id === thirdQuestion.correctAnswerId,
+      );
+      act(() => findButton(container, correctAnswer?.label ?? "").click());
+
+      const stored = parseQuizTeaserProgress(
+        window.localStorage.getItem(QUIZ_TEASER_PROGRESS_STORAGE_KEY),
+      );
+      expect(stored.activeRound?.questionIndex).toBe(3);
+      expect(stored.activeRound?.answeredQuestionIds).toEqual([
+        firstQuestion.id,
+        secondQuestion.id,
+        thirdQuestion.id,
+      ]);
+    } finally {
+      cleanup();
+    }
+  });
+
+  it("shows a result when another tab completes the active round", async () => {
+    const { container, cleanup } = await renderWidget();
+    act(() => findButton(container, "Heutige Runde starten").click());
+
+    saveProgress({
+      ...createEmptyQuizTeaserProgress(),
+      completedCuratedDays: 1,
+      lastResult: { date: getLocalDateKey(), score: 4, source: "curated", dayNumber: 1 },
+    });
+
+    try {
+      act(() => window.dispatchEvent(new Event("focus")));
+
+      expect(container.textContent).toContain("Heute geschafft");
+      expect(container.textContent).toContain("4/5");
+      expect(container.textContent).not.toContain(CURATED_QUIZ_DAYS[0].questions[0].prompt);
+    } finally {
+      cleanup();
+    }
+  });
+
   it("resumes an unfinished curated round at the next unanswered question", async () => {
     const firstRender = await renderWidget();
     act(() => findButton(firstRender.container, "Heutige Runde starten").click());
