@@ -167,7 +167,7 @@ describe("public SEO metadata contracts", () => {
       title: `Deutsch lernen mit Quiz und Artikeln | ${PUBLIC_SITE_NAME}`,
       images: [{ url: PUBLIC_SITE_LOGO_PATH }],
     });
-    expect(projectsMetadata.title).toBe("Projektübersicht");
+    expect(projectsMetadata.title).toBe("Lernangebote");
     expect(knowledgeMetadata.title).toBe("Wissen & Tipps");
     expect(knowledgeMetadata.alternates?.canonical).toBe("/wissen");
     expect(contactMetadata.title).toBe("Kontakt");
@@ -336,6 +336,7 @@ describe("public robots and sitemap contracts", () => {
       "https://qa.quizarena.test/",
       "https://qa.quizarena.test/wissen",
       "https://qa.quizarena.test/projects",
+      "https://qa.quizarena.test/books",
       "https://qa.quizarena.test/contact",
       "https://qa.quizarena.test/privacy",
       "https://qa.quizarena.test/impressum",
@@ -596,7 +597,7 @@ describe("knowledge transport implementation", () => {
       );
 
       expect(html).toContain("Deutsch ist einfach!");
-      expect(html).toContain('href="/#projects"');
+      expect(html).toContain('href="/projects"');
       expect(html).toContain('aria-label="Breadcrumb"');
       expect(html).toContain("bg-slate-950/40");
       expect(html).toContain("border-white/10");

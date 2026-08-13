@@ -9,6 +9,7 @@ import {
   PublicHomeChannelSection,
   PublicHomeContactSection,
   PublicHomeHero,
+  PublicHomeProductsSection,
 } from "./public-home-sections";
 import { PublicSiteHeader } from "./_components/public-site-header";
 import { buildTrackedTelegramBotUrl } from "./public-home-helpers";
@@ -62,6 +63,7 @@ function renderHomeForAnalytics() {
       <main id="public-home-root" lang="de">
         <PublicSiteHeader />
         <PublicHomeHero trackedTelegramBotUrl={trackedUrl} />
+        <PublicHomeProductsSection trackedTelegramBotUrl={trackedUrl} />
         <PublicHomeChannelSection />
         <PublicHomeContactSection />
       </main>
@@ -128,8 +130,8 @@ describe("public home analytics event wiring", () => {
     const { container, cleanup } = renderHomeForAnalytics();
 
     try {
-      const heroButton = container.querySelector<HTMLButtonElement>(
-        '[data-analytics-event="hero_cta_click"][data-analytics-section="hero"]',
+      const heroButton = container.querySelector<HTMLAnchorElement>(
+        '[data-analytics-event="hero_cta_click"][data-analytics-section="hero"][data-analytics-cta="telegram_bot"]',
       );
       const channelButton = container.querySelector<HTMLButtonElement>(
         '[data-analytics-event="channel_cta_click"][data-analytics-section="channel"]',
@@ -159,7 +161,7 @@ describe("public home analytics event wiring", () => {
     const { container, cleanup } = renderHomeForAnalytics();
 
     try {
-      const heroButton = container.querySelector<HTMLButtonElement>(
+      const heroButton = container.querySelector<HTMLAnchorElement>(
         '[data-analytics-event="hero_cta_click"][data-analytics-section="hero"]',
       );
       expect(heroButton).not.toBeNull();
@@ -174,7 +176,7 @@ describe("public home analytics event wiring", () => {
 
       expect(trackEventSpy).toHaveBeenCalledWith(
         "hero_cta_click",
-        expect.objectContaining({ section: "hero", cta: "telegram_bot" }),
+        expect.objectContaining({ section: "hero", cta: "quiz_teaser_anchor" }),
       );
     } finally {
       cleanup();
@@ -185,8 +187,8 @@ describe("public home analytics event wiring", () => {
     const { container, cleanup } = renderHomeForAnalytics();
 
     try {
-      const heroButton = container.querySelector<HTMLButtonElement>(
-        '[data-analytics-event="hero_cta_click"][data-analytics-section="hero"]',
+      const heroButton = container.querySelector<HTMLAnchorElement>(
+        '[data-analytics-event="hero_cta_click"][data-analytics-section="hero"][data-analytics-cta="telegram_bot"]',
       );
       expect(heroButton).not.toBeNull();
 

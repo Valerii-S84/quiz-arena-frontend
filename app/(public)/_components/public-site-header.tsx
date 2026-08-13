@@ -18,10 +18,10 @@ type PublicSiteHeaderProps = {
 };
 
 const publicNavigation = [
-  { homeHref: "#projects", siteHref: "/#projects", label: "Projekte" },
+  { homeHref: "#projects", siteHref: "/projects", label: "Lernangebote" },
   { homeHref: "#knowledge", siteHref: "/wissen", label: "Wissen & Tipps" },
-  { homeHref: "#unterricht", siteHref: "/#unterricht", label: "Lernbegleitung" },
-  { homeHref: "#contact", siteHref: "/#contact", label: "Kontakt" },
+  { homeHref: "#unterricht", siteHref: "/contact#lernbegleitung", label: "Lernbegleitung" },
+  { homeHref: "/contact", siteHref: "/contact", label: "Kontakt" },
 ];
 
 const LINK_FOCUS_CLASS =

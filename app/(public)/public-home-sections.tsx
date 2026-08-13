@@ -18,7 +18,7 @@ import {
   ORANGE_BUTTON_CLASS,
   SECONDARY_BUTTON_CLASS,
   WISSEN_ARTICLES,
-  WORKLOG_INFO_PATH,
+  WORKLOG_DOWNLOAD_PATH,
   WORKLOG_LOGO_PATH,
 } from "./public-home-content";
 import { PublicHomeQuizTeaserWidget } from "./_components/quiz-teaser-widget";
@@ -31,10 +31,6 @@ type PublicHomeHeroProps = {
 
 type PublicHomeStatsSectionProps = {
   stats: StatsState;
-};
-
-type PublicHomeBotSectionProps = {
-  trackedTelegramBotUrl: string;
 };
 
 type PublicHomeQuizTeaserSectionProps = {
@@ -62,7 +58,6 @@ type ProductCard = {
   actionLabel: string;
   imageSrc?: string;
   imageAlt?: string;
-  accentClass: string;
   download?: string;
   analyticsEventName?: "hero_cta_click" | "channel_cta_click";
   analyticsSection?: string;
@@ -71,25 +66,6 @@ type ProductCard = {
 
 const LINK_FOCUS_CLASS =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD166] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111f]";
-
-const botFeatures = [
-  {
-    title: "Daily Challenge",
-    description: "Ein fester Tagesimpuls für kurze, konzentrierte Quizrunden.",
-  },
-  {
-    title: "Duelle",
-    description: "Direkter Vergleich mit Freunden und anderen Lernenden in der Arena.",
-  },
-  {
-    title: "Fortschritt",
-    description: "Klare Rückmeldung zu richtigen Antworten, Serien und Entwicklung.",
-  },
-  {
-    title: "Fehlertraining",
-    description: "Schwierige Fragen gezielt wiederholen und Wissen dauerhaft festigen.",
-  },
-];
 
 function getTrackedTelegramBotFallback(): string {
   return buildTrackedTelegramBotUrl(getTelegramBotUrl(), TELEGRAM_BOT_START_PAYLOAD);
@@ -113,7 +89,6 @@ function getProjectCards(trackedTelegramBotUrl: string): ProductCard[] {
       actionLabel: "Bot öffnen",
       imageSrc: BOT_LOGO_PATH,
       imageAlt: `${QUIZ_PRODUCT_NAME} Logo`,
-      accentClass: "from-[#2AABEE]/20 to-[#FFD166]/10",
       analyticsEventName: "hero_cta_click",
       analyticsSection: "product_card",
       analyticsCta: "telegram_bot",
@@ -126,7 +101,6 @@ function getProjectCards(trackedTelegramBotUrl: string): ProductCard[] {
       actionLabel: "Kanal öffnen",
       imageSrc: CHANNEL_LOGO_PATH,
       imageAlt: "Deutsch ist einfach! Kanal Logo",
-      accentClass: "from-[#4DE2C6]/20 to-[#2AABEE]/10",
       analyticsEventName: "channel_cta_click",
       analyticsSection: "product_card",
       analyticsCta: "telegram_channel",
@@ -140,21 +114,9 @@ function getProjectCards(trackedTelegramBotUrl: string): ProductCard[] {
       actionLabel: "Trainer öffnen",
       imageSrc: DEUTSCH_TRAINER_LOGO_PATH,
       imageAlt: "Deutsch Trainer Bot Logo",
-      accentClass: "from-[#FFD166]/20 to-[#4DE2C6]/10",
       analyticsEventName: "hero_cta_click",
       analyticsSection: "product_card",
       analyticsCta: "telegram_bot",
-    },
-    {
-      title: "Worklog",
-      eyebrow: "Organisation",
-      description:
-        "Aufgaben, Notizen und Arbeitsabläufe übersichtlich an einem Ort organisieren.",
-      href: WORKLOG_INFO_PATH,
-      actionLabel: "Mehr erfahren",
-      imageSrc: WORKLOG_LOGO_PATH,
-      imageAlt: "Worklog Logo",
-      accentClass: "from-white/20 to-[#2AABEE]/10",
     },
   ];
 }
@@ -187,72 +149,49 @@ function ProductIcon({ product }: { product: ProductCard }) {
   );
 }
 
-function SmallProductCard({ product }: { product: ProductCard }) {
-  const shouldOpenInNewTab = opensInNewTab(product.href, product.download);
-
-  return (
-    <a
-      href={product.href}
-      target={shouldOpenInNewTab ? "_blank" : undefined}
-      rel={shouldOpenInNewTab ? "noreferrer" : undefined}
-      download={product.download}
-      aria-label={`${product.title}: ${product.actionLabel}`}
-      data-analytics-event={product.analyticsEventName}
-      data-analytics-section={product.analyticsSection}
-      data-analytics-cta={product.analyticsCta}
-      className={`group block min-w-0 rounded-2xl border border-white/10 bg-gradient-to-br ${product.accentClass} p-3 transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.08] ${LINK_FOCUS_CLASS} sm:p-4`}
-    >
-      <div className="flex items-start gap-3">
-        <ProductIcon product={product} />
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase text-slate-400">{product.eyebrow}</p>
-          <h3 className="mt-1 break-words text-base font-semibold leading-snug text-white">
-            {product.title}
-          </h3>
-          <p className="mt-2 line-clamp-2 text-sm leading-5 text-slate-300">
-            {product.description}
-          </p>
-        </div>
-      </div>
-    </a>
-  );
-}
-
 function ProjectCard({ product }: { product: ProductCard }) {
   const shouldOpenInNewTab = opensInNewTab(product.href, product.download);
 
   return (
-    <article className={`${GLASS_CARD_CLASS} flex h-full min-w-0 flex-col p-4 sm:p-6`}>
-      <div className="flex items-start gap-4">
-        <ProductIcon product={product} />
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase text-slate-400">{product.eyebrow}</p>
-          <h3 className="mt-2 break-words text-lg font-semibold leading-tight text-white sm:text-xl">
-            {product.title}
-          </h3>
-        </div>
+    <article className={`${GLASS_CARD_CLASS} flex h-full min-w-0 flex-col overflow-hidden`}>
+      <div className="relative aspect-[16/9] overflow-hidden border-b border-white/10 bg-[#07111f] p-6 sm:p-8">
+        {product.imageSrc ? (
+          <Image
+            src={product.imageSrc}
+            alt=""
+            fill
+            sizes="(min-width: 1024px) 352px, (min-width: 640px) calc(50vw - 2rem), calc(100vw - 2rem)"
+            className="object-contain p-6 sm:p-8"
+          />
+        ) : null}
       </div>
-      <p className="mt-4 text-sm leading-6 text-slate-300">{product.description}</p>
-      <a
-        href={product.href}
-        target={shouldOpenInNewTab ? "_blank" : undefined}
-        rel={shouldOpenInNewTab ? "noreferrer" : undefined}
-        download={product.download}
-        aria-label={`${product.actionLabel}: ${product.title}`}
-        data-analytics-event={product.analyticsEventName}
-        data-analytics-section={product.analyticsSection}
-        data-analytics-cta={product.analyticsCta}
-        className={`mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-white/10 bg-white/[0.08] px-4 py-2 text-center text-sm font-semibold leading-snug text-white transition hover:border-[#2AABEE]/70 hover:bg-[#2AABEE]/20 ${LINK_FOCUS_CLASS} sm:w-fit`}
-      >
-        {product.actionLabel}
-      </a>
+      <div className="flex flex-1 flex-col p-4 sm:p-6">
+        <p className="w-fit rounded-full border border-[#4DE2C6]/25 bg-[#4DE2C6]/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#B9FFF2]">
+          {product.eyebrow}
+        </p>
+        <h3 className="mt-4 break-words text-xl font-semibold leading-tight text-white sm:text-2xl">
+          {product.title}
+        </h3>
+        <p className="mt-3 text-sm leading-6 text-slate-300">{product.description}</p>
+        <a
+          href={product.href}
+          target={shouldOpenInNewTab ? "_blank" : undefined}
+          rel={shouldOpenInNewTab ? "noreferrer" : undefined}
+          download={product.download}
+          aria-label={`${product.actionLabel}: ${product.title}`}
+          data-analytics-event={product.analyticsEventName}
+          data-analytics-section={product.analyticsSection}
+          data-analytics-cta={product.analyticsCta}
+          className={`mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-[#2AABEE]/30 bg-[#2AABEE]/10 px-4 py-2 text-center text-sm font-semibold leading-snug text-white transition hover:border-[#2AABEE]/70 hover:bg-[#2AABEE]/20 ${LINK_FOCUS_CLASS} sm:w-fit`}
+        >
+          {product.actionLabel}
+        </a>
+      </div>
     </article>
   );
 }
 
 export function PublicHomeHero({ trackedTelegramBotUrl }: PublicHomeHeroProps) {
-  const liveProducts = getProjectCards(trackedTelegramBotUrl);
-
   return (
     <section
       id="hero"
@@ -266,50 +205,58 @@ export function PublicHomeHero({ trackedTelegramBotUrl }: PublicHomeHeroProps) {
           Deutsch lernen. Wissen testen. Jeden Tag Fortschritte machen.
         </h1>
         <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
-          {PUBLIC_SITE_NAME} bündelt Wissensartikel, Lernimpulse, Telegram-Angebote und digitale
-          Formate. {QUIZ_PRODUCT_NAME} ist das Quiz-Produkt der Marke.
+          Finde in fünf kurzen Fragen heraus, wo du stehst. Du bekommst sofort ein Ergebnis und
+          kannst danach mit passenden Quizrunden, Lernimpulsen und Erklärungen weiterlernen.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <a
+            href="#quiz-teaser"
+            className={`w-full sm:w-auto ${ORANGE_BUTTON_CLASS}`}
+            data-analytics-event="hero_cta_click"
+            data-analytics-section="hero"
+            data-analytics-cta="quiz_teaser_anchor"
+          >
+            Deutsch in 5 Fragen testen
+          </a>
           <a
             href={trackedTelegramBotUrl}
             target="_blank"
             rel="noreferrer"
-            className={`w-full sm:w-auto ${ORANGE_BUTTON_CLASS}`}
+            className={`w-full sm:w-auto ${SECONDARY_BUTTON_CLASS}`}
             data-analytics-event="hero_cta_click"
             data-analytics-section="hero"
             data-analytics-cta="telegram_bot"
           >
-            Quiz-Bot öffnen
-          </a>
-          <a
-            href="#projects"
-            className={`w-full sm:w-auto ${SECONDARY_BUTTON_CLASS}`}
-            data-analytics-event="hero_cta_click"
-            data-analytics-section="hero"
-            data-analytics-cta="projects_anchor"
-          >
-            Alle Angebote entdecken
+            Quiz-Bot auf Telegram öffnen
           </a>
         </div>
       </div>
 
-      <aside className={`${GLASS_CARD_CLASS} min-w-0 p-4 sm:p-6`} aria-label="Lernangebote">
-        <div className="flex flex-wrap items-start justify-between gap-3 sm:items-center sm:gap-4">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-[#FFD166]">Alles an einem Ort</p>
-            <h2 className="mt-1 break-words text-xl font-semibold text-white sm:text-2xl">
-              Wähle dein Lernformat.
-            </h2>
-          </div>
-          <span className="shrink-0 rounded-full border border-[#4DE2C6]/30 bg-[#4DE2C6]/10 px-3 py-1 text-xs font-semibold text-[#4DE2C6]">
-            Direkt starten
-          </span>
-        </div>
-        <div className="mt-5 grid gap-3">
-          {liveProducts.map((product) => (
-            <SmallProductCard key={product.title} product={product} />
+      <aside className={`${GLASS_CARD_CLASS} min-w-0 p-5 sm:p-7`} aria-label="Dein schneller Einstieg">
+        <p className="text-sm font-semibold text-[#FFD166]">Dein schneller Einstieg</p>
+        <h2 className="mt-2 break-words text-xl font-semibold leading-tight text-white sm:text-2xl">
+          In fünf Fragen zum nächsten Lernschritt.
+        </h2>
+        <ol className="mt-6 grid gap-4">
+          {[
+            ["Kurz testen", "Beantworte fünf abwechslungsreiche Deutschfragen."],
+            ["Ergebnis sehen", "Erhalte direkt eine klare Rückmeldung zu deiner Runde."],
+            ["Passend weiterlernen", "Wähle anschließend das Lernformat, das zu dir passt."],
+          ].map(([title, description], index) => (
+            <li key={title} className="flex gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+              <span
+                aria-hidden="true"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#4DE2C6]/30 bg-[#4DE2C6]/10 text-sm font-semibold text-[#B9FFF2]"
+              >
+                {index + 1}
+              </span>
+              <div className="min-w-0">
+                <h3 className="font-semibold text-white">{title}</h3>
+                <p className="mt-1 text-sm leading-6 text-slate-300">{description}</p>
+              </div>
+            </li>
           ))}
-        </div>
+        </ol>
       </aside>
     </section>
   );
@@ -332,6 +279,15 @@ export function PublicHomeStatsSection({ stats }: PublicHomeStatsSectionProps) {
             </h2>
             <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">
               Aktuelle Zahlen aus Quizrunden und der wachsenden Lerngemeinschaft.
+            </p>
+            <p className="mt-3 flex items-center gap-2 text-xs font-medium text-slate-400">
+              <span
+                aria-hidden="true"
+                className={`h-2 w-2 rounded-full ${stats.isUnavailable ? "bg-slate-500" : "bg-[#4DE2C6]"}`}
+              />
+              {stats.isUnavailable
+                ? "Datenabruf derzeit nicht verfügbar"
+                : "Bei jedem Seitenaufruf neu geladen"}
             </p>
           </div>
           <div className="grid min-w-0 gap-3 sm:grid-cols-2">
@@ -409,7 +365,6 @@ export function PublicHomeChannelSection() {
               actionLabel: "Kanal öffnen",
               imageSrc: CHANNEL_LOGO_PATH,
               imageAlt: "Deutsch ist einfach! Kanal Logo",
-              accentClass: "",
             }}
           />
           <div className="min-w-0">
@@ -438,50 +393,6 @@ export function PublicHomeChannelSection() {
   );
 }
 
-export function PublicHomeBotSection({ trackedTelegramBotUrl }: PublicHomeBotSectionProps) {
-  return (
-    <section id="bot" className="scroll-mt-24 py-8 sm:py-10">
-      <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-center">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-[#4DE2C6]">{QUIZ_PRODUCT_NAME}</p>
-          <h2 className="mt-2 max-w-2xl break-words text-2xl font-semibold leading-tight text-white sm:text-4xl">
-            Dein täglicher Trainingsraum für Deutsch.
-          </h2>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300 sm:leading-8">
-            Kurze Quizrunden, Daily Challenge, Streaks, Duelle und klare Rückmeldung — direkt in
-            Telegram, ohne extra App.
-          </p>
-          <a
-            href={trackedTelegramBotUrl}
-            target="_blank"
-            rel="noreferrer"
-            className={`mt-7 w-full sm:w-auto ${ORANGE_BUTTON_CLASS}`}
-            data-analytics-event="hero_cta_click"
-            data-analytics-section="bot_block"
-            data-analytics-cta="telegram_bot"
-          >
-            Quiz-Bot öffnen
-          </a>
-        </div>
-
-        <div className="grid min-w-0 gap-3 sm:grid-cols-2">
-          {botFeatures.map((feature) => (
-            <article key={feature.title} className={`${GLASS_CARD_CLASS} min-w-0 p-4 sm:p-5`}>
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[#2AABEE]/30 bg-[#2AABEE]/10 text-sm font-bold text-[#2AABEE]">
-                {feature.title.slice(0, 2)}
-              </div>
-              <h3 className="mt-4 break-words text-lg font-semibold text-white sm:text-xl">
-                {feature.title}
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-slate-300">{feature.description}</p>
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export function PublicHomeProductsSection({
   trackedTelegramBotUrl,
 }: PublicHomeProductsSectionProps = {}) {
@@ -497,13 +408,136 @@ export function PublicHomeProductsSection({
           </h2>
         </div>
         <p className="max-w-xl text-sm leading-6 text-slate-300">
-          Quiz-Bots, Lernimpulse, Wissensartikel und digitale Werkzeuge für deinen Alltag.
+          Drei klare Wege für kurze Quizrunden, tägliche Lernimpulse und persönliches Training.
         </p>
       </div>
-      <div className="mt-6 grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-6 grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {productCards.map((product) => (
           <ProjectCard key={product.title} product={product} />
         ))}
+      </div>
+    </section>
+  );
+}
+
+export function PublicHomeFurtherProjectsSection() {
+  const furtherProjects = [
+    {
+      title: "Worklog",
+      category: "Produktivität · Android",
+      description:
+        "Eine eigenständige Android-App, um Aufgaben, Notizen und Arbeitsabläufe übersichtlich zu organisieren.",
+      href: WORKLOG_DOWNLOAD_PATH,
+      actionLabel: "Android-App herunterladen",
+      imageSrc: WORKLOG_LOGO_PATH,
+      badge: "Wo",
+      download: "worklog.apk",
+      external: false,
+    },
+    {
+      title: "Bücher",
+      category: "Lesen & Lernen",
+      description:
+        "Deutsch für Elektriker als Printausgabe und Kindle-eBook – weitere Titel folgen.",
+      href: "/books",
+      actionLabel: "Bücher entdecken",
+      imageSrc: undefined,
+      badge: "Bü",
+      download: undefined,
+      external: false,
+    },
+    {
+      title: "Shorts Blocker Kids",
+      category: "Digitales Wohlbefinden",
+      description:
+        "Ein eigenständiges Projekt für einen bewussteren Umgang mit Kurzvideo-Feeds auf Kindergeräten.",
+      href: "https://www.shortsblockerkids.de/",
+      actionLabel: "Projekt ansehen",
+      imageSrc: undefined,
+      badge: "SB",
+      download: undefined,
+      external: true,
+    },
+  ] as const;
+
+  return (
+    <section id="further-projects" className="scroll-mt-24 py-8 sm:py-10">
+      <div className="min-w-0">
+        <p className="text-sm font-semibold text-slate-400">Außerdem von uns</p>
+        <h2 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">Weitere Projekte</h2>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
+          Bücher und eigenständige Projekte neben unseren digitalen Lernformaten.
+        </p>
+      </div>
+      <div className="mt-5 grid gap-4 lg:grid-cols-3">
+        {furtherProjects.map((project) => {
+          const content = (
+            <>
+              <span
+                aria-hidden="true"
+                className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[#07111f] text-xs font-bold text-[#FFD166]"
+              >
+                {project.imageSrc ? (
+                  <Image
+                    src={project.imageSrc}
+                    alt=""
+                    fill
+                    sizes="48px"
+                    className="object-contain p-2"
+                  />
+                ) : (
+                  project.badge
+                )}
+              </span>
+              <span className="min-w-0">
+                <span className="block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  {project.category}
+                </span>
+                <span className="mt-1 block text-lg font-semibold text-white">{project.title}</span>
+                <span className="mt-2 block text-sm leading-6 text-slate-300">
+                  {project.description}
+                </span>
+                <span className="mt-4 block text-sm font-semibold text-[#B9FFF2]">
+                  {project.actionLabel} <span aria-hidden="true">→</span>
+                </span>
+              </span>
+            </>
+          );
+
+          const className = `flex min-w-0 items-start gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:-translate-y-0.5 hover:border-[#4DE2C6]/30 hover:bg-white/[0.07] sm:p-5 ${LINK_FOCUS_CLASS}`;
+
+          return project.download ? (
+            <a
+              key={project.title}
+              href={project.href}
+              download={project.download}
+              aria-label={`${project.title}: ${project.actionLabel}`}
+              className={className}
+            >
+              {content}
+            </a>
+          ) : project.external ? (
+            <a
+              key={project.title}
+              href={project.href}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`${project.title}: ${project.actionLabel} (öffnet in einem neuen Tab)`}
+              className={className}
+            >
+              {content}
+            </a>
+          ) : (
+            <Link
+              key={project.title}
+              href={project.href}
+              aria-label={`${project.title}: ${project.actionLabel}`}
+              className={className}
+            >
+              {content}
+            </Link>
+          );
+        })}
       </div>
     </section>
   );
@@ -609,12 +643,27 @@ export function PublicHomeContactSection({
           </article>
 
           <div className="grid min-w-0 gap-4 sm:grid-cols-3 lg:grid-cols-1">
-            {["Kanäle", "Lehrkräfte", "Schulen & Communities"].map((item) => (
-              <article key={item} className="min-w-0 rounded-2xl border border-white/10 bg-[#0b1726] p-4 sm:rounded-3xl sm:p-5">
-                <h3 className="break-words text-lg font-semibold text-white">{item}</h3>
+            {[
+              {
+                title: "Kanäle",
+                description:
+                  "Gemeinsame Quizaktionen, Inhalte und Cross-Promotion für Lerncommunities.",
+              },
+              {
+                title: "Lehrkräfte",
+                description:
+                  "Digitale Quizformate und ergänzende Materialien für Unterricht und Hausaufgaben.",
+              },
+              {
+                title: "Schulen & Communities",
+                description:
+                  "Individuelle Lernformate für Gruppen, Kurse und Sprachprojekte.",
+              },
+            ].map((item) => (
+              <article key={item.title} className="min-w-0 rounded-2xl border border-white/10 bg-[#0b1726] p-4 sm:rounded-3xl sm:p-5">
+                <h3 className="break-words text-lg font-semibold text-white">{item.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-slate-300">
-                  Gemeinsam entwickeln wir ein klares Ziel, das passende Format und einen
-                  realistischen Zeitplan.
+                  {item.description}
                 </p>
               </article>
             ))}

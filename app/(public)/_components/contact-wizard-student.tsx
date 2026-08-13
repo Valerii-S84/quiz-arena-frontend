@@ -255,7 +255,7 @@ export function StudentWizard({ onClose }: WizardProps) {
           className="min-h-11 w-full rounded-full bg-slate-800 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-700 sm:w-auto"
           onClick={onClose}
         >
-          Zurück zur Startseite
+          Fenster schließen
         </button>
       </div>
     );

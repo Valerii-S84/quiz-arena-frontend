@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 import { PublicLegalFooter } from "../_components/public-legal-footer";
+import { PublicSiteHeader } from "../_components/public-site-header";
 import { PUBLIC_SITE_NAME, getPublicContactEmail } from "@/lib/public-site-config";
 
 export const metadata: Metadata = {
@@ -21,7 +22,9 @@ const contactEmail = getPublicContactEmail();
 
 export default function PrivacyPage() {
   return (
-    <main className="mx-auto max-w-3xl px-6 py-14">
+    <>
+      <PublicSiteHeader sectionLinkPrefix="/" />
+      <main className="mx-auto min-h-screen max-w-3xl px-6 py-14">
       <h1 className="text-3xl font-semibold text-slate-900">Datenschutzerklärung</h1>
       <p className="mt-4 text-sm leading-6 text-slate-700">
         Stand: 12. August 2026. Diese Datenschutzerklärung gilt für die öffentliche Website{" "}
@@ -194,7 +197,8 @@ export default function PrivacyPage() {
           </p>
         </article>
       </section>
-      <PublicLegalFooter />
-    </main>
+        <PublicLegalFooter />
+      </main>
+    </>
   );
 }
