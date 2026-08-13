@@ -113,11 +113,11 @@ function embeddedArticleTheme(): string {
   max-width: min(100%, 58rem);
 }
 .${ARTICLE_DOCUMENT_CLASS} [data-article-toc-heading="true"] {
-  scroll-margin-top: 16rem;
+  scroll-margin-top: 5.5rem;
 }
 @media (min-width: 640px) {
   .${ARTICLE_DOCUMENT_CLASS} [data-article-toc-heading="true"] {
-    scroll-margin-top: 12rem;
+    scroll-margin-top: 5.5rem;
   }
 }
 @media (min-width: 1024px) {
@@ -598,7 +598,7 @@ function ArticleTableOfContents({
     >
       <details className="rounded-2xl border border-white/10 bg-slate-950/70 p-4 shadow-[0_18px_50px_rgba(2,6,23,0.28)] lg:hidden">
         <summary className="cursor-pointer rounded-md font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300">
-          Inhaltsverzeichnis
+          Auf dieser Seite
         </summary>
         <nav aria-label="Inhaltsverzeichnis">
           <TableOfContentsLinks items={items} />
@@ -613,7 +613,7 @@ function ArticleTableOfContents({
           id={desktopHeadingId}
           className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-300"
         >
-          Inhaltsverzeichnis
+          Auf dieser Seite
         </h2>
         <TableOfContentsLinks items={items} />
       </nav>

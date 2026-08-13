@@ -34,10 +34,10 @@ describe("Prüfungen article responsive layout", () => {
       .join("\n");
 
     expect(document.querySelector("details.lg\\:hidden summary")?.textContent).toContain(
-      "Inhaltsverzeichnis",
+      "Auf dieser Seite",
     );
     expect(document.querySelector("nav.lg\\:block")?.textContent).toContain(
-      "Inhaltsverzeichnis",
+      "Auf dieser Seite",
     );
     expect(tocLabels).toContain("Goethe-Institut — Goethe-Zertifikat");
     expect(tocLabels).toContain("telc — The European Language Certificates");
@@ -45,12 +45,12 @@ describe("Prüfungen article responsive layout", () => {
     expect(headingIds).toContain("artikel-telc-the-european-language-certificates");
     expect(renderedStyles).toMatch(
       new RegExp(
-        `\\.${ARTICLE_DOCUMENT_CLASS} \\[data-article-toc-heading="true"\\] \\{\\s*scroll-margin-top: 16rem;\\s*\\}`,
+        `\\.${ARTICLE_DOCUMENT_CLASS} \\[data-article-toc-heading="true"\\] \\{\\s*scroll-margin-top: 5.5rem;\\s*\\}`,
       ),
     );
     expect(renderedStyles).toMatch(
       new RegExp(
-        `@media \\(min-width: 640px\\) \\{\\s*\\.${ARTICLE_DOCUMENT_CLASS} \\[data-article-toc-heading="true"\\] \\{\\s*scroll-margin-top: 12rem;`,
+        `@media \\(min-width: 640px\\) \\{\\s*\\.${ARTICLE_DOCUMENT_CLASS} \\[data-article-toc-heading="true"\\] \\{\\s*scroll-margin-top: 5.5rem;`,
       ),
     );
     expect(renderedStyles).toMatch(
@@ -143,5 +143,25 @@ describe("Prüfungen article responsive layout", () => {
     expect(renderedStyles).toContain('content: "Sprachstufe";');
     expect(renderedStyles).toContain('content: "machen";');
     expect(renderedStyles).toContain('content: "Haus";');
+  });
+
+  it("exposes direct anchors for every CEFR level, exams, and learning tips", async () => {
+    await renderTargetArticle("sprachniveaus-a0-c2");
+
+    const tocLinks = Array.from(
+      document.querySelectorAll<HTMLAnchorElement>("details [data-article-toc-link]"),
+    );
+    const tocLabels = tocLinks.map((link) => link.textContent?.trim());
+
+    for (const level of ["A0", "A1", "A2", "B1", "B2", "C1", "C2"]) {
+      expect(tocLabels.some((label) => label?.startsWith(`${level} –`))).toBe(true);
+    }
+
+    expect(tocLabels).toContain("Offizielle Prüfungen und Zertifikate");
+    expect(tocLabels).toContain("Tipps für effektives Lernen");
+
+    for (const link of tocLinks) {
+      expect(document.getElementById(decodeURIComponent(link.hash.slice(1)))).not.toBeNull();
+    }
   });
 });
